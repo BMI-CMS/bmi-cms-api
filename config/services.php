@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'api' => [
+        'key' => env('BMI_CMS_KEY'),
+    ],
+
 ];

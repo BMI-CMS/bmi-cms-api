@@ -1,0 +1,163 @@
+# Plan Filtering & Classification Engine (`PlanHelper.php`)
+
+This document provides a comprehensive explanation of the plan filtering and categorization functionality implemented in `PlanHelper.php` based on the specifications in `rules` and the sample dataset in `AccountSeeder.php`.
+
+---
+
+## 1. Overview and Objective
+
+The primary objective is to implement a robust, high-performance function that filters and categorizes each plan/account into its appropriate category according to defined business rules:
+- **Priority Accounts**
+  - Promise to Pay (PTP) Accounts
+  - For Repossession Accounts
+  - Priority 1 accounts
+  - Next Action Plan Accounts
+  - FDD / NS (First Default Due / Non Starter)
+- **Regular Accounts**
+  - No contact recording
+  - DPD 1 - 30
+  - NP0 and NP1 regardless of DPD
+
+The main entry point is `PlanHelper::filterEachPlan($plans, $hierarchical = false)`, which processes a collection of plans/accounts, evaluates the business logic criteria, and places each plan into the exact category where it belongs.
+
+---
+
+## 2. Business Rules & Implementation Logic
+
+The filtering engine evaluates each plan using the hierarchy and criteria defined in `rules`:
+
+### A. Priority Accounts
+
+1. **Promise to Pay (PTP) Accounts**
+   - **Rule**: Accounts with an active Promise-to-Pay commitment recorded through Contact Recording within the month.
+   - **Implementation**:
+     - Checks contact recordings associated with the account (`ContactRecording`).
+     - Verifies if the contact date (`contact_date`) or scheduled commitment date (`next_action_date`) is within the active/current month or within the last 30 days (`isWithinMonth()`).
+     - Detects PTP commitments via `action_taken`, `next_action_plan`, `remarks`, or `follow_up_mode` containing keywords like `PTP`, `Promise to Pay`, or explicit flags (`is_ptp`, `promise_to_pay`).
+
+2. **For Repossession Accounts**
+   - **Rule**:
+     1. Accounts with NP3 and above and DPD 91 and above shall be automatically tagged as For Repossession.
+     2. Repossession Requests approved by the Cluster Head (CH) until the last approver shall automatically be reflected under this category.
+   - **Implementation**:
+     - **Automatic Tagging**: Evaluates non-payments (`no_of_non_payments` parsed as `NP >= 3`) and days past due (`days_past_due >= 91` or bucket matching `DPD 91+`).
+     - **Approved Requests**: Checks if the account exists in `for_repossessions` table or has a `RepossessionRequest` record where `is_first_level_approved` (Cluster Head) and `is_third_level_approved` (last approver) are both true.
+
+3. **Priority 1 accounts**
+   - **Rule**: Accounts classified as NP2 and above with a DPD 61 and above based on the loaded targets.
+   - **Implementation**:
+     - Verifies `NP >= 2` (e.g., `'2'`, `'3'`, `'4'`, etc.).
+     - Verifies `DPD >= 61` (or target bucket containing `DPD 60`, `DPD 61-90`, `DPD 90`, etc.).
+     - Positioned after Repossession in priority order so that severe delinquency (NP3+ & DPD 91+) properly defaults to For Repossession.
+
+4. **Next Action Plan Accounts**
+   - **Rule**:
+     - Skip trace
+     - Notice and demand letter
+     - Forced Prioritized
+   - **Implementation**:
+     - Inspects plan attributes and contact recordings for:
+       - **Skip trace**: Matches `skiptrace` or `skip trace` (e.g. `'SKIPTRACE'`, `'FOR SKIPTRACE'`).
+       - **Notice and demand letter**: Matches `notice`, `demand letter`, `collection notice`, or `atty's letter` (e.g. `'SERVED COLLECTION NOTICE'`, `'FOR SERVICE OF COLLECTION NOTICE/ATTY\'S LETTER'`).
+       - **Forced Prioritized**: Matches `forced prioritized` or boolean flag `is_forced_prioritized` / `forced_prioritized`.
+
+5. **FDD / NS (First Default Due / Non Starter)**
+   - **Rule**:
+     - **FDD on due date**: Identifies accounts with no payment on or before due date.
+     - **Non Starter**: Identifies accounts that did make a payment, but the total amount is less than the required Minimum Installment (MI).
+   - **Implementation**:
+     - Computes the total payment amount from attached receipts or `ReceiptEncoding` records.
+     - **Non Starter**: If `total_paid > 0` and `total_paid < monthly_amortization` (Minimum Installment), it is tagged as Non Starter.
+     - **FDD on due date**: If `total_paid == 0` and the account has an overdue balance (`past_due_balance > 0` or `days_past_due > 0`).
+
+---
+
+### B. Regular Accounts
+
+- **Rule**:
+  - No contact recording
+  - DPD 1 - 30
+  - NP0 and NP1 irregardless of DPD
+- **Implementation**:
+  - Confirms the account has **zero** contact recordings.
+  - Matches if `days_past_due` is between 1 and 30 (`DPD 1 - 30`), **OR** if non-payments are `NP0` (`'UPDATED'`) or `NP1` (`'LAST PAID 1 MONTH AGO'` or `'1'`), regardless of DPD.
+
+---
+
+## 3. Analysis of Sample Data (`AccountSeeder.php`)
+
+The sample dataset in `AccountSeeder.php` contains 14 accounts. Below is the mapping of how each sample account is classified:
+
+| # | Customer Name | DPD / Bucket | NP Value | Contact / Repo / Receipt Status | Category Assigned | Subcategory / Specific Type |
+|---|---------------|--------------|----------|----------------------------------|-------------------|-----------------------------|
+| 1 | RACHEL DELA CRUZ | 5 / DPD 1-30 | NP1 | Contact recorded ('COLLECTED'); Receipt = 1,500.00 < MI 5,148.00 | Priority Accounts | FDD / NS (Non Starter) |
+| 2 | MARIFE CASTILLO | 25 / DPD 61-90 | NP1 | Contact recorded ('COLLECTED'); Receipt = 3,250.50 < MI 6,790.00 | Priority Accounts | FDD / NS (Non Starter) |
+| 3 | JOSEPH SALUDES | 2 / DPD 271-300 | NP1 | Contact recorded ('COLLECTED'); Receipt = 5,000.00 >= MI 3,423.00 | Priority Accounts | Priority Accounts (Active Follow-up) |
+| 4 | CHRISTOPER DE LEON | 25 / DPD 0 | NP0 | Contact recorded ('COLLECTED'); Receipt = 1,200.75 < MI 4,536.00 | Priority Accounts | FDD / NS (Non Starter) |
+| 5 | MARIA CLARA | 60 / DPD 60 | NP2 | Contact recorded ('for repo'); Approved in `ForRepossession` (CH to DH) | Priority Accounts | For Repossession Accounts |
+| 6 | JUAN DELA CRUZ | 0 / DPD 0 | NP0 | Contact recorded ('for repo'); Approved in `ForRepossession` (CH to DH) | Priority Accounts | For Repossession Accounts |
+| 7 | PEDRO PENDUKO | 90 / DPD 90 | NP3 | Contact recorded ('for repo'); Approved in `ForRepossession` (CH to DH) | Priority Accounts | For Repossession Accounts |
+| 8 | ANA ROCES | 30 / DPD 30 | NP1 | No contact recording; DPD 30; NP 1 | Regular Accounts | Regular Accounts |
+| 9 | JOSE RIZAL | 0 / DPD 0 | NP0 | No contact recording; DPD 0; NP 0 (UPDATED) | Regular Accounts | Regular Accounts |
+| 10 | LIZA SOBERANO | 120 / DPD 120 | NP4 | No contact recording; NP 4 (>= 3) and DPD 120 (>= 91) | Priority Accounts | For Repossession Accounts (Auto-Tagged) |
+| 11 | VIC SOTTO | 0 / DPD 0 | NP0 | No contact recording; DPD 0; NP 0 (UPDATED) | Regular Accounts | Regular Accounts |
+| 12 | SARAH GERONIMO | 60 / DPD 60 | NP2 | No contact recording; NP 2 (>= 2) and DPD 60/61+ target bucket | Priority Accounts | Priority 1 accounts |
+| 13 | COCO MARTIN | 30 / DPD 30 | NP1 | No contact recording; DPD 30; NP 1 | Regular Accounts | Regular Accounts |
+| 14 | KATHRYN BERNARDO | 0 / DPD 0 | NP0 | No contact recording; DPD 0; NP 0 (UPDATED) | Regular Accounts | Regular Accounts |
+
+### Note on Sample Plan Types:
+As noted (*"since my sample plan cant go all sample types that okey"*), the 14 sample accounts in `AccountSeeder` do not encompass every single subcategory (e.g., explicit active PTP text or Skip trace / Demand letter action plans are not yet populated in the initial seed records).
+
+The filtering logic in `PlanHelper.php` has been fully implemented for **all** rule categories and subtypes. As soon as records with PTP commitments, Skip trace, or Demand letter action plans are seeded or imported, `PlanHelper` will immediately classify them into their correct buckets without requiring any code modifications.
+
+---
+
+## 4. Method Reference & Usage Examples
+
+### 1. `PlanHelper::filterEachPlan($plans = null, bool $hierarchical = false): Collection`
+Filters all plans into their respective categories.
+- **Default Flat Grouping (`$hierarchical = false`)**:
+  ```php
+  use App\Helpers\PlanHelper;
+
+  $grouped = PlanHelper::filterEachPlan();
+
+  // Access specific categories:
+  $repoAccounts      = $grouped->get(PlanHelper::TYPE_FOR_REPOSSESSION);
+  $ptpAccounts       = $grouped->get(PlanHelper::TYPE_PTP);
+  $priority1Accounts = $grouped->get(PlanHelper::TYPE_PRIORITY_1);
+  $nextActionPlans   = $grouped->get(PlanHelper::TYPE_NEXT_ACTION_PLAN);
+  $fddNsAccounts     = $grouped->get(PlanHelper::TYPE_FDD_NS);
+  $regularAccounts   = $grouped->get(PlanHelper::TYPE_REGULAR);
+  ```
+
+- **Hierarchical Grouping (`$hierarchical = true`)**:
+  ```php
+  $hierarchical = PlanHelper::filterEachPlan(null, true);
+
+  $priorityAccounts = $hierarchical->get(PlanHelper::CATEGORY_PRIORITY);
+  $regularAccounts  = $hierarchical->get(PlanHelper::CATEGORY_REGULAR);
+
+  $repoInPriority = $priorityAccounts->get(PlanHelper::TYPE_FOR_REPOSSESSION);
+  ```
+
+### 2. `PlanHelper::filterPlansByType(Collection $plans, string $type): Collection`
+Filters a collection of plans to return only those matching a given type or category name (also supports friendly aliases like `'ptp'`, `'repo'`, `'priority 1'`, `'regular'`).
+```php
+$repoPlans = PlanHelper::filterPlansByType($plans, PlanHelper::TYPE_FOR_REPOSSESSION);
+$ptpPlans  = PlanHelper::filterPlansByType($plans, 'PTP');
+$regPlans  = PlanHelper::filterPlansByType($plans, 'Regular Accounts');
+```
+
+### 3. Individual Classification Methods
+- `PlanHelper::categorizePlan($plan)`: Returns detailed classification array (`main_category`, `subcategory`, `specific_type`, `matched_rules`).
+- `PlanHelper::determineCategory($plan)`: Returns the subcategory string (e.g., `'For Repossession Accounts'`).
+- `PlanHelper::determineMainCategory($plan)`: Returns `'Priority Accounts'` or `'Regular Accounts'`.
+
+---
+
+## 5. Performance & Defensive Design
+
+1. **O(1) In-Memory Lookups / No N+1 Queries**: `PlanHelper::filterEachPlan()` extracts all account IDs and performs bulk preloading of contact recordings, repossession requests, repossession status, and receipt encodings in single batch queries.
+2. **Universal Data Compatibility**: Works with Eloquent Models, stdClass objects, and plain associative arrays.
+3. **Graceful Fault Tolerance**: All database queries are protected with safety checks and error handling, ensuring the helper functions smoothly even during isolated unit testing or if tables are being migrated.

@@ -26,22 +26,16 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Authenticated successfully.',
-            'token' => $result['token'],
-            'user' => $result['user'],
+            'data' => $result['data'],
         ]);
     }
 
     public function me(Request $request): JsonResponse
     {
         /** @var \App\Models\User $user */
-        $user = $request->user()->load('userLevel');
+        $user = $request->user()->load('CmsUser:id,name,role_id,company_id,level,psgc_code');
 
-        return response()->json([
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name
-            ],
-        ]);
+        return response()->json($user);
     }
 
     public function logout(Request $request): JsonResponse

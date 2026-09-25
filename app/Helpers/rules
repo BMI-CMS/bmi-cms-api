@@ -1,0 +1,20 @@
+Priority Accounts
+    Promise to Pay (PTP) Accounts  
+        Accounts with an active Promise-to-Pay commitment recorded through Contact Recording within the month.
+    For Repossession Accounts
+        Accounts with NP3 and above and DPD 91 and above shall be automatically tagged as For Repossession
+        Repossession Requests approved by the Cluster Head (CH) until the last approver shall automatically be reflected under this category.
+    Priority 1 accounts
+        Accounts classified as NP2 and above with a DPD - 61 and above based on the loaded targets.
+    Next Action Plan Accounts
+        Skip trace
+        Notice and demand letter
+        Forced Prioritized
+    FDD / NS
+        FDD on due date ( identifies accounts with no payment on or before due date )
+        Non Starter ( identifies accounts that did make a payment, but the total amount is less than the required Minimum Installment (MI).)
+
+Regular Accounts
+    No contact recording
+    DPD 1 - 30 
+    NP0 and NP1 irregardless of DPD

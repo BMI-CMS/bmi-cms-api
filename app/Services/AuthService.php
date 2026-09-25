@@ -41,16 +41,30 @@ class AuthService
             ];
         }
 
+        $user->tokens()->delete();
+
         $token = $user->createToken('auth-token')->plainTextToken;
+
+
+        $user->load([
+            'CmsUser:id,name,role_id,company_id,level,psgc_code',
+            'CmsUser.company:id,name',
+            'CmsUser.role:id,name'
+        ]);
 
         return [
             'success' => true,
-            'token' => $token,
-            'user' => [
+            'data' => [
+                'token' => $token,
                 'id' => $user->id,
-                'name' => $user->name,
-                'user_level' => $user->user_level
-            ],
+                'name' => $user->CmsUser->name,
+                'role_id' => $user->CmsUser->role_id,
+                'role' => $user->CmsUser->role->name,
+                'company_id' => $user->CmsUser->company_id,
+                'company_name' => $user->CmsUser->company->name,
+                'level' => $user->CmsUser->level,
+                'psgc_code' => $user->CmsUser->psgc_code
+            ]
         ];
     }
 

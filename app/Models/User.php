@@ -7,11 +7,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -22,7 +24,7 @@ class User extends Authenticatable
         'username',
         'password',
         'name',
-        'user_level_id',
+        'user_level',
         'phone_imei',
     ];
 
@@ -49,13 +51,8 @@ class User extends Authenticatable
         ];
     }
 
-    /**
-     * Get the user level associated with this user.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function userLevel(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function CmsUser(): BelongsTo
     {
-        return $this->belongsTo(UserLevel::class, 'user_level_id', 'level');
+        return $this->belongsTo(CmsUser::class);
     }
 }

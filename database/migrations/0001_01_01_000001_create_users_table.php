@@ -15,10 +15,12 @@ return new class extends Migration
             $table->id();
             $table->string('username', 50);
             $table->string('password');
-            $table->string('name', 50);
+            $table->foreignId('cms_user_id')
+                ->constrained('cms_users')
+                ->cascadeOnDelete();
             $table->string('phone_imei', 15);
-            $table->integer('user_level');
             $table->rememberToken();
+            $table->softDeletes();
             $table->timestamps();
         });
 

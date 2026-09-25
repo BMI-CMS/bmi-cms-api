@@ -16,7 +16,24 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         $this->call([
+            FollowUpModeSeeder::class,
+            CompanySeeder::class,
+            CompanyFollowUpModeSeeder::class,
+            ReasonForDefaultSeeder::class,
+            CompanyReasonForDefaultSeeder::class,
+            ActionTakenTypesSeeder::class,
+            CompanyActionTakenTypeSeeder::class,
+            NextActionPlanSeeder::class,
+            RoleSeeder::class,
+            CompanyNextActionPlanSeeder::class,
+            CmsUserSeeder::class,
+            AccountSeeder::class,
             UserSeeder::class,
+            ContactRecordingSeeder::class,
+            RepossessionRequestSeeder::class,
+            ForRepossessionSeeder::class,
+            ReceiptEncodingSeeder::class,
+            RestructuringSeeder::class
         ]);
     }
 }

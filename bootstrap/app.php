@@ -15,12 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->redirectGuestsTo(fn ($request) => $request->is('api/*') ? null : null);
+        $middleware->redirectGuestsTo(fn($request) => $request->is('api/*') ? null : null);
 
-        $middleware->group('api-session', [
-            EncryptCookies::class,
-            AddQueuedCookiesToResponse::class,
-            StartSession::class,
+        $middleware->alias([
+            'api.key' => \App\Http\Middleware\ApiKeyMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

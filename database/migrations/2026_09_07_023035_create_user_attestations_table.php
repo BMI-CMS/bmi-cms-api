@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->boolean('is_attested');
+            $table->softDeletes();
             $table->timestamps();
         });
     }
