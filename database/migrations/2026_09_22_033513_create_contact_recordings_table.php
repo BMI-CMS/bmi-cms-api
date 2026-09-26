@@ -25,7 +25,7 @@ return new class extends Migration
             $table->string('geotagging', 255)->nullable();
             $table->unsignedBigInteger('recorded_by')->index();
             $table->dateTime('contact_date');
-            $table->dateTime('next_action_date')->nullable();
+            $table->dateTime('next_action_date')->nullable()->index();
             $table->softDeletes();
             $table->timestamp('created_at')->index();
             $table->timestamp('updated_at');

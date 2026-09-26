@@ -10,7 +10,7 @@ use Carbon\Carbon;
 
 class DashboardRepository
 {
-    public function getAccountPerformance()
+    public function getAccountPerformance(int $userId)
     {
         $startDate = Carbon::now()->startOfMonth();
         $endDate = Carbon::now()->endOfMonth();
@@ -55,14 +55,15 @@ class DashboardRepository
                 'accounts.id',
                 'accounts.account_number',
                 'accounts.customer_name',
+                'accounts.past_due_balance',
                 'receipt_encodings.account_id as receipt_encodings_id',
                 'receipt_encodings.amount as receipt_encode_amount',
                 'restructurings.account_id as restructurings_id',
                 'restructurings.new_monthly_amortization',
                 'for_repossessions.account_id as for_repossessions_id',
-                'for_repossessions.amount',
+                'for_repossessions.amount as repossessed_amount',
             ])
-            ->where('accounts.assigned_cc_id', 1)
+            ->where('accounts.assigned_cc_id', $userId)
             ->where('accounts.created_at', '>=', $startDate)
             ->where('accounts.created_at', '<', $endDate)
             ->get();

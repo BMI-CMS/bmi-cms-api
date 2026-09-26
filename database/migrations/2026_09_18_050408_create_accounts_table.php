@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('accounts', function (Blueprint $table) {
             $table->id();
-            $table->string('account_number', 15)->unique();
+            $table->string('account_number', 15)->index();
             $table->unsignedBigInteger('customer_id')->index();
             $table->string('customer_name');
             $table->decimal('monthly_amortization', 15, 2);

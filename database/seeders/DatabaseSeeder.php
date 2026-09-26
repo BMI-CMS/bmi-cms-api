@@ -33,7 +33,8 @@ class DatabaseSeeder extends Seeder
             RepossessionRequestSeeder::class,
             ForRepossessionSeeder::class,
             ReceiptEncodingSeeder::class,
-            RestructuringSeeder::class
+            RestructuringSeeder::class,
+            PromiseToPaySeeder::class
         ]);
     }
 }

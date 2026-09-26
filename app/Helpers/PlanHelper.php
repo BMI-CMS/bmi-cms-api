@@ -165,9 +165,11 @@ class PlanHelper
             $specific    = $classification['specific_type'];
 
             // Match full category names
-            if (strcasecmp($type, $mainCat) === 0 ||
+            if (
+                strcasecmp($type, $mainCat) === 0 ||
                 strcasecmp($type, $subCat) === 0 ||
-                strcasecmp($type, $specific) === 0) {
+                strcasecmp($type, $specific) === 0
+            ) {
                 return true;
             }
 
@@ -583,8 +585,8 @@ class PlanHelper
     protected static function getContactRecordings(mixed $plan, ?array $context): array
     {
         $direct = self::getAttribute($plan, 'contact_recordings') ??
-                  self::getAttribute($plan, 'contactRecordings') ??
-                  self::getAttribute($plan, 'contact_recording');
+            self::getAttribute($plan, 'contactRecordings') ??
+            self::getAttribute($plan, 'contact_recording');
         if ($direct !== null) {
             return is_iterable($direct) ? (is_array($direct) ? $direct : iterator_to_array($direct)) : [$direct];
         }
@@ -612,7 +614,7 @@ class PlanHelper
     protected static function getForRepossession(mixed $plan, ?array $context): mixed
     {
         $direct = self::getAttribute($plan, 'for_repossession') ??
-                  self::getAttribute($plan, 'forRepossession');
+            self::getAttribute($plan, 'forRepossession');
         if ($direct !== null) {
             return $direct;
         }
@@ -640,8 +642,8 @@ class PlanHelper
     protected static function getRepossessionRequests(mixed $plan, ?array $context): array
     {
         $direct = self::getAttribute($plan, 'repossession_requests') ??
-                  self::getAttribute($plan, 'repossessionRequests') ??
-                  self::getAttribute($plan, 'repossession_request');
+            self::getAttribute($plan, 'repossessionRequests') ??
+            self::getAttribute($plan, 'repossession_request');
         if ($direct !== null) {
             return is_iterable($direct) ? (is_array($direct) ? $direct : iterator_to_array($direct)) : [$direct];
         }
@@ -677,14 +679,14 @@ class PlanHelper
     protected static function getTotalPayments(mixed $plan, ?array $context): float
     {
         $directTotal = self::getAttribute($plan, 'total_paid') ??
-                       self::getAttribute($plan, 'amount_paid') ??
-                       self::getAttribute($plan, 'payment_amount');
+            self::getAttribute($plan, 'amount_paid') ??
+            self::getAttribute($plan, 'payment_amount');
         if ($directTotal !== null && is_numeric($directTotal)) {
             return (float) $directTotal;
         }
 
         $receipts = self::getAttribute($plan, 'receipt_encodings') ??
-                    self::getAttribute($plan, 'receiptEncodings');
+            self::getAttribute($plan, 'receiptEncodings');
         if ($receipts !== null && is_iterable($receipts)) {
             $sum = 0.0;
             foreach ($receipts as $r) {

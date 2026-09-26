@@ -6,7 +6,7 @@ use App\Models\ForRepossession;
 
 class ForRepossessionQuery
 {
-    public static function withReceiptAmount($startDate, $endDate)
+    public static function withReceiptAmount(string  $startDate, string  $endDate)
     {
         return ForRepossession::leftJoin(
             'receipt_encodings',

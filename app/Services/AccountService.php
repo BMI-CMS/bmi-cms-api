@@ -4,12 +4,8 @@ namespace App\Services;
 
 class AccountService
 {
-    public function getSummary(): array
+    public function getAccounts(int $user_id): array
     {
-        return [
-            "accounts" => 100,
-            "first_encounters" => 10,
-            "collections" => 5
-        ];
+        return [];
     }
 }

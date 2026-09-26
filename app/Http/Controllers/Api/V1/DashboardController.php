@@ -11,9 +11,9 @@ class DashboardController extends Controller
         protected DashboardService $dashboardService
     ) {}
 
-    public function getSummary()
+    public function show(int $userId)
     {
-        $summary = $this->dashboardService->getSummary();
+        $summary = $this->dashboardService->getSummary($userId);
 
         return response()->json([
             'message' => 'Dashboard summary retrieved successfully.',

@@ -16,6 +16,7 @@ class ContactRecordingSeeder extends Seeder
     {
         $accountIds = [1, 2, 3, 4];
         $now = Carbon::now();
+        $prev = Carbon::today()->subDay(7);
 
         $records = [];
 
@@ -57,5 +58,71 @@ class ContactRecordingSeeder extends Seeder
         }
 
         ContactRecording::insert($records);
+
+
+        ContactRecording::create([
+            'account_id'          => 14,
+            'follow_up_mode'      => 'Field Visit',
+            'reason_for_default'  => 'CALAMITY / ACTS OF NATURE RELATED',
+            'action_taken'        => 'ATTEND BRGY HEARING',
+            'next_action_plan'    => 'For skiptrace',
+            //'assigned_support_cc' => '',
+            'remarks'             => 'Follow-up completed successfully.',
+            'geotagging'          => 'my address',
+            'recorded_by'         => 1,
+            'contact_date'        => $now,
+            'next_action_date'    => $prev,
+            'created_at'           => $now,
+            'updated_at'           => $now,
+        ]);
+
+
+        ContactRecording::create([
+            'account_id'          => 14,
+            'follow_up_mode'      => 'Field Visit',
+            'reason_for_default'  => 'CALAMITY / ACTS OF NATURE RELATED',
+            'action_taken'        => 'ATTEND BRGY HEARING',
+            'next_action_plan'    => 'Promise to Pay',
+            //'assigned_support_cc' => '',
+            'remarks'             => 'Follow-up completed successfully.',
+            'geotagging'          => 'my address',
+            'recorded_by'         => 1,
+            'contact_date'        => $now,
+            'next_action_date'    => $now->copy()->addDays(7),
+            'created_at'           => $now,
+            'updated_at'           => $now,
+        ]);
+
+        ContactRecording::create([
+            'account_id'          => 14,
+            'follow_up_mode'      => 'Field Visit',
+            'reason_for_default'  => 'CALAMITY / ACTS OF NATURE RELATED',
+            'action_taken'        => 'ATTEND BRGY HEARING',
+            'next_action_plan'    => 'For Repo',
+            //'assigned_support_cc' => '',
+            'remarks'             => 'Follow-up completed successfully.',
+            'geotagging'          => 'my address',
+            'recorded_by'         => 1,
+            'contact_date'        => $now,
+            'next_action_date'    => $now->copy()->addDays(7),
+            'created_at'           => $now,
+            'updated_at'           => $now,
+        ]);
+
+        ContactRecording::create([
+            'account_id'          => 13,
+            'follow_up_mode'      => 'Field Visit',
+            'reason_for_default'  => 'CALAMITY / ACTS OF NATURE RELATED',
+            'action_taken'        => 'ATTEND BRGY HEARING',
+            'next_action_plan'    => 'For Legal / Small Claims',
+            //'assigned_support_cc' => '',
+            'remarks'             => 'Follow-up completed successfully.',
+            'geotagging'          => 'my address',
+            'recorded_by'         => 1,
+            'contact_date'        => $now,
+            'next_action_date'    => $now,
+            'created_at'           => $now,
+            'updated_at'           => $now,
+        ]);
     }
 }

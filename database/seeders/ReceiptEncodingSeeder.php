@@ -65,8 +65,9 @@ class ReceiptEncodingSeeder extends Seeder
                 'created_at'           => $now,
                 'updated_at'           => $now,
             ],
+
             [
-                'account_id'           => 4,
+                'account_id'           => 5,
                 'contact_recording_id' => null,
                 'for_repossession_id' => 1,
                 'collection_id'        => null,
@@ -77,8 +78,9 @@ class ReceiptEncodingSeeder extends Seeder
                 'created_at'           => $now,
                 'updated_at'           => $now,
             ],
+
             [
-                'account_id'           => 4,
+                'account_id'           => 6,
                 'contact_recording_id' => null,
                 'for_repossession_id' => 2,
                 'collection_id'        => null,
@@ -88,7 +90,11 @@ class ReceiptEncodingSeeder extends Seeder
                 'receipt_image_path'   => null, // Example of an entry without an uploaded photo yet
                 'created_at'           => $now,
                 'updated_at'           => $now,
-            ],
+            ]
+
+
+
+
         ];
 
         ReceiptEncoding::insert($records);
