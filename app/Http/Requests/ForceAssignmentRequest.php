@@ -1,20 +1,26 @@
 <?php
 
-namespace App\Http\Requests\Dashboard;
+namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 use App\Constants\Constants;
+use App\Models\User;
 
-class AssignedAccountRequest extends FormRequest
+class ForceAssignmentRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return true;
+        $user = $this->user();
+
+        if (!$user instanceof User) {
+            return false;
+        }
+
+        return in_array($user->cmsUser->level, Constants::ACCOUNT_PRIORITIZATION_ALLOWED_LEVELS, true);
     }
 
     /**
@@ -25,16 +31,18 @@ class AssignedAccountRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_id' => [
+            'account_id' => [
                 'required',
                 'integer',
                 'min:1',
             ],
 
-            'period' => [
+            'account_number' => [
                 'required',
-                Rule::in([Constants::PERIOD_DAILY, Constants::PERIOD_MONTHLY]),
+                'string',
+                'max:15',
             ],
+
         ];
     }
 }

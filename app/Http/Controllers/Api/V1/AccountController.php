@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Services\AccountService;
+use App\Http\Requests\ForceAssignmentRequest;
 
 class AccountController extends Controller
 {
@@ -11,13 +12,19 @@ class AccountController extends Controller
         protected AccountService $accountService
     ) {}
 
-    public function show(int $user_id)
+    public function markAsForcePrioritized(ForceAssignmentRequest $request)
     {
-        $summary = $this->accountService->getAccounts($user_id);
+        $validated = $request->validated();
 
-        return response()->json([
-            'message' => 'Dashboard summary retrieved successfully.',
-            'data' => $summary,
-        ]);
+        // $result = $this->userService->attestation($request->validated(), $user);
+
+        // if (!$result['is_attested']) {
+        //     $user->currentAccessToken()->delete();
+        // }
+
+        // return response()->json([
+        //     'message' => $result['message'],
+        //     'data' => $result['is_attested'],
+        // ], 200);
     }
 }

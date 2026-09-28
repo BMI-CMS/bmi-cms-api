@@ -7,7 +7,7 @@ use App\Models\Account;
 
 class AllocateAccountsHelper
 {
-    public static function accountsAllocation(array $accounts)
+    public static function accountsClassification(array $accounts)
     {
         $allocatedAccounts = [];
         foreach ($accounts as $account) {
@@ -82,7 +82,7 @@ class AllocateAccountsHelper
         return $allocatedAccounts;
     }
 
-    public static function PSGCAccountsAllocation(Account $account): ?string
+    public static function accountsClassificationPSGC(Account $account): ?string
     {
         if ($account['non_starter_payment_id']) {
             return Constants::CLASSIFICATION_FDD_NS;

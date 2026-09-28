@@ -15,12 +15,6 @@ class UserIdRequest extends FormRequest
         return true;
     }
 
-    protected function prepareForValidation(): void
-    {
-        $this->merge([
-            'userId' => $this->route('userId')
-        ]);
-    }
 
     /**
      * Get the validation rules that apply to the request.
@@ -30,7 +24,7 @@ class UserIdRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'userId' => [
+            'user_id' => [
                 'required',
                 'integer',
                 'min:1',

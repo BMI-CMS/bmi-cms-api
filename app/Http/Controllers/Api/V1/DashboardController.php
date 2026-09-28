@@ -15,9 +15,9 @@ class DashboardController extends Controller
 
     public function accountSummary(UserIdRequest $request)
     {
-        $userId = $request->route('userId');
+        $validated = $request->validated();
 
-        $summary = $this->dashboardService->getSummary($userId);
+        $summary = $this->dashboardService->getSummary($validated['user_id']);
 
         return response()->json([
             'message' => 'Dashboard summary retrieved successfully.',
@@ -27,11 +27,9 @@ class DashboardController extends Controller
 
     public function assignedAccounts(AssignedAccountRequest $request)
     {
-        $userId = $request->route('userId');
+        $validated = $request->validated();
 
-        $period = $request->route('period');
-
-        $summary = $this->dashboardService->getAssignedAccounts($userId, $period);
+        $summary = $this->dashboardService->getAssignedAccounts($validated['user_id'], $validated['period']);
 
         return response()->json([
             'message' => 'Dashboard summary retrieved successfully.',
@@ -41,9 +39,9 @@ class DashboardController extends Controller
 
     public function assignedAccountsByPSGC(UserIdRequest $request)
     {
-        $userId = $request->route('userId');
+        $validated = $request->validated();
 
-        $summary = $this->dashboardService->assignedAccountsByPSGC($userId);
+        $summary = $this->dashboardService->assignedAccountsByPSGC($validated['user_id']);
 
         return response()->json([
             'message' => 'Dashboard summary retrieved successfully.',

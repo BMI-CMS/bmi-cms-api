@@ -44,4 +44,7 @@ class Constants
     public const CLASSIFICATION_PROMISE_TO_PAY = 'Promise To Pay';
     public const CLASSIFICATION_FOR_SKIPTRACE = 'For Skiptrace';
     public const CLASSIFICATION_NOTICE_AND_DEMAND_LETTER = 'Notice and Demand Letter';
+
+
+    public const ACCOUNT_PRIORITIZATION_ALLOWED_LEVELS = [2, 3, 4];
 }

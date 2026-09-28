@@ -101,8 +101,8 @@ class DashboardService
             }
         }
 
-        $accountAllocation = AllocateAccountsHelper::accountsAllocation($accounts);
-        return  $accountAllocation;
+        $accountAllocation = AllocateAccountsHelper::accountsClassification($accounts);
+        return $accountAllocation;
     }
 
     public function assignedAccountsByPSGC(int $userId)
@@ -146,7 +146,7 @@ class DashboardService
                     'social_media_account' => $item->social_media_account,
                     'next_action_date' => $item->next_action_date,
                     'next_action_plan' => $item->next_action_plan,
-                    'account_classification' => AllocateAccountsHelper::PSGCAccountsAllocation($item),
+                    'account_classification' => AllocateAccountsHelper::accountsClassificationPSGC($item),
                     'activity_records' => [],
                 ];
             }

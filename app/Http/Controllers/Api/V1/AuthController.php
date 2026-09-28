@@ -35,7 +35,7 @@ class AuthController extends Controller
         /** @var \App\Models\User $user */
         $user = $request->user();
 
-        return response()->json($user);
+        return response()->json($user->CmsUser);
     }
 
     public function logout(Request $request): JsonResponse
