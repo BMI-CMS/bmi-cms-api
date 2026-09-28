@@ -5,6 +5,7 @@ namespace App\Services;
 use Carbon\Carbon;
 use App\Repositories\DashboardRepository;
 use App\Constants\Constants;
+use App\Helpers\AllocateAccountsHelper;
 
 class DashboardService
 {
@@ -53,6 +54,9 @@ class DashboardService
                     'account_number' => $item->account_number,
                     'customer_name' => $item->customer_name,
                     'monthly_amortization' => $item->monthly_amortization,
+                    'non_starter_payment_id' => $item->non_starter_payment_id,
+                    'total_payment' => $item->total_payment,
+                    'shortfall_amount' => $item->shortfall_amount,
                     'past_due_balance' => $item->past_due_balance,
                     'days_past_due' => $item->days_past_due,
                     'dpd_bucket' => $item->dpd_bucket,
@@ -60,6 +64,7 @@ class DashboardService
                     'outstanding_balance' => $item->outstanding_balance,
                     'last_payment_date' => $item->last_payment_date,
                     'asset' => $item->asset,
+                    'is_force_prioritized' => $item->is_force_prioritized,
                     'psgc_code' => $item->psgc_code,
                     'assigned_cc_id' => $item->assigned_cc_id,
                     'assigned_ch_id' => $item->assigned_ch_id,
@@ -80,54 +85,23 @@ class DashboardService
                     'next_action_plan' => $item->next_action_plan,
                     'activity_records' => [],
                 ];
-            } else {
-                if ($item->contact_recording_id) {
-                    $accounts[$accountId]['activity_records'][] = [
-                        'follow_up_mode' => $item->follow_up_mode,
-                        'reason_for_default' => $item->reason_for_default,
-                        'action_taken' => $item->action_taken,
-                        'next_action_plan' => $item->next_action_plan,
-                        'remarks' => $item->remarks,
-                        'geotagging' => $item->geotagging,
-                        'recorded_by' => $item->recorded_by,
-                        'contact_date' => $item->contact_date,
-                    ];
-                }
+            }
+
+            if ($item->contact_recording_id) {
+                $accounts[$accountId]['activity_records'][] = [
+                    'follow_up_mode' => $item->follow_up_mode,
+                    'reason_for_default' => $item->reason_for_default,
+                    'action_taken' => $item->action_taken,
+                    'next_action_plan' => $item->next_action_plan,
+                    'remarks' => $item->remarks,
+                    'geotagging' => $item->geotagging,
+                    'recorded_by' => $item->recorded_by,
+                    'contact_date' => $item->contact_date,
+                ];
             }
         }
 
-        $accountAllocation = [];
-        $count = 0;
-        foreach ($accounts as $account) {
-            if ($count == 3) break;
-            if (!$account['next_action_date']) {
-                if ($account['no_of_non_payments'] >= Constants::NP3 && $account['days_past_due'] >= Constants::DPD91) {
-                    $accountAllocation['prioritization']["for_repossession"][] = $account;
-                } else if ($account['no_of_non_payments'] >= Constants::NP2) {
-                    $accountAllocation['prioritization']["priority_1_accounts"][] = $account;
-                } else if ($account['days_past_due'] > 0 && $account['days_past_due'] < 30) {
-                    $accountAllocation['regular']["dpd_1_30_days"][] = $account;
-                } else if ($account['no_of_non_payments'] >= 1) {
-                    $accountAllocation['regular']["np1"][] = $account;
-                }
-            }
-            // else {
-            //     if ($account['next_action_plan'] === 'Promise to Pay') {
-            //         $accountAllocation['prioritization']["promise_to_pay"][] = $account;
-            //     } else if ($account['next_action_plan'] === 'for repo') {
-            //         $accountAllocation['prioritization']["for_repossession"][] = $account;
-            //     } else {
-            //         if ($account["next_action_plan"] === 'For skiptrace') {
-            //             $accountAllocation['prioritization']["next_action_plan"]['for_skiptrace'] = $account;
-            //         } else if ($account["next_action_plan"] === 'forced prioritized') {
-            //             $accountAllocation["next_action_plan"]['forced prioritized'] = $account;
-            //         } else {
-            //             $accountAllocation['prioritization']["next_action_plan"]['notice_demand_letter'] = $account;
-            //         }
-            //     }
-            // } 
-            $count++;
-        }
+        $accountAllocation = AllocateAccountsHelper::accountsAllocation($accounts);
         return  $accountAllocation;
     }
 
@@ -171,6 +145,8 @@ class DashboardService
                     'email' => $item->email,
                     'social_media_account' => $item->social_media_account,
                     'next_action_date' => $item->next_action_date,
+                    'next_action_plan' => $item->next_action_plan,
+                    'account_classification' => AllocateAccountsHelper::PSGCAccountsAllocation($item),
                     'activity_records' => [],
                 ];
             }

@@ -23,6 +23,7 @@ class Account extends Model
         'outstanding_balance',
         'last_payment_date',
         'asset',
+        'is_force_prioritized',
         'cms_user_id',
         'assigned_date',
         'follow_up_date',

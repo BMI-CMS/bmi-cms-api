@@ -24,6 +24,7 @@ return new class extends Migration
             $table->decimal('outstanding_balance', 15, 2);
             $table->date('last_payment_date');
             $table->decimal('asset', 15, 2);
+            $table->boolean('is_force_prioritized')->default(false);
             $table->foreignId('assigned_cc_id')
                 ->constrained('cms_users')
                 ->cascadeOnDelete();

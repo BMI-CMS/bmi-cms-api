@@ -96,12 +96,21 @@ class DashboardRepository
                 '=',
                 'contact_information.account_id'
             )
+            ->leftJoin(
+                'non_starter_payments',
+                'contact_recordings.contact_recording_id',
+                '=',
+                'non_starter_payments.contact_recording_id'
+            )
             ->select([
                 'accounts.id',
                 'contact_recordings.contact_recording_id',
                 'accounts.account_number',
                 'accounts.customer_name',
                 'accounts.monthly_amortization',
+                'non_starter_payments.id AS non_starter_payment_id',
+                'non_starter_payments.total_payment',
+                'non_starter_payments.shortfall_amount',
                 'accounts.past_due_balance',
                 'accounts.days_past_due',
                 'accounts.dpd_bucket',
@@ -109,6 +118,7 @@ class DashboardRepository
                 'accounts.outstanding_balance',
                 'accounts.last_payment_date',
                 'accounts.asset',
+                'accounts.is_force_prioritized',
                 'contact_recordings.follow_up_mode',
                 'contact_recordings.reason_for_default',
                 'contact_recordings.action_taken',
@@ -174,12 +184,21 @@ class DashboardRepository
                 '=',
                 'contact_information.account_id'
             )
+            ->leftJoin(
+                'non_starter_payments',
+                'contact_recordings.contact_recording_id',
+                '=',
+                'non_starter_payments.contact_recording_id'
+            )
             ->select([
                 'accounts.id',
                 'contact_recordings.contact_recording_id',
                 'accounts.account_number',
                 'accounts.customer_name',
                 'accounts.monthly_amortization',
+                'non_starter_payments.id AS non_starter_payment_id',
+                'non_starter_payments.total_payment',
+                'non_starter_payments.shortfall_amount',
                 'accounts.past_due_balance',
                 'accounts.days_past_due',
                 'accounts.dpd_bucket',
@@ -187,6 +206,7 @@ class DashboardRepository
                 'accounts.outstanding_balance',
                 'accounts.last_payment_date',
                 'accounts.asset',
+                'accounts.is_force_prioritized',
                 'contact_recordings.follow_up_mode',
                 'contact_recordings.reason_for_default',
                 'contact_recordings.action_taken',

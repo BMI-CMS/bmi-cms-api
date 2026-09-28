@@ -15,7 +15,7 @@ class AccountSeeder extends Seeder
     public function run(): void
     {
         $now = Carbon::now();
-        //NP0
+        //NP0 1 
         Account::create([
             'account_number' => '81652348',
             'customer_id' => 120356482,
@@ -37,7 +37,7 @@ class AccountSeeder extends Seeder
             'follow_up_date' => '2026-09-25',
             'created_at' => $now
         ]);
-        //DPD 1-30
+        //DPD 1-30 2
         Account::create([
             'account_number' => '81987654',
             'customer_id' => 1232654825,
@@ -59,7 +59,7 @@ class AccountSeeder extends Seeder
             'follow_up_date' => '2026-09-25',
             'created_at' => $now
         ]);
-        //NP1 
+        //NP1  3
         Account::create([
             'account_number' => '77325643',
             'customer_id' => 1932654825,
@@ -81,7 +81,7 @@ class AccountSeeder extends Seeder
             'follow_up_date' => '2026-09-25',
             'created_at' => $now
         ]);
-        //
+        //skip trace 4
         Account::create([
             'account_number' => '81356487',
             'customer_id' => 132658452,
@@ -100,9 +100,9 @@ class AccountSeeder extends Seeder
             'assigned_dh_id' => 8,
             'assigned_date' => '2026-09-18',
             'follow_up_date' => '2026-09-25',
-            'created_at' => $now
+            'created_at' => $now->copy()->subDays(),
         ]);
-
+        //Notice & Demand Letter 5
         Account::create([
             'account_number' => '81356501',
             'customer_id' => 132658501,
@@ -123,7 +123,8 @@ class AccountSeeder extends Seeder
             'follow_up_date' => '2026-09-25',
             'created_at' => $now
         ]);
-        //////////////////////////////////////////
+
+        //Force Priority 6
         Account::create([
             'account_number' => '81356502',
             'customer_id' => 132658502,
@@ -136,15 +137,17 @@ class AccountSeeder extends Seeder
             'outstanding_balance' => 350000.00,
             'last_payment_date' => '2026-09-01',
             'asset' => 0.00,
+            'is_force_prioritized' => true,
             'assigned_cc_id' => 1,
             'assigned_ch_id' => 6,
             'assigned_am_id' => 7,
             'assigned_dh_id' => 8,
             'assigned_date' => '2026-09-18',
             'follow_up_date' => '2026-09-25',
-            'created_at' => $now->copy()->addDays()
+            'created_at' => $now
         ]);
 
+        //Promise to Pay 7
         Account::create([
             'account_number' => '81356503',
             'customer_id' => 132658503,
@@ -153,7 +156,7 @@ class AccountSeeder extends Seeder
             'past_due_balance' => 6301.50,
             'days_past_due' => 90,
             'dpd_bucket' => 'DPD 61-90',
-            'no_of_non_payments' => floor($now->parse('2026-06-10')->diffInMonths(now())),
+            'no_of_non_payments' => 2,
             'outstanding_balance' => 18000.00,
             'last_payment_date' => '2026-06-10',
             'asset' => 0.00,
@@ -163,18 +166,18 @@ class AccountSeeder extends Seeder
             'assigned_dh_id' => 8,
             'assigned_date' => '2026-09-18',
             'follow_up_date' => '2026-09-26',
-            'created_at' => $now->copy()->addDays()
+            'created_at' => $now->copy()->subDays(1)
         ]);
-
+        //For repo 8
         Account::create([
             'account_number' => '81356504',
             'customer_id' => 132658504,
             'customer_name' => 'ANA ROCES',
             'monthly_amortization' => 8400.00,
             'past_due_balance' => 8400.00,
-            'days_past_due' => 30,
-            'dpd_bucket' => 'DPD 1-30',
-            'no_of_non_payments' => floor($now->parse('2026-08-20')->diffInMonths(now())),
+            'days_past_due' => 92,
+            'dpd_bucket' => 'DPD 91-120',
+            'no_of_non_payments' => 3,
             'outstanding_balance' => 105000.00,
             'last_payment_date' => '2026-08-20',
             'asset' => 0.00,
@@ -186,16 +189,16 @@ class AccountSeeder extends Seeder
             'follow_up_date' => '2026-09-28',
             'created_at' => $now
         ]);
-
+        //9
         Account::create([
             'account_number' => '81356505',
             'customer_id' => 132658505,
             'customer_name' => 'JOSE RIZAL',
             'monthly_amortization' => 5000.00,
             'past_due_balance' => 0.00,
-            'days_past_due' => 0,
-            'dpd_bucket' => 'DPD 0',
-            'no_of_non_payments' => floor($now->parse('2026-09-15')->diffInMonths(now())),
+            'days_past_due' => 90,
+            'dpd_bucket' => 'DPD 61-90',
+            'no_of_non_payments' => 2,
             'outstanding_balance' => 50000.00,
             'last_payment_date' => '2026-09-15',
             'asset' => 0.00,
@@ -208,15 +211,16 @@ class AccountSeeder extends Seeder
             'created_at' => $now
         ]);
 
+        // Priority 1 Accounts 10 
         Account::create([
             'account_number' => '81356506',
             'customer_id' => 132658506,
             'customer_name' => 'LIZA SOBERANO',
             'monthly_amortization' => 12500.00,
             'past_due_balance' => 37500.00,
-            'days_past_due' => 120,
-            'dpd_bucket' => 'DPD 91-120',
-            'no_of_non_payments' => floor($now->parse('2026-05-10')->diffInMonths(now())),
+            'days_past_due' => 62,
+            'dpd_bucket' => 'DPD 61-90',
+            'no_of_non_payments' => 2,
             'outstanding_balance' => 250000.00,
             'last_payment_date' => '2026-05-10',
             'asset' => 0.00,
@@ -228,7 +232,7 @@ class AccountSeeder extends Seeder
             'follow_up_date' => '2026-09-24',
             'created_at' => $now->copy()->subDays(4)
         ]);
-
+        //FDD / NS 11
         Account::create([
             'account_number' => '81356507',
             'customer_id' => 132658507,
@@ -247,7 +251,7 @@ class AccountSeeder extends Seeder
             'assigned_dh_id' => 8,
             'assigned_date' => '2026-09-18',
             'follow_up_date' => '2026-09-29',
-            'created_at' => $now->copy()->subDays(4)
+            'created_at' => $now->copy()->subDays(1)
         ]);
 
         Account::create([

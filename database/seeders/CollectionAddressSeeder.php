@@ -191,6 +191,58 @@ class CollectionAddressSeeder extends Seeder
                 'city_municipality' => 'Cebu City',
                 'region' => 'CENTRAL VISAYAS',
             ],
+
+            [
+                'account_id' => 15,
+                'psgc_code' => '042108000',
+                'unit_lot_block' => 'Lot 10 Block 4',
+                'street_name' => 'Governor Drive',
+                'subdivision_village' => 'Dasmarinas Village',
+                'province' => 'Cavite',
+                'postal_code' => '4114',
+                'barangay' => 'Salitran',
+                'city_municipality' => 'Dasmarinas City',
+                'region' => 'CALABARZON',
+            ],
+
+            [
+                'account_id' => 16,
+                'psgc_code' => '042108000',
+                'unit_lot_block' => 'Lot 10 Block 4',
+                'street_name' => 'Governor Drive',
+                'subdivision_village' => 'Dasmarinas Village',
+                'province' => 'Cavite',
+                'postal_code' => '4114',
+                'barangay' => 'Salitran',
+                'city_municipality' => 'Dasmarinas City',
+                'region' => 'CALABARZON',
+            ],
+
+            [
+                'account_id' => 17,
+                'psgc_code' => '138060000',
+                'unit_lot_block' => 'Lot 18 Block 6',
+                'street_name' => 'Sindalan Road',
+                'subdivision_village' => 'Sunrise Village',
+                'province' => 'Pampanga',
+                'postal_code' => '2000',
+                'barangay' => 'Sindalan',
+                'city_municipality' => 'San Fernando City',
+                'region' => 'CENTRAL LUZON',
+            ],
+
+            [
+                'account_id' => 18,
+                'psgc_code' => '138060000',
+                'unit_lot_block' => 'Lot 18 Block 6',
+                'street_name' => 'Sindalan Road',
+                'subdivision_village' => 'Sunrise Village',
+                'province' => 'Pampanga',
+                'postal_code' => '2000',
+                'barangay' => 'Sindalan',
+                'city_municipality' => 'San Fernando City',
+                'region' => 'CENTRAL LUZON',
+            ]
         ];
 
         $count = 1;

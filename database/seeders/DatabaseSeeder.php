@@ -36,7 +36,8 @@ class DatabaseSeeder extends Seeder
             RestructuringSeeder::class,
             PromiseToPaySeeder::class,
             ContactInformationSeeder::class,
-            CollectionAddressSeeder::class
+            CollectionAddressSeeder::class,
+            NonStarterPaymentSeeder::class
         ]);
     }
 }

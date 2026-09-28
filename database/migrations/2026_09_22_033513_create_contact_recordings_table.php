@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('follow_up_mode', 30);
             $table->string('action_taken', 30);
             $table->string('reason_for_default', 50)->nullable();
-            $table->string('next_action_plan', 30)->nullable();
+            $table->string('next_action_plan', 60)->nullable();
             $table->string('assigned_support_cc', 10)->nullable();
             $table->string('remarks', 255)->nullable();
             $table->string('geotagging', 255)->nullable();
