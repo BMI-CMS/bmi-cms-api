@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Account;
+use Carbon\Carbon;
 
 class AccountSeeder extends Seeder
 {
@@ -13,85 +14,73 @@ class AccountSeeder extends Seeder
      */
     public function run(): void
     {
+        $now = Carbon::now();
+        //NP0
         Account::create([
             'account_number' => '81652348',
             'customer_id' => 120356482,
             'customer_name' => 'RACHEL DELA CRUZ',
             'monthly_amortization' => 5148.00,
             'past_due_balance' => 5123.00,
-            'days_past_due' => 5,
-            'dpd_bucket' => 'DPD 1-30',
-            'no_of_non_payments' => 'LAST PAID 1 MONTH AGO',
+            'days_past_due' => 0,
+            'dpd_bucket' => 'DPD 0',
+            // 'no_of_non_payments' => floor($now->parse('2026-09-25')->diffInMonths(now())),
+            'no_of_non_payments' => 0,
             'outstanding_balance' => 26354.00,
             'last_payment_date' => '2026-04-04',
             'asset' => 0.00,
-            'psgc_code' => '1234567890',
             'assigned_cc_id' => 1,
             'assigned_ch_id' => 6,
             'assigned_am_id' => 7,
             'assigned_dh_id' => 8,
             'assigned_date' => '2026-09-18',
             'follow_up_date' => '2026-09-25',
-            'collecting_address' => 'ADDRESS 1',
-            'email' => 'RACHEL@gmail.com',
-            'social_media_account' => 'RACHEL/tiktok',
-            'contact_number' => '9703361111'
+            'created_at' => $now
         ]);
-
+        //DPD 1-30
         Account::create([
             'account_number' => '81987654',
             'customer_id' => 1232654825,
             'customer_name' => 'MARIFE CASTILLO',
             'monthly_amortization' => 6790.00,
             'past_due_balance' => 13458.00,
-            'days_past_due' => 25,
-            'dpd_bucket' => 'DPD 61-90',
-            'no_of_non_payments' => 'LAST PAID 1 MONTH AGO',
+            'days_past_due' => 2,
+            'dpd_bucket' => 'DPD 1-30',
+            // 'no_of_non_payments' => floor($now->parse('2026-08-26')->diffInMonths(now())),
+            'no_of_non_payments' => 0,
             'outstanding_balance' => 240523.00,
             'last_payment_date' => '2026-04-06',
             'asset' => 0.00,
-            'psgc_code' => '1234567890',
             'assigned_cc_id' => 1,
             'assigned_ch_id' => 6,
             'assigned_am_id' => 7,
             'assigned_dh_id' => 8,
             'assigned_date' => '2026-09-18',
             'follow_up_date' => '2026-09-25',
-            'collecting_address' => 'ADDRESS 1',
-            'email' => 'MARIFE@gmail.com',
-            'social_media_account' => 'MARIFE/tiktok',
-            'contact_number' => '09703361111'
+            'created_at' => $now
         ]);
-
+        //NP1 
         Account::create([
             'account_number' => '77325643',
             'customer_id' => 1932654825,
             'customer_name' => 'JOSEPH SALUDES',
             'monthly_amortization' => 3423.00,
             'past_due_balance' => 6784.00,
-            'days_past_due' => 2,
-            'dpd_bucket' => 'DPD 271-300',
-            'no_of_non_payments' => 'LAST PAID 1 MONTH AGO',
+            'days_past_due' => 33,
+            'dpd_bucket' => 'DPD 31-60',
+            // 'no_of_non_payments' => floor($now->parse('2026-09-28')->diffInMonths(now())),
+            'no_of_non_payments' => 1,
             'outstanding_balance' => 6465.00,
             'last_payment_date' => '2025-10-02',
             'asset' => 0.00,
-            'psgc_code' => '1234567890',
             'assigned_cc_id' => 1,
             'assigned_ch_id' => 6,
             'assigned_am_id' => 7,
             'assigned_dh_id' => 8,
             'assigned_date' => '2026-09-18',
             'follow_up_date' => '2026-09-25',
-            'collecting_address' => 'ADDRESS 1',
-            'email' => 'JOSEPH@gmail.com',
-            'social_media_account' => 'JOSEPH/tiktok',
-            'contact_number' => '09703361111'
+            'created_at' => $now
         ]);
-
-
-
-
-
         //
         Account::create([
             'account_number' => '81356487',
@@ -100,26 +89,20 @@ class AccountSeeder extends Seeder
             'monthly_amortization' => 4536.00,
             'past_due_balance' => 0.00,
             'days_past_due' => 25,
-            'dpd_bucket' => 'DPD 0',
-            'no_of_non_payments' => 'UPDATED',
+            'dpd_bucket' => 'DPD 1-30',
+            'no_of_non_payments' => floor($now->parse($now)->diffInMonths(now())),
             'outstanding_balance' => 58745.00,
             'last_payment_date' => '2026-04-22',
             'asset' => 0.00,
-            'psgc_code' => '1234567890',
             'assigned_cc_id' => 1,
             'assigned_ch_id' => 6,
             'assigned_am_id' => 7,
             'assigned_dh_id' => 8,
             'assigned_date' => '2026-09-18',
             'follow_up_date' => '2026-09-25',
-            'collecting_address' => 'ADDRESS 1',
-            'email' => 'CHRISTOPER@gmail.com',
-            'social_media_account' => 'JOSEPH/tiktok',
-            'contact_number' => '09703361111'
+            'created_at' => $now
         ]);
 
-
-        //
         Account::create([
             'account_number' => '81356501',
             'customer_id' => 132658501,
@@ -127,24 +110,20 @@ class AccountSeeder extends Seeder
             'monthly_amortization' => 3200.00,
             'past_due_balance' => 6400.00,
             'days_past_due' => 60,
-            'dpd_bucket' => 'DPD 60',
-            'no_of_non_payments' => '2',
+            'dpd_bucket' => 'DPD 31-60',
+            'no_of_non_payments' => floor($now->parse('2026-07-15')->diffInMonths(now())),
             'outstanding_balance' => 45000.00,
             'last_payment_date' => '2026-07-15',
             'asset' => 0.00,
-            'psgc_code' => '137404000',
             'assigned_cc_id' => 1,
             'assigned_ch_id' => 6,
             'assigned_am_id' => 7,
             'assigned_dh_id' => 8,
             'assigned_date' => '2026-09-18',
             'follow_up_date' => '2026-09-25',
-            'collecting_address' => 'QUEZON CITY, METRO MANILA',
-            'email' => 'm.clara@yahoo.com',
-            'social_media_account' => 'MARIAC/facebook',
-            'contact_number' => '09171234501'
+            'created_at' => $now
         ]);
-
+        //////////////////////////////////////////
         Account::create([
             'account_number' => '81356502',
             'customer_id' => 132658502,
@@ -153,21 +132,17 @@ class AccountSeeder extends Seeder
             'past_due_balance' => 0.00,
             'days_past_due' => 0,
             'dpd_bucket' => 'DPD 0',
-            'no_of_non_payments' => 'UPDATED',
+            'no_of_non_payments' => floor($now->parse('2026-09-01')->diffInMonths(now())),
             'outstanding_balance' => 350000.00,
             'last_payment_date' => '2026-09-01',
             'asset' => 0.00,
-            'psgc_code' => '137604000',
             'assigned_cc_id' => 1,
             'assigned_ch_id' => 6,
             'assigned_am_id' => 7,
             'assigned_dh_id' => 8,
             'assigned_date' => '2026-09-18',
             'follow_up_date' => '2026-09-25',
-            'collecting_address' => 'MAKATI CITY, METRO MANILA',
-            'email' => 'juandelacruz@gmail.com',
-            'social_media_account' => 'JUANDC/instagram',
-            'contact_number' => '09181234502'
+            'created_at' => $now->copy()->addDays()
         ]);
 
         Account::create([
@@ -177,22 +152,18 @@ class AccountSeeder extends Seeder
             'monthly_amortization' => 2100.50,
             'past_due_balance' => 6301.50,
             'days_past_due' => 90,
-            'dpd_bucket' => 'DPD 90',
-            'no_of_non_payments' => '3',
+            'dpd_bucket' => 'DPD 61-90',
+            'no_of_non_payments' => floor($now->parse('2026-06-10')->diffInMonths(now())),
             'outstanding_balance' => 18000.00,
             'last_payment_date' => '2026-06-10',
             'asset' => 0.00,
-            'psgc_code' => '031400000',
             'assigned_cc_id' => 1,
             'assigned_ch_id' => 6,
             'assigned_am_id' => 7,
             'assigned_dh_id' => 8,
             'assigned_date' => '2026-09-18',
             'follow_up_date' => '2026-09-26',
-            'collecting_address' => 'MALOLOS, BULACAN',
-            'email' => 'pedro.p@hotmail.com',
-            'social_media_account' => 'PEDROP/tiktok',
-            'contact_number' => '09221234503'
+            'created_at' => $now->copy()->addDays()
         ]);
 
         Account::create([
@@ -202,22 +173,18 @@ class AccountSeeder extends Seeder
             'monthly_amortization' => 8400.00,
             'past_due_balance' => 8400.00,
             'days_past_due' => 30,
-            'dpd_bucket' => 'DPD 30',
-            'no_of_non_payments' => '1',
+            'dpd_bucket' => 'DPD 1-30',
+            'no_of_non_payments' => floor($now->parse('2026-08-20')->diffInMonths(now())),
             'outstanding_balance' => 105000.00,
             'last_payment_date' => '2026-08-20',
             'asset' => 0.00,
-            'psgc_code' => '043404000',
             'assigned_cc_id' => 1,
             'assigned_ch_id' => 6,
             'assigned_am_id' => 7,
             'assigned_dh_id' => 8,
             'assigned_date' => '2026-09-18',
             'follow_up_date' => '2026-09-28',
-            'collecting_address' => 'SAN PABLO, LAGUNA',
-            'email' => 'ana.roces@gmail.com',
-            'social_media_account' => 'ANAROCES/facebook',
-            'contact_number' => '09331234504'
+            'created_at' => $now
         ]);
 
         Account::create([
@@ -228,21 +195,17 @@ class AccountSeeder extends Seeder
             'past_due_balance' => 0.00,
             'days_past_due' => 0,
             'dpd_bucket' => 'DPD 0',
-            'no_of_non_payments' => 'UPDATED',
+            'no_of_non_payments' => floor($now->parse('2026-09-15')->diffInMonths(now())),
             'outstanding_balance' => 50000.00,
             'last_payment_date' => '2026-09-15',
             'asset' => 0.00,
-            'psgc_code' => '043400000',
             'assigned_cc_id' => 1,
             'assigned_ch_id' => 6,
             'assigned_am_id' => 7,
             'assigned_dh_id' => 8,
             'assigned_date' => '2026-09-18',
             'follow_up_date' => '2026-09-30',
-            'collecting_address' => 'CALAMBA, LAGUNA',
-            'email' => 'j.rizal@yahoo.com',
-            'social_media_account' => 'JRIZAL/twitter',
-            'contact_number' => '09441234505'
+            'created_at' => $now
         ]);
 
         Account::create([
@@ -252,22 +215,18 @@ class AccountSeeder extends Seeder
             'monthly_amortization' => 12500.00,
             'past_due_balance' => 37500.00,
             'days_past_due' => 120,
-            'dpd_bucket' => 'DPD 120',
-            'no_of_non_payments' => '4',
+            'dpd_bucket' => 'DPD 91-120',
+            'no_of_non_payments' => floor($now->parse('2026-05-10')->diffInMonths(now())),
             'outstanding_balance' => 250000.00,
             'last_payment_date' => '2026-05-10',
             'asset' => 0.00,
-            'psgc_code' => '137401000',
             'assigned_cc_id' => 1,
             'assigned_ch_id' => 6,
             'assigned_am_id' => 7,
             'assigned_dh_id' => 8,
             'assigned_date' => '2026-09-18',
             'follow_up_date' => '2026-09-24',
-            'collecting_address' => 'TAGUIG CITY, METRO MANILA',
-            'email' => 'liza.s@gmail.com',
-            'social_media_account' => 'LIZAS/instagram',
-            'contact_number' => '09551234506'
+            'created_at' => $now->copy()->subDays(4)
         ]);
 
         Account::create([
@@ -278,21 +237,17 @@ class AccountSeeder extends Seeder
             'past_due_balance' => 0.00,
             'days_past_due' => 0,
             'dpd_bucket' => 'DPD 0',
-            'no_of_non_payments' => 'UPDATED',
+            'no_of_non_payments' =>  floor($now->parse('2026-09-10')->diffInMonths(now())),
             'outstanding_balance' => 72000.00,
             'last_payment_date' => '2026-09-10',
             'asset' => 0.00,
-            'psgc_code' => '137402000',
             'assigned_cc_id' => 1,
             'assigned_ch_id' => 6,
             'assigned_am_id' => 7,
             'assigned_dh_id' => 8,
             'assigned_date' => '2026-09-18',
             'follow_up_date' => '2026-09-29',
-            'collecting_address' => 'PASIG CITY, METRO MANILA',
-            'email' => 'bossing@gmail.com',
-            'social_media_account' => 'VIC/facebook',
-            'contact_number' => '09661234507'
+            'created_at' => $now->copy()->subDays(4)
         ]);
 
         Account::create([
@@ -302,22 +257,18 @@ class AccountSeeder extends Seeder
             'monthly_amortization' => 9500.00,
             'past_due_balance' => 19000.00,
             'days_past_due' => 60,
-            'dpd_bucket' => 'DPD 60',
-            'no_of_non_payments' => '2',
+            'dpd_bucket' => 'DPD 31-60',
+            'no_of_non_payments' => floor($now->parse('2026-07-22')->diffInMonths(now())),
             'outstanding_balance' => 114000.00,
             'last_payment_date' => '2026-07-22',
             'asset' => 0.00,
-            'psgc_code' => '137403000',
             'assigned_cc_id' => 1,
             'assigned_ch_id' => 6,
             'assigned_am_id' => 7,
             'assigned_dh_id' => 8,
             'assigned_date' => '2026-09-18',
             'follow_up_date' => '2026-09-26',
-            'collecting_address' => 'MANDALUYONG CITY, METRO MANILA',
-            'email' => 'sarah.g@yahoo.com',
-            'social_media_account' => 'SARAHG/tiktok',
-            'contact_number' => '09771234508'
+            'created_at' => $now->copy()->addDays()
         ]);
 
         Account::create([
@@ -327,22 +278,18 @@ class AccountSeeder extends Seeder
             'monthly_amortization' => 4500.00,
             'past_due_balance' => 4500.00,
             'days_past_due' => 30,
-            'dpd_bucket' => 'DPD 30',
-            'no_of_non_payments' => '1',
+            'dpd_bucket' => 'DPD 1-30',
+            'no_of_non_payments' =>  floor($now->parse('2026-08-15')->diffInMonths(now())),
             'outstanding_balance' => 22500.00,
             'last_payment_date' => '2026-08-15',
             'asset' => 0.00,
-            'psgc_code' => '137405000',
             'assigned_cc_id' => 1,
             'assigned_ch_id' => 6,
             'assigned_am_id' => 7,
             'assigned_dh_id' => 8,
             'assigned_date' => '2026-09-18',
             'follow_up_date' => '2026-09-25',
-            'collecting_address' => 'SAN JUAN CITY, METRO MANILA',
-            'email' => 'tanggol@gmail.com',
-            'social_media_account' => 'COCO/facebook',
-            'contact_number' => '09881234509'
+            'created_at' => $now
         ]);
 
         Account::create([
@@ -353,21 +300,102 @@ class AccountSeeder extends Seeder
             'past_due_balance' => 0.00,
             'days_past_due' => 0,
             'dpd_bucket' => 'DPD 0',
-            'no_of_non_payments' => 'UPDATED',
+            'no_of_non_payments' =>  floor($now->parse('2026-09-20')->diffInMonths(now())),
             'outstanding_balance' => 156000.00,
             'last_payment_date' => '2026-09-20',
             'asset' => 0.00,
-            'psgc_code' => '137404000',
             'assigned_cc_id' => 1,
             'assigned_ch_id' => 6,
             'assigned_am_id' => 7,
             'assigned_dh_id' => 8,
             'assigned_date' => '2026-09-18',
             'follow_up_date' => '2026-09-27',
-            'collecting_address' => 'QUEZON CITY, METRO MANILA',
-            'email' => 'kathryn.b@hotmail.com',
-            'social_media_account' => 'KATHRYN/instagram',
-            'contact_number' => '09991234510'
+            'created_at' => $now->copy()->addDays()
+        ]);
+
+
+        Account::create([
+            'account_number' => '81356511',
+            'customer_id' => 132658511,
+            'customer_name' => 'JOY DELA CRUZ',
+            'monthly_amortization' => 8500.00,
+            'past_due_balance' => 17000.00,
+            'days_past_due' => 25,
+            'dpd_bucket' => 'DPD 1-30',
+            'no_of_non_payments' => floor($now->parse('2026-08-25')->diffInMonths(now())),
+            'outstanding_balance' => 145000.00,
+            'last_payment_date' => '2026-08-25',
+            'asset' => 0.00,
+            'assigned_cc_id' => 1,
+            'assigned_ch_id' => 6,
+            'assigned_am_id' => 7,
+            'assigned_dh_id' => 8,
+            'assigned_date' => '2026-09-18',
+            'follow_up_date' => '2026-09-28',
+            'created_at' =>  $now,
+        ]);
+
+        Account::create([
+            'account_number' => '81356512',
+            'customer_id' => 132658512,
+            'customer_name' => 'MARIA SANTOS',
+            'monthly_amortization' => 12000.00,
+            'past_due_balance' => 36000.00,
+            'days_past_due' => 65,
+            'dpd_bucket' => 'DPD 61-90',
+            'no_of_non_payments' =>  floor($now->parse('2026-07-20')->diffInMonths(now())),
+            'outstanding_balance' => 320000.00,
+            'last_payment_date' => '2026-07-20',
+            'asset' => 0.00,
+            'assigned_cc_id' => 1,
+            'assigned_ch_id' => 6,
+            'assigned_am_id' => 7,
+            'assigned_dh_id' => 8,
+            'assigned_date' => '2026-09-19',
+            'follow_up_date' => '2026-09-29',
+            'created_at' =>  $now,
+        ]);
+
+        Account::create([
+            'account_number' => '81356513',
+            'customer_id' => 132658513,
+            'customer_name' => 'PEDRO REYES',
+            'monthly_amortization' => 15000.00,
+            'past_due_balance' => 60000.00,
+            'days_past_due' => 95,
+            'dpd_bucket' => 'DPD 91-120',
+            'no_of_non_payments' => floor($now->parse('2026-06-15')->diffInMonths(now())),
+            'outstanding_balance' => 450000.00,
+            'last_payment_date' => '2026-06-15',
+            'asset' => 25000.00,
+            'assigned_cc_id' => 2,
+            'assigned_ch_id' => 6,
+            'assigned_am_id' => 7,
+            'assigned_dh_id' => 8,
+            'assigned_date' => '2026-09-20',
+            'follow_up_date' => '2026-09-30',
+            'created_at' =>  $now,
+        ]);
+
+        Account::create([
+            'account_number' => '81356514',
+            'customer_id' => 132658514,
+            'customer_name' => 'ANA GARCIA',
+            'monthly_amortization' => 9500.00,
+            'past_due_balance' => 19000.00,
+            'days_past_due' => 91,
+            'dpd_bucket' => 'DPD 31-60',
+            'no_of_non_payments' => floor($now->parse('2026-08-05')->diffInMonths(now())),
+            'outstanding_balance' => 210000.00,
+            'last_payment_date' => '2026-08-05',
+            'asset' => 0.00,
+            'assigned_cc_id' => 2,
+            'assigned_ch_id' => 6,
+            'assigned_am_id' => 7,
+            'assigned_dh_id' => 8,
+            'assigned_date' => '2026-09-21',
+            'follow_up_date' => '2026-10-01',
+            'created_at' =>  $now,
         ]);
     }
 }

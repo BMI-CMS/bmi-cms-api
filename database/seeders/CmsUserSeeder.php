@@ -6,7 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\CMSUser;
 
-class CMSUserSeeder extends Seeder
+class CmsUserSeeder extends Seeder
 {
     /**
      * Run the database seeds.

@@ -23,14 +23,10 @@ class Account extends Model
         'outstanding_balance',
         'last_payment_date',
         'asset',
-        'psgc_code',
         'cms_user_id',
         'assigned_date',
         'follow_up_date',
-        'collecting_address',
-        'email',
-        'social_media_account',
-        'contact_number',
+        'created_at'
     ];
 
     public const DEFAULT_FIELDS = [

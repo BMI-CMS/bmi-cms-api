@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Account;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class CMSUser extends Model
+class CmsUser extends Model
 {
     use SoftDeletes;
 

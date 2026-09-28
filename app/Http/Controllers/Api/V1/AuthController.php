@@ -33,7 +33,7 @@ class AuthController extends Controller
     public function me(Request $request): JsonResponse
     {
         /** @var \App\Models\User $user */
-        $user = $request->user()->load('CmsUser:id,name,role_id,company_id,level,psgc_code');
+        $user = $request->user();
 
         return response()->json($user);
     }

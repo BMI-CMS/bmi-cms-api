@@ -6,7 +6,7 @@ use App\Models\Restructuring;
 
 class RestructuringQuery
 {
-    public static function forDateRange(string  $startDate, string  $endDate)
+    public static function restructured(string  $startDate, string  $endDate)
     {
         return Restructuring::select([
             'account_id',

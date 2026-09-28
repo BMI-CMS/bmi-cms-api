@@ -6,7 +6,7 @@ use App\Models\ReceiptEncoding;
 
 class ReceiptEncodingQuery
 {
-    public static function forDateRange(string  $startDate,  string $endDate)
+    public static function receiptEncoding(string  $startDate,  string $endDate)
     {
         return ReceiptEncoding::select([
             'account_id',

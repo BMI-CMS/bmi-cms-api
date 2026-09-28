@@ -24,7 +24,6 @@ return new class extends Migration
             $table->decimal('outstanding_balance', 15, 2);
             $table->date('last_payment_date');
             $table->decimal('asset', 15, 2);
-            $table->string('psgc_code', 10);
             $table->foreignId('assigned_cc_id')
                 ->constrained('cms_users')
                 ->cascadeOnDelete();
@@ -39,10 +38,6 @@ return new class extends Migration
                 ->cascadeOnDelete();
             $table->date('assigned_date')->nullable();
             $table->date('follow_up_date')->nullable();
-            $table->string('collecting_address');
-            $table->string('email', 255);
-            $table->string('social_media_account', 255);
-            $table->string('contact_number', 30);
             $table->softDeletes();
             $table->timestamp('created_at')->index();
             $table->timestamp('updated_at');
