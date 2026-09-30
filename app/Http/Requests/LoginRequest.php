@@ -23,22 +23,11 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'username' => [
-                'required',
-                'string',
-            ],
+            'username' => 'required|string',
 
-            'password' => [
-                'required',
-                'string',
-            ],
+            'password' => 'required|string',
 
-            'phone_imei' => [
-                'required',
-                'string',
-                'size:15',
-                'regex:/^[0-9]{15}$/'
-            ],
+            'phone_imei' => 'required|string',
         ];
     }
 }

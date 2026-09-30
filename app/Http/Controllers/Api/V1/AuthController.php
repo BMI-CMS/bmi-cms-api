@@ -32,15 +32,30 @@ class AuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
-        /** @var \App\Models\User $user */
-        $user = $request->user()->load('CmsUser:id,name,role_id,company_id,level,psgc_code');
+        /** @var \App\Models\User|null $user */
+        $user = $request->user();
+
+        if (! $user) {
+            return response()->json([
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
+
+        $user->load('CmsUser:id,name,role_id,company_id,level,psgc_code');
+
+        \Log::info($user);
 
         return response()->json($user);
     }
 
     public function logout(Request $request): JsonResponse
     {
-        $this->authService->logout($request->user());
+        /** @var \App\Models\User|null $user */
+        $user = $request->user();
+
+        if ($user) {
+            $this->authService->logout($user);
+        }
 
         return response()->json([
             'message' => 'Logged out successfully.',
