@@ -56,14 +56,17 @@ class AuthService
             'success' => true,
             'data' => [
                 'token' => $token,
-                'id' => $user->id,
-                'name' => $user->CmsUser->name,
-                'role_id' => $user->CmsUser->role_id,
-                'role' => $user->CmsUser->role->name,
-                'company_id' => $user->CmsUser->company_id,
-                'company_name' => $user->CmsUser->company->name,
-                'level' => $user->CmsUser->level,
-                'psgc_code' => $user->CmsUser->psgc_code
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->CmsUser->name,
+                    'username' => $user->username,
+                    'role_id' => $user->CmsUser->role_id,
+                    'role' => $user->CmsUser->role->name,
+                    'company_id' => $user->CmsUser->company_id,
+                    'company_name' => $user->CmsUser->company->name,
+                    'level' => $user->CmsUser->level,
+                    'psgc_code' => $user->CmsUser->psgc_code
+                ]
             ]
         ];
     }
