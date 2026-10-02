@@ -36,7 +36,7 @@ return [
     ],
 
     'api' => [
-        'key' => env('API_KEY'),
+        'key' => env('APP_KEY'),
     ],
 
 ];
