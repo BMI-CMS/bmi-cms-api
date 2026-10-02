@@ -15,9 +15,13 @@ class ApiKeyMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $apiKey = $request->header('BMI_CMS_KEY');
+        $expectedKey = config('services.api.key');
+        $apiKey = $request->header('BMI_CMS_KEY')
+            ?? $request->header('BMI-CMS-KEY')
+            ?? $request->header('x-api-key')
+            ?? $request->header('X-API-KEY');
 
-        if (!$apiKey || !hash_equals(config('services.api.key'), $apiKey)) {
+        if (!$expectedKey || !$apiKey || !hash_equals((string) $expectedKey, (string) $apiKey)) {
             return response()->json([
                 'message' => 'Invalid API key.',
             ], 401);
