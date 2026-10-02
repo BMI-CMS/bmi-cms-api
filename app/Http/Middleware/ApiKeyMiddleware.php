@@ -16,10 +16,7 @@ class ApiKeyMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         $expectedKey = config('services.api.key');
-        $apiKey = $request->header('BMI_CMS_KEY')
-            ?? $request->header('BMI-CMS-KEY')
-            ?? $request->header('x-api-key')
-            ?? $request->header('X-API-KEY');
+        $apiKey = $request->header('x-api-key');
 
         if (!$expectedKey || !$apiKey || !hash_equals((string) $expectedKey, (string) $apiKey)) {
             return response()->json([
