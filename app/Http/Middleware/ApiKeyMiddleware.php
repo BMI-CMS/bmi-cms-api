@@ -18,6 +18,9 @@ class ApiKeyMiddleware
         $expectedKey = config('services.api.key');
         $apiKey = $request->header('x-api-key');
 
+        \Log::info("expectedKey >>>>> " . $expectedKey);
+        \Log::info("apiKey >>>>> " . $apiKey);
+
         if (!$expectedKey || !$apiKey || !hash_equals((string) $expectedKey, (string) $apiKey)) {
             return response()->json([
                 'message' => 'Invalid API key.',
