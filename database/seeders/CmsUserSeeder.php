@@ -31,6 +31,7 @@ class CmsUserSeeder extends Seeder
             ['name' => 'GIL PUYAT',          'company' => 2, 'role_id' => 2, 'level' => 2, 'psgc_code' => '1234567890'],
             ['name' => 'TAFT AVENUE',        'company' => 2, 'role_id' => 3, 'level' => 3, 'psgc_code' => '1234567890'],
             ['name' => 'MIA ROAD',           'company' => 2, 'role_id' => 4, 'level' => 4, 'psgc_code' => '1234567890'],
+            ['name' => 'JUAN DELA CRUZ',     'company' => 1, 'role_id' => 4, 'level' => 1, 'psgc_code' => '1234567890'],
         ];
 
         foreach ($users as $user) {

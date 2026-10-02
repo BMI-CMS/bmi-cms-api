@@ -127,5 +127,20 @@ class UserSeeder extends Seeder
             'cms_user_id' => 16,
             'phone_imei' => '143456789123456'
         ]);
+
+        User::create([
+            'username' => 'juandelacruz',
+            'password' => Hash::make('password'),
+            'cms_user_id' => 18,
+            'phone_imei' => '27afcd1e54edb964'
+        ])
+
+        User::create([
+
+            'username' => 'hitoribocchi',
+            'password' => Hash::make('wakaranai'),
+            'cms_user_id' => 18,
+            'phone_imei' => '957826f50488decf'
+        ])
     }
 }
