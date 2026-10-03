@@ -133,7 +133,7 @@ class UserSeeder extends Seeder
             'password' => Hash::make('password'),
             'cms_user_id' => 18,
             'phone_imei' => '27afcd1e54edb964'
-        ])
+        ]);
 
         User::create([
 
@@ -141,6 +141,6 @@ class UserSeeder extends Seeder
             'password' => Hash::make('wakaranai'),
             'cms_user_id' => 18,
             'phone_imei' => '957826f50488decf'
-        ])
+        ]);
     }
 }
