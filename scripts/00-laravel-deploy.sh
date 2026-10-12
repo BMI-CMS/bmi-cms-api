@@ -27,8 +27,8 @@ fi
 
 # Run database seeders if RUN_SEEDERS environment variable is set to true
 if [ "$RUN_SEEDERS" = "true" ]; then
-    echo "Running database seeders..."
-    php artisan db:seed --force
+    echo "Running production seeder (runs once; skipped if data already exists)..."
+    php artisan db:seed --class=ProductionSeeder --force
 fi
 
 echo "=== Laravel Deploy Script Completed Successfully ==="
