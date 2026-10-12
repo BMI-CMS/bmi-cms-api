@@ -17,9 +17,13 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-# Run database migrations automatically
-echo "Running database migrations..."
-php artisan migrate --force
+# Run database migrations only when RUN_MIGRATIONS environment variable is set to true
+if [ "$RUN_MIGRATIONS" = "true" ]; then
+    echo "Running database migrations..."
+    php artisan migrate --force
+else
+    echo "Skipping database migrations (set RUN_MIGRATIONS=true to run them)."
+fi
 
 # Run database seeders if RUN_SEEDERS environment variable is set to true
 if [ "$RUN_SEEDERS" = "true" ]; then
