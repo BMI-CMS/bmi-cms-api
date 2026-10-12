@@ -539,7 +539,7 @@ class DashboardRepository
     public function getTeamVisitPlanAccounts(int $level, int $requesterId, string $psgcCode, CarbonInterface $now, string $period, ?array $counselorIds = null)
     {
         return $this->teamEligibleQuery($level, $requesterId, $psgcCode, $now, $period)
-            ->when($counselorIds !== null, fn ($query) => $query->whereIn('accounts.assigned_cc_id', $counselorIds))
+            ->when($counselorIds !== null, fn($query) => $query->whereIn('accounts.assigned_cc_id', $counselorIds))
             ->get();
     }
 
@@ -562,7 +562,7 @@ class DashboardRepository
             ->distinct()
             ->pluck('assigned_cc_id');
 
-        return $planned->merge($visited)->map(fn ($id) => (int) $id)->unique()->sort()->values()->all();
+        return $planned->merge($visited)->map(fn($id) => (int) $id)->unique()->sort()->values()->all();
     }
 
     private function teamEligibleQuery(int $level, int $requesterId, string $psgcCode, CarbonInterface $now, string $period): EloquentBuilder
@@ -600,39 +600,39 @@ class DashboardRepository
     {
         return $this->teamVisitedQuery($level, $requesterId, $psgcCode, $from, $until)
             ->select([
-            'accounts.id',
-            'accounts.account_number',
-            'accounts.customer_name',
-            'accounts.monthly_amortization',
-            'accounts.past_due_balance',
-            'accounts.days_past_due',
-            'accounts.dpd_bucket',
-            'accounts.no_of_non_payments',
-            'accounts.outstanding_balance',
-            'accounts.last_payment_date',
-            'accounts.asset',
-            'accounts.payment_status',
-            'accounts.is_force_prioritized',
-            'accounts.assigned_cc_id',
-            'accounts.assigned_ch_id',
-            'accounts.assigned_am_ar_id',
-            'accounts.assigned_rm__dh_id',
-            'accounts.due_date',
-            'accounts.psgc_code',
-            'accounts.is_contacted',
-            'cms_users.name as credit_counselor_name',
-            'contact_recordings.id as contact_recording_id',
-            'contact_recordings.account_id',
-            'contact_recordings.follow_up_mode',
-            'contact_recordings.reason_for_default',
-            'contact_recordings.action_taken',
-            'contact_recordings.current_category',
-            'contact_recordings.remarks',
-            'contact_recordings.geotagging',
-            'contact_recordings.recorded_by',
-            'contact_recordings.contact_date',
-        ])
-            ->when($counselorIds !== null, fn ($query) => $query->whereIn('accounts.assigned_cc_id', $counselorIds))
+                'accounts.id',
+                'accounts.account_number',
+                'accounts.customer_name',
+                'accounts.monthly_amortization',
+                'accounts.past_due_balance',
+                'accounts.days_past_due',
+                'accounts.dpd_bucket',
+                'accounts.no_of_non_payments',
+                'accounts.outstanding_balance',
+                'accounts.last_payment_date',
+                'accounts.asset',
+                'accounts.payment_status',
+                'accounts.is_force_prioritized',
+                'accounts.assigned_cc_id',
+                'accounts.assigned_ch_id',
+                'accounts.assigned_am_ar_id',
+                'accounts.assigned_rm__dh_id',
+                'accounts.due_date',
+                'accounts.psgc_code',
+                'accounts.is_contacted',
+                'cms_users.name as credit_counselor_name',
+                'contact_recordings.id as contact_recording_id',
+                'contact_recordings.account_id',
+                'contact_recordings.follow_up_mode',
+                'contact_recordings.reason_for_default',
+                'contact_recordings.action_taken',
+                'contact_recordings.current_category',
+                'contact_recordings.remarks',
+                'contact_recordings.geotagging',
+                'contact_recordings.recorded_by',
+                'contact_recordings.contact_date',
+            ])
+            ->when($counselorIds !== null, fn($query) => $query->whereIn('accounts.assigned_cc_id', $counselorIds))
             ->orderBy('accounts.id')
             ->get();
     }

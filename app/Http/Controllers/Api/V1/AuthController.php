@@ -18,7 +18,7 @@ class AuthController extends Controller
     {
         $result = $this->authService->login($request->validated());
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             return response()->json([
                 'message' => $result['message'],
             ], $result['code']);
@@ -32,18 +32,33 @@ class AuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
-        /** @var \App\Models\User $user */
+        /** @var \App\Models\User|null $user */
         $user = $request->user();
+
+        if (! $user) {
+            return response()->json([
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
+
+        $user->load('CmsUser:id,name,role_id,company_id,level,psgc_code');
+
+        \Log::info($user);
 
         return response()->json($user->CmsUser);
     }
 
     public function logout(Request $request): JsonResponse
     {
-        $this->authService->logout($request->user());
+        /** @var \App\Models\User|null $user */
+        $user = $request->user();
+
+        if ($user) {
+            $this->authService->logout($user);
+        }
 
         return response()->json([
-            'message' => 'Logged out successfully',
+            'message' => 'Logged out successfully.',
         ]);
     }
 }

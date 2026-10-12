@@ -41,7 +41,7 @@ class ContactRecordingSeeder extends Seeder
         $laterToday = $now->copy()->addHour()->min($today->copy()->endOfDay());
         $yesterday = $today->copy()->subDay()->setTime(10, 0);
         $tomorrow = $today->copy()->addDay()->setTime(10, 0);
-        $daysAgo = fn (int $days) => $today->copy()->subDays($days)->setTime(10, 0);
+        $daysAgo = fn(int $days) => $today->copy()->subDays($days)->setTime(10, 0);
         $lastMonth = $today->copy()->subMonthNoOverflow()->startOfMonth()->addDays(11)->setTime(10, 0);
 
         // [account_number, current_category, action_taken, next_action_plan, contact_date, next_action_date, soft_deleted, is_contacted?]

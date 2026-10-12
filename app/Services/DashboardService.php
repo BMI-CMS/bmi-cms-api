@@ -309,7 +309,7 @@ class DashboardService
             return count($node);
         }
 
-        return array_sum(array_map(fn (array $child) => $this->countClassified($child), $node));
+        return array_sum(array_map(fn(array $child) => $this->countClassified($child), $node));
     }
 
     public function teamAssignedAccountsPSGC(int $userId, string $psgc_code, string $period)

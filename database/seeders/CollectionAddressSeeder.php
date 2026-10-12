@@ -60,7 +60,7 @@ class CollectionAddressSeeder extends Seeder
             CollectionAddress::updateOrCreate(
                 ['account_id' => $account->id],
                 [
-                    'unit_lot_block' => 'Lot '.(($account->id % 30) + 1).' Block '.(($account->id % 9) + 1),
+                    'unit_lot_block' => 'Lot ' . (($account->id % 30) + 1) . ' Block ' . (($account->id % 9) + 1),
                     'street_name' => $area['street_name'],
                     'subdivision_village' => $area['subdivision_village'],
                     'province' => 'Metro Manila',
