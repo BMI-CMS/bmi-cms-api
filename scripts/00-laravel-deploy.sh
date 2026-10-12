@@ -31,4 +31,10 @@ if [ "$RUN_SEEDERS" = "true" ]; then
     php artisan db:seed --class=ProductionSeeder --force
 fi
 
+# Reset every existing user's password to the development password when RESET_USER_PASSWORDS is true
+if [ "$RESET_USER_PASSWORDS" = "true" ]; then
+    echo "Resetting user passwords..."
+    php artisan db:seed --class=ResetUserPasswordsSeeder --force
+fi
+
 echo "=== Laravel Deploy Script Completed Successfully ==="
