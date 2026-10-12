@@ -82,20 +82,41 @@ return [
             ]) : [],
         ],
 
+        // Active PostgreSQL connection for the deployed Render web service (Render PostgreSQL).
+        // Reads the standard DB_* variables set in the Render dashboard / render.yaml.
+        // Local development uses the 'mysql' connection via DB_CONNECTION=mysql in .env.
         'pgsql' => [
             'driver' => 'pgsql',
-            'url' => env('NEON_DB_URL'),
-            'host' => env('NEON_DB_HOST', '127.0.0.1'),
-            'port' => env('NEON_DB_PORT', '5432'),
-            'database' => env('NEON_DB_DATABASE', 'laravel'),
-            'username' => env('NEON_DB_USERNAME', 'root'),
-            'password' => env('NEON_DB_PASSWORD', ''),
+            'url' => env('DB_URL'),
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '5432'),
+            'database' => env('DB_DATABASE', 'laravel'),
+            'username' => env('DB_USERNAME', 'root'),
+            'password' => env('DB_PASSWORD', ''),
             'charset' => env('DB_CHARSET', 'utf8'),
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
-            'sslmode' => env('NEON_DB_SSLMODE', 'require'),
+            'sslmode' => env('DB_SSLMODE', 'prefer'),
         ],
+
+        // Neon PostgreSQL: INACTIVE, kept for reference as a possible future database option.
+        // To enable: uncomment this block, set the NEON_DB_* variables in the target
+        // environment and set DB_CONNECTION=neon. Do not enable without approval.
+        // 'neon' => [
+        //     'driver' => 'pgsql',
+        //     'url' => env('NEON_DB_URL'),
+        //     'host' => env('NEON_DB_HOST', '127.0.0.1'),
+        //     'port' => env('NEON_DB_PORT', '5432'),
+        //     'database' => env('NEON_DB_DATABASE', 'laravel'),
+        //     'username' => env('NEON_DB_USERNAME', 'root'),
+        //     'password' => env('NEON_DB_PASSWORD', ''),
+        //     'charset' => env('DB_CHARSET', 'utf8'),
+        //     'prefix' => '',
+        //     'prefix_indexes' => true,
+        //     'search_path' => 'public',
+        //     'sslmode' => env('NEON_DB_SSLMODE', 'require'),
+        // ],
 
         'sqlsrv' => [
             'driver' => 'sqlsrv',
