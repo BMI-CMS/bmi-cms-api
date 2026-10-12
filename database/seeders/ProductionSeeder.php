@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Company;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Seeds the Render (production) database so the auth, user and dashboard routes return data.
@@ -27,6 +28,8 @@ class ProductionSeeder extends Seeder
             return;
         }
 
+        $this->resetEmptyTableSequences();
+
         DB::transaction(function (): void {
             $this->call([
                 CompanySeeder::class,
@@ -40,5 +43,31 @@ class ProductionSeeder extends Seeder
                 CollectionAddressSeeder::class,
             ]);
         });
+    }
+
+    /**
+     * PostgreSQL does not roll back auto-increment counters: a failed or rolled-back seeding run
+     * leaves every table's counter advanced, so the next run would not start at id 1. The seeders
+     * refer to fixed ids (role_id 1, cms_user_id 1, ...), so restart the counter of every table
+     * that is still empty. Tables that already hold rows are never touched. Not needed on MySQL.
+     */
+    private function resetEmptyTableSequences(): void
+    {
+        if (DB::getDriverName() !== 'pgsql') {
+            return;
+        }
+
+        foreach (Schema::getTables() as $table) {
+            $name = $table['name'];
+
+            if (($table['schema'] ?? 'public') !== 'public'
+                || !Schema::hasColumn($name, 'id')
+                || DB::table($name)->exists()) {
+                continue;
+            }
+
+            // Returns NULL (and does nothing) for tables whose id has no sequence, such as sessions.
+            DB::statement("SELECT setval(pg_get_serial_sequence(?, 'id'), 1, false)", [$name]);
+        }
     }
 }
