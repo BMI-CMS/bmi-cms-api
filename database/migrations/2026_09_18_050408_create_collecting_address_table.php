@@ -17,7 +17,6 @@ return new class extends Migration
                 ->unique()
                 ->constrained('accounts')
                 ->cascadeOnDelete();
-            $table->string('psgc_code', 10);
             $table->string('unit_lot_block', 255)->nullable();
             $table->string('street_name', 255)->nullable();
             $table->string('subdivision_village', 255)->nullable();

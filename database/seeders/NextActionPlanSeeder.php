@@ -25,9 +25,9 @@ class NextActionPlanSeeder extends Seeder
             'text' => 'FOR SUPPORT CC VISIT',
         ]);
 
-        NextActionPlan::create([
-            'text' => "FOR SERVICE OF COLLECTION NOTICE/ATTY'S LETTER",
-        ]);
+        // NextActionPlan::create([
+        //     'text' => "FOR SERVICE OF COLLECTION NOTICE/ATTY'S LETTER",
+        // ]);
 
         NextActionPlan::create([
             'text' => 'FOR RESTRUCTURING',

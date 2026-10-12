@@ -23,7 +23,7 @@ class ReceiptEncodingSeeder extends Seeder
                 'for_repossession_id' => null,
                 'collection_id'        => null,
                 'ar_number'            => 'AR-2026-0001',
-                'ar_date'              => $now->copy()->subDays(3),
+                'ar_date'              => $now,
                 'amount'               => 1500.00,
                 'receipt_image_path'   => 'receipts/sample_ar_0001.jpg',
                 'created_at'           => $now,
@@ -35,7 +35,7 @@ class ReceiptEncodingSeeder extends Seeder
                 'for_repossession_id' => null,
                 'collection_id'        => null,
                 'ar_number'            => 'AR-2026-0002',
-                'ar_date'              => $now->copy()->subDays(2),
+                'ar_date'              => $now,
                 'amount'               => 3250.50,
                 'receipt_image_path'   => 'receipts/sample_ar_0002.jpg',
                 'created_at'           => $now,
@@ -47,7 +47,7 @@ class ReceiptEncodingSeeder extends Seeder
                 'for_repossession_id' => null,
                 'collection_id'        => null,
                 'ar_number'            => 'AR-2026-0003',
-                'ar_date'              => $now->copy()->subDay(),
+                'ar_date'              => $now,
                 'amount'               => 5000.00,
                 'receipt_image_path'   => 'receipts/sample_ar_0003.jpg',
                 'created_at'           => $now,
@@ -61,40 +61,34 @@ class ReceiptEncodingSeeder extends Seeder
                 'ar_number'            => 'AR-2026-0004',
                 'ar_date'              => $now,
                 'amount'               => 1200.75,
-                'receipt_image_path'   => null, // Example of an entry without an uploaded photo yet
+                'receipt_image_path'   => 'receipts/sample_ar_0004.jpg',
                 'created_at'           => $now,
                 'updated_at'           => $now,
             ],
-
             [
-                'account_id'           => 5,
+                'account_id'           => 6,
                 'contact_recording_id' => null,
                 'for_repossession_id' => 1,
                 'collection_id'        => null,
                 'ar_number'            => 'AR-2026-0004',
                 'ar_date'              => $now,
                 'amount'               => 1200.75,
-                'receipt_image_path'   => null, // Example of an entry without an uploaded photo yet
+                'receipt_image_path'   => 'receipts/sample_ar_0004.jpg',
                 'created_at'           => $now,
                 'updated_at'           => $now,
             ],
-
             [
-                'account_id'           => 6,
+                'account_id'           => 7,
                 'contact_recording_id' => null,
                 'for_repossession_id' => 2,
                 'collection_id'        => null,
                 'ar_number'            => 'AR-2026-0004',
                 'ar_date'              => $now,
                 'amount'               => 1200.75,
-                'receipt_image_path'   => null, // Example of an entry without an uploaded photo yet
+                'receipt_image_path'   => 'receipts/sample_ar_0004.jpg',
                 'created_at'           => $now,
                 'updated_at'           => $now,
-            ]
-
-
-
-
+            ],
         ];
 
         ReceiptEncoding::insert($records);

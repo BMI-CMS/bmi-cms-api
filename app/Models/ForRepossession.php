@@ -7,17 +7,17 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ForRepossession extends Model
 {
-    use SoftDeletes;
+        use SoftDeletes;
 
-    protected $table = 'for_repossessions';
+        protected $table = 'for_repossessions';
 
-    protected $fillable = [
-        'account_id',
-        'repossession_request_id',
-        'stockyard',
-        'payment_status',
-        'reason_for_unrepossessed',
-        'status_name',
-        'status'
-    ];
+        protected $fillable = [
+                'account_id',
+                'contact_recording_id',
+                'repossession_request_id',
+                'stockyard',
+                'payment_status',
+                'reason_for_unrepossessed',
+                'status'
+        ];
 }

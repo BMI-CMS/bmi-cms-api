@@ -2,404 +2,233 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Account;
 use Carbon\Carbon;
 
+/**
+ * Visit Plan sample accounts.
+ *
+ * Every account covers one scenario from docs/visit_plan_business_rules_claude.md.
+ * Only these columns matter for classification/scheduling:
+ * dpd_bucket, no_of_non_payments, payment_status, is_force_prioritized,
+ * is_contacted and due_date. The other columns are filler.
+ *
+ * Group A (7100000xxx): no contact recording.
+ * Group B (7200000xxx): has contact recordings, see ContactRecordingSeeder.
+ * Group C (7300000xxx): other credit counselor.
+ *
+ * All dates are relative to the day the seeder runs, in the application
+ * timezone. Safe to rerun: accounts are matched by account_number.
+ */
 class AccountSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
+    private const DAYS_PAST_DUE = [
+        'DPD 0' => 0,
+        'DPD 1-30' => 15,
+        'DPD 31-60' => 45,
+        'DPD 61-90' => 75,
+        'DPD 91-120' => 105,
+        'DPD 121-150' => 135,
+        'DPD 151-180' => 165,
+        'DPD 181-210' => 195,
+        'DPD 211-240' => 225,
+        'DPD 241-270' => 255,
+        'DPD 271-300' => 285,
+        'DPD 301-330' => 315,
+        'DPD 331-360' => 345,
+        'DPD MORE THAN 360' => 400,
+    ];
+
+    private const MONTHLY_AMORTIZATION = 8500.00;
+
+    // Quezon City, Pasig City, Makati City. Accounts take them in turn by index.
+    private const PSGC_CODES = ['137404000', '137403000', '137602000'];
+
     public function run(): void
     {
-        $now = Carbon::now();
-        //NP0 1 
-        Account::create([
-            'account_number' => '81652348',
-            'customer_id' => 120356482,
-            'customer_name' => 'RACHEL DELA CRUZ',
-            'monthly_amortization' => 5148.00,
-            'past_due_balance' => 5123.00,
-            'days_past_due' => 0,
-            'dpd_bucket' => 'DPD 0',
-            // 'no_of_non_payments' => floor($now->parse('2026-09-25')->diffInMonths(now())),
-            'no_of_non_payments' => 0,
-            'outstanding_balance' => 26354.00,
-            'last_payment_date' => '2026-04-04',
-            'asset' => 0.00,
-            'assigned_cc_id' => 1,
-            'assigned_ch_id' => 6,
-            'assigned_am_id' => 7,
-            'assigned_dh_id' => 8,
-            'assigned_date' => '2026-09-18',
-            'follow_up_date' => '2026-09-25',
-            'created_at' => $now
-        ]);
-        //DPD 1-30 2
-        Account::create([
-            'account_number' => '81987654',
-            'customer_id' => 1232654825,
-            'customer_name' => 'MARIFE CASTILLO',
-            'monthly_amortization' => 6790.00,
-            'past_due_balance' => 13458.00,
-            'days_past_due' => 2,
-            'dpd_bucket' => 'DPD 1-30',
-            // 'no_of_non_payments' => floor($now->parse('2026-08-26')->diffInMonths(now())),
-            'no_of_non_payments' => 0,
-            'outstanding_balance' => 240523.00,
-            'last_payment_date' => '2026-04-06',
-            'asset' => 0.00,
-            'assigned_cc_id' => 1,
-            'assigned_ch_id' => 6,
-            'assigned_am_id' => 7,
-            'assigned_dh_id' => 8,
-            'assigned_date' => '2026-09-18',
-            'follow_up_date' => '2026-09-25',
-            'created_at' => $now
-        ]);
-        //NP1  3
-        Account::create([
-            'account_number' => '77325643',
-            'customer_id' => 1932654825,
-            'customer_name' => 'JOSEPH SALUDES',
-            'monthly_amortization' => 3423.00,
-            'past_due_balance' => 6784.00,
-            'days_past_due' => 33,
-            'dpd_bucket' => 'DPD 31-60',
-            // 'no_of_non_payments' => floor($now->parse('2026-09-28')->diffInMonths(now())),
-            'no_of_non_payments' => 1,
-            'outstanding_balance' => 6465.00,
-            'last_payment_date' => '2025-10-02',
-            'asset' => 0.00,
-            'assigned_cc_id' => 1,
-            'assigned_ch_id' => 6,
-            'assigned_am_id' => 7,
-            'assigned_dh_id' => 8,
-            'assigned_date' => '2026-09-18',
-            'follow_up_date' => '2026-09-25',
-            'created_at' => $now
-        ]);
-        //skip trace 4
-        Account::create([
-            'account_number' => '81356487',
-            'customer_id' => 132658452,
-            'customer_name' => 'CHRISTOPER DE LEON',
-            'monthly_amortization' => 4536.00,
-            'past_due_balance' => 0.00,
-            'days_past_due' => 25,
-            'dpd_bucket' => 'DPD 1-30',
-            'no_of_non_payments' => floor($now->parse($now)->diffInMonths(now())),
-            'outstanding_balance' => 58745.00,
-            'last_payment_date' => '2026-04-22',
-            'asset' => 0.00,
-            'assigned_cc_id' => 1,
-            'assigned_ch_id' => 6,
-            'assigned_am_id' => 7,
-            'assigned_dh_id' => 8,
-            'assigned_date' => '2026-09-18',
-            'follow_up_date' => '2026-09-25',
-            'created_at' => $now->copy()->subDays(),
-        ]);
-        //Notice & Demand Letter 5
-        Account::create([
-            'account_number' => '81356501',
-            'customer_id' => 132658501,
-            'customer_name' => 'MARIA CLARA',
-            'monthly_amortization' => 3200.00,
-            'past_due_balance' => 6400.00,
-            'days_past_due' => 60,
-            'dpd_bucket' => 'DPD 31-60',
-            'no_of_non_payments' => floor($now->parse('2026-07-15')->diffInMonths(now())),
-            'outstanding_balance' => 45000.00,
-            'last_payment_date' => '2026-07-15',
-            'asset' => 0.00,
-            'assigned_cc_id' => 1,
-            'assigned_ch_id' => 6,
-            'assigned_am_id' => 7,
-            'assigned_dh_id' => 8,
-            'assigned_date' => '2026-09-18',
-            'follow_up_date' => '2026-09-25',
-            'created_at' => $now
-        ]);
+        $today = Carbon::today();
 
-        //Force Priority 6
-        Account::create([
-            'account_number' => '81356502',
-            'customer_id' => 132658502,
-            'customer_name' => 'JUAN DELA CRUZ',
-            'monthly_amortization' => 15000.00,
-            'past_due_balance' => 0.00,
-            'days_past_due' => 0,
-            'dpd_bucket' => 'DPD 0',
-            'no_of_non_payments' => floor($now->parse('2026-09-01')->diffInMonths(now())),
-            'outstanding_balance' => 350000.00,
-            'last_payment_date' => '2026-09-01',
-            'asset' => 0.00,
-            'is_force_prioritized' => true,
-            'assigned_cc_id' => 1,
-            'assigned_ch_id' => 6,
-            'assigned_am_id' => 7,
-            'assigned_dh_id' => 8,
-            'assigned_date' => '2026-09-18',
-            'follow_up_date' => '2026-09-25',
-            'created_at' => $now
-        ]);
+        // On the 1st, "earlier this month" is today; on the last day, "later this month" is today.
+        $dueToday = $today->copy();
+        $dueEarlierThisMonth = $today->copy()->startOfMonth();
+        $dueLaterThisMonth = $today->copy()->endOfMonth()->startOfDay();
+        $dueLastMonth = $today->copy()->subMonthNoOverflow()->startOfMonth()->addDays(9);
+        $dueNextMonth = $today->copy()->addMonthNoOverflow()->startOfMonth()->addDays(4);
 
-        //Promise to Pay 7
-        Account::create([
-            'account_number' => '81356503',
-            'customer_id' => 132658503,
-            'customer_name' => 'PEDRO PENDUKO',
-            'monthly_amortization' => 2100.50,
-            'past_due_balance' => 6301.50,
-            'days_past_due' => 90,
-            'dpd_bucket' => 'DPD 61-90',
-            'no_of_non_payments' => 2,
-            'outstanding_balance' => 18000.00,
-            'last_payment_date' => '2026-06-10',
-            'asset' => 0.00,
-            'assigned_cc_id' => 1,
-            'assigned_ch_id' => 6,
-            'assigned_am_id' => 7,
-            'assigned_dh_id' => 8,
-            'assigned_date' => '2026-09-18',
-            'follow_up_date' => '2026-09-26',
-            'created_at' => $now->copy()->subDays(1)
-        ]);
-        //For repo 8
-        Account::create([
-            'account_number' => '81356504',
-            'customer_id' => 132658504,
-            'customer_name' => 'ANA ROCES',
-            'monthly_amortization' => 8400.00,
-            'past_due_balance' => 8400.00,
-            'days_past_due' => 92,
-            'dpd_bucket' => 'DPD 91-120',
-            'no_of_non_payments' => 3,
-            'outstanding_balance' => 105000.00,
-            'last_payment_date' => '2026-08-20',
-            'asset' => 0.00,
-            'assigned_cc_id' => 1,
-            'assigned_ch_id' => 6,
-            'assigned_am_id' => 7,
-            'assigned_dh_id' => 8,
-            'assigned_date' => '2026-09-18',
-            'follow_up_date' => '2026-09-28',
-            'created_at' => $now
-        ]);
-        //9
-        Account::create([
-            'account_number' => '81356505',
-            'customer_id' => 132658505,
-            'customer_name' => 'JOSE RIZAL',
-            'monthly_amortization' => 5000.00,
-            'past_due_balance' => 0.00,
-            'days_past_due' => 90,
-            'dpd_bucket' => 'DPD 61-90',
-            'no_of_non_payments' => 2,
-            'outstanding_balance' => 50000.00,
-            'last_payment_date' => '2026-09-15',
-            'asset' => 0.00,
-            'assigned_cc_id' => 1,
-            'assigned_ch_id' => 6,
-            'assigned_am_id' => 7,
-            'assigned_dh_id' => 8,
-            'assigned_date' => '2026-09-18',
-            'follow_up_date' => '2026-09-30',
-            'created_at' => $now
-        ]);
+        $accounts = [
+            // ===== A. NO CONTACT RECORDING — base classification rules =====
+            ['7100000001', 'A01 FOR REPO RULE', 'DPD 91-120', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueToday],
+            ['7100000002', 'A02 PRIORITY 1 NP2', 'DPD 61-90', 'LAST PAID 2 MONTH AGO', 'WITH PAYMENT', false, $dueToday],
+            ['7100000003', 'A03 PRIORITY 1 NP3', 'DPD 61-90', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueToday],
+            ['7100000004', 'A04 FDD', 'DPD 1-30', 'UPDATED', 'FIRST DUE DATE', false, $dueToday],
+            ['7100000005', 'A05 NON-STARTER', 'DPD 31-60', 'LAST PAID 1 MONTH AGO', 'NON-STARTER', false, $dueToday],
+            ['7100000006', 'A06 DPD 1-30', 'DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueToday],
+            ['7100000007', 'A07 NP0', 'DPD 0', 'UPDATED', 'WITH PAYMENT', false, $dueToday],
+            ['7100000008', 'A08 NP1', 'DPD 31-60', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueToday],
 
-        // Priority 1 Accounts 10 
-        Account::create([
-            'account_number' => '81356506',
-            'customer_id' => 132658506,
-            'customer_name' => 'LIZA SOBERANO',
-            'monthly_amortization' => 12500.00,
-            'past_due_balance' => 37500.00,
-            'days_past_due' => 62,
-            'dpd_bucket' => 'DPD 61-90',
-            'no_of_non_payments' => 2,
-            'outstanding_balance' => 250000.00,
-            'last_payment_date' => '2026-05-10',
-            'asset' => 0.00,
-            'assigned_cc_id' => 1,
-            'assigned_ch_id' => 6,
-            'assigned_am_id' => 7,
-            'assigned_dh_id' => 8,
-            'assigned_date' => '2026-09-18',
-            'follow_up_date' => '2026-09-24',
-            'created_at' => $now->copy()->subDays(4)
-        ]);
-        //FDD / NS 11
-        Account::create([
-            'account_number' => '81356507',
-            'customer_id' => 132658507,
-            'customer_name' => 'VIC SOTTO',
-            'monthly_amortization' => 6000.00,
-            'past_due_balance' => 0.00,
-            'days_past_due' => 0,
-            'dpd_bucket' => 'DPD 0',
-            'no_of_non_payments' =>  floor($now->parse('2026-09-10')->diffInMonths(now())),
-            'outstanding_balance' => 72000.00,
-            'last_payment_date' => '2026-09-10',
-            'asset' => 0.00,
-            'assigned_cc_id' => 1,
-            'assigned_ch_id' => 6,
-            'assigned_am_id' => 7,
-            'assigned_dh_id' => 8,
-            'assigned_date' => '2026-09-18',
-            'follow_up_date' => '2026-09-29',
-            'created_at' => $now->copy()->subDays(1)
-        ]);
+            // ===== A. Overlapping conditions (precedence) =====
+            ['7100000009', 'A09 FORCED + DPD 1-30', 'DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', true, $dueToday],
+            ['7100000010', 'A10 FORCED + FOR REPO RULE', 'DPD 91-120', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', true, $dueToday],
+            ['7100000011', 'A11 FORCED + FDD', 'DPD 1-30', 'UPDATED', 'FIRST DUE DATE', true, $dueToday],
+            ['7100000012', 'A12 FDD + PRIORITY 1', 'DPD 61-90', 'LAST PAID 2 MONTH AGO', 'FIRST DUE DATE', false, $dueToday],
+            ['7100000013', 'A13 NON-STARTER + FOR REPO RULE', 'DPD 91-120', 'LAST PAID 3 MONTHS AGO', 'NON-STARTER', false, $dueToday],
+            ['7100000014', 'A14 DPD 1-30 + UPDATED', 'DPD 1-30', 'UPDATED', 'WITH PAYMENT', false, $dueToday],
 
-        Account::create([
-            'account_number' => '81356508',
-            'customer_id' => 132658508,
-            'customer_name' => 'SARAH GERONIMO',
-            'monthly_amortization' => 9500.00,
-            'past_due_balance' => 19000.00,
-            'days_past_due' => 60,
-            'dpd_bucket' => 'DPD 31-60',
-            'no_of_non_payments' => floor($now->parse('2026-07-22')->diffInMonths(now())),
-            'outstanding_balance' => 114000.00,
-            'last_payment_date' => '2026-07-22',
-            'asset' => 0.00,
-            'assigned_cc_id' => 1,
-            'assigned_ch_id' => 6,
-            'assigned_am_id' => 7,
-            'assigned_dh_id' => 8,
-            'assigned_date' => '2026-09-18',
-            'follow_up_date' => '2026-09-26',
-            'created_at' => $now->copy()->addDays()
-        ]);
+            // ===== A. Combinations not covered by any rule yet =====
+            ['7100000015', 'A15 UNCOVERED DPD 121-150', 'DPD 121-150', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueToday],
+            ['7100000016', 'A16 UNCOVERED DPD 181-210', 'DPD 181-210', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueToday],
+            ['7100000017', 'A17 UNCOVERED DPD MORE THAN 360', 'DPD MORE THAN 360', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueToday],
+            ['7100000018', 'A18 UNCOVERED DPD 61-90 NP1', 'DPD 61-90', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueToday],
+            ['7100000019', 'A19 UNCOVERED DPD 91-120 NP2', 'DPD 91-120', 'LAST PAID 2 MONTH AGO', 'WITH PAYMENT', false, $dueToday],
+            ['7100000020', 'A20 UNCOVERED DPD 31-60 NP2', 'DPD 31-60', 'LAST PAID 2 MONTH AGO', 'WITH PAYMENT', false, $dueToday],
+            ['7100000021', 'A21 UNCOVERED DPD 0 NP1', 'DPD 0', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueToday],
 
-        Account::create([
-            'account_number' => '81356509',
-            'customer_id' => 132658509,
-            'customer_name' => 'COCO MARTIN',
-            'monthly_amortization' => 4500.00,
-            'past_due_balance' => 4500.00,
-            'days_past_due' => 30,
-            'dpd_bucket' => 'DPD 1-30',
-            'no_of_non_payments' =>  floor($now->parse('2026-08-15')->diffInMonths(now())),
-            'outstanding_balance' => 22500.00,
-            'last_payment_date' => '2026-08-15',
-            'asset' => 0.00,
-            'assigned_cc_id' => 1,
-            'assigned_ch_id' => 6,
-            'assigned_am_id' => 7,
-            'assigned_dh_id' => 8,
-            'assigned_date' => '2026-09-18',
-            'follow_up_date' => '2026-09-25',
-            'created_at' => $now
-        ]);
+            // ===== A. Scheduling by accounts.due_date =====
+            ['7100000022', 'A22 DUE EARLIER THIS MONTH', 'DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
+            ['7100000023', 'A23 DUE LATER THIS MONTH', 'DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueLaterThisMonth],
+            ['7100000024', 'A24 DUE LAST MONTH', 'DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueLastMonth],
+            ['7100000025', 'A25 DUE NEXT MONTH', 'DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueNextMonth],
 
-        Account::create([
-            'account_number' => '81356510',
-            'customer_id' => 132658510,
-            'customer_name' => 'KATHRYN BERNARDO',
-            'monthly_amortization' => 7800.00,
-            'past_due_balance' => 0.00,
-            'days_past_due' => 0,
-            'dpd_bucket' => 'DPD 0',
-            'no_of_non_payments' =>  floor($now->parse('2026-09-20')->diffInMonths(now())),
-            'outstanding_balance' => 156000.00,
-            'last_payment_date' => '2026-09-20',
-            'asset' => 0.00,
-            'assigned_cc_id' => 1,
-            'assigned_ch_id' => 6,
-            'assigned_am_id' => 7,
-            'assigned_dh_id' => 8,
-            'assigned_date' => '2026-09-18',
-            'follow_up_date' => '2026-09-27',
-            'created_at' => $now->copy()->addDays()
-        ]);
+            // ===== A. Non-payments beyond NP3 =====
+            ['7100000026', 'A26 FOR REPO RULE NP4', 'DPD 91-120', 'LAST PAID 4 MONTHS AGO', 'WITH PAYMENT', false, $dueToday],
+            ['7100000027', 'A27 PRIORITY 1 NP5', 'DPD 61-90', 'LAST PAID 5 MONTHS AGO', 'WITH PAYMENT', false, $dueToday],
+            ['7100000028', 'A28 UNCOVERED DPD 121-150 NP6', 'DPD 121-150', 'LAST PAID 6 MONTHS AGO', 'WITH PAYMENT', false, $dueToday],
 
+            // ===== B. WITH CONTACT RECORDING — due next action plans =====
+            ['7200000001', 'B01 PTP DUE EARLIER TODAY', 'DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
+            ['7200000002', 'B02 PTP LATER TODAY', 'DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
+            ['7200000003', 'B03 PTP TOMORROW', 'DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
+            ['7200000004', 'B04 PTP OVERDUE YESTERDAY', 'DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
+            ['7200000005', 'B05 SKIPTRACE DUE', 'DPD 61-90', 'LAST PAID 2 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
+            ['7200000006', 'B06 NOTICE AND DEMAND DUE', 'DPD 31-60', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
+            ['7200000007', 'B07 FOR REPO NAP NO APPROVAL', 'DPD 61-90', 'LAST PAID 2 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
 
-        Account::create([
-            'account_number' => '81356511',
-            'customer_id' => 132658511,
-            'customer_name' => 'JOY DELA CRUZ',
-            'monthly_amortization' => 8500.00,
-            'past_due_balance' => 17000.00,
-            'days_past_due' => 25,
-            'dpd_bucket' => 'DPD 1-30',
-            'no_of_non_payments' => floor($now->parse('2026-08-25')->diffInMonths(now())),
-            'outstanding_balance' => 145000.00,
-            'last_payment_date' => '2026-08-25',
-            'asset' => 0.00,
-            'assigned_cc_id' => 1,
-            'assigned_ch_id' => 6,
-            'assigned_am_id' => 7,
-            'assigned_dh_id' => 8,
-            'assigned_date' => '2026-09-18',
-            'follow_up_date' => '2026-09-28',
-            'created_at' =>  $now,
-        ]);
+            // ===== B. Fallback to current_category =====
+            ['7200000008', 'B08 FALLBACK FIELD VISIT', 'DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
+            ['7200000009', 'B09 FALLBACK BRGY BLOTTER', 'DPD 31-60', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
+            ['7200000010', 'B10 FALLBACK BRGY HEARING', 'DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
+            ['7200000011', 'B11 FALLBACK DISCREPANCY', 'DPD 0', 'UPDATED', 'WITH PAYMENT', false, $dueEarlierThisMonth],
+            ['7200000012', 'B12 FALLBACK ASSUMPTION', 'DPD 61-90', 'LAST PAID 2 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
+            ['7200000013', 'B13 FALLBACK WRITE OFF', 'DPD 1-30', 'LAST PAID 1 MONTH AGO', 'NON-STARTER', false, $dueEarlierThisMonth],
+            ['7200000014', 'B14 FALLBACK NULL CATEGORY', 'DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
+            ['7200000015', 'B15 FALLBACK CATEGORY CHANGED', 'DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
 
-        Account::create([
-            'account_number' => '81356512',
-            'customer_id' => 132658512,
-            'customer_name' => 'MARIA SANTOS',
-            'monthly_amortization' => 12000.00,
-            'past_due_balance' => 36000.00,
-            'days_past_due' => 65,
-            'dpd_bucket' => 'DPD 61-90',
-            'no_of_non_payments' =>  floor($now->parse('2026-07-20')->diffInMonths(now())),
-            'outstanding_balance' => 320000.00,
-            'last_payment_date' => '2026-07-20',
-            'asset' => 0.00,
-            'assigned_cc_id' => 1,
-            'assigned_ch_id' => 6,
-            'assigned_am_id' => 7,
-            'assigned_dh_id' => 8,
-            'assigned_date' => '2026-09-19',
-            'follow_up_date' => '2026-09-29',
-            'created_at' =>  $now,
-        ]);
+            // ===== B. Precedence with a due next action plan =====
+            ['7200000016', 'B16 FORCED + PTP DUE', 'DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', true, $dueEarlierThisMonth],
+            ['7200000017', 'B17 FOR REPO RULE + PTP DUE', 'DPD 91-120', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
+            ['7200000018', 'B18 FDD + PTP DUE', 'DPD 1-30', 'UPDATED', 'FIRST DUE DATE', false, $dueEarlierThisMonth],
+            ['7200000019', 'B19 FORCED + FOR REPO RULE + SKIPTRACE', 'DPD 91-120', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', true, $dueEarlierThisMonth],
 
-        Account::create([
-            'account_number' => '81356513',
-            'customer_id' => 132658513,
-            'customer_name' => 'PEDRO REYES',
-            'monthly_amortization' => 15000.00,
-            'past_due_balance' => 60000.00,
-            'days_past_due' => 95,
-            'dpd_bucket' => 'DPD 91-120',
-            'no_of_non_payments' => floor($now->parse('2026-06-15')->diffInMonths(now())),
-            'outstanding_balance' => 450000.00,
-            'last_payment_date' => '2026-06-15',
-            'asset' => 25000.00,
-            'assigned_cc_id' => 2,
-            'assigned_ch_id' => 6,
-            'assigned_am_id' => 7,
-            'assigned_dh_id' => 8,
-            'assigned_date' => '2026-09-20',
-            'follow_up_date' => '2026-09-30',
-            'created_at' =>  $now,
-        ]);
+            // ===== B. Multiple recordings / latest recording selection =====
+            ['7200000020', 'B20 SAME DAY RESCHEDULE', 'DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
+            ['7200000021', 'B21 OLD PTP DUE LATEST FUTURE', 'DPD 61-90', 'LAST PAID 2 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
+            ['7200000022', 'B22 LATEST SOFT DELETED', 'DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
+            ['7200000023', 'B23 OFFLINE SYNC ORDER', 'DPD 31-60', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
+            ['7200000024', 'B24 PTP OVERDUE LAST MONTH', 'DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueLastMonth],
 
-        Account::create([
-            'account_number' => '81356514',
-            'customer_id' => 132658514,
-            'customer_name' => 'ANA GARCIA',
-            'monthly_amortization' => 9500.00,
-            'past_due_balance' => 19000.00,
-            'days_past_due' => 91,
-            'dpd_bucket' => 'DPD 31-60',
-            'no_of_non_payments' => floor($now->parse('2026-08-05')->diffInMonths(now())),
-            'outstanding_balance' => 210000.00,
-            'last_payment_date' => '2026-08-05',
-            'asset' => 0.00,
-            'assigned_cc_id' => 2,
+            // ===== B. Out-of-scope / unlisted next action plans =====
+            ['7200000025', 'B25 INSURANCE CLAIM', 'DPD 61-90', 'LAST PAID 2 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
+            ['7200000026', 'B26 ENDORSEMENT TO RCD', 'DPD 121-150', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
+            ['7200000027', 'B27 RESTRUCTURING', 'DPD 31-60', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
+            ['7200000028', 'B28 LEGAL SMALL CLAIMS', 'DPD 151-180', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
+            ['7200000029', 'B29 COLLECTED NO NEXT ACTION', 'DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
+            ['7200000030', 'B30 UNLISTED REVISIT CALL', 'DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
+            ['7200000031', 'B31 UNLISTED FOR COLLECTION', 'DPD 31-60', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
+        ];
+
+        foreach ($accounts as $index => [$accountNumber, $customerName, $dpdBucket, $nonPayments, $paymentStatus, $isForcePrioritized, $dueDate]) {
+            $this->upsert($this->account(
+                $index,
+                $accountNumber,
+                $customerName,
+                $dpdBucket,
+                $nonPayments,
+                $paymentStatus,
+                $isForcePrioritized,
+                str_starts_with($accountNumber, '72'),
+                $dueDate,
+                $today,
+                assignedCcId: 1,
+            ));
+        }
+
+        // ===== Other credit counselor — must never appear in CC 1's Visit Plan =====
+        $this->upsert($this->account(
+            count($accounts),
+            '7300000001',
+            'C01 OTHER CC DUE TODAY',
+            'DPD 1-30',
+            'LAST PAID 1 MONTH AGO',
+            'WITH PAYMENT',
+            false,
+            false,
+            $dueToday,
+            $today,
+            assignedCcId: 2,
+        ));
+    }
+
+    private function upsert(array $attributes): void
+    {
+        $account = Account::withTrashed()->updateOrCreate(
+            ['account_number' => $attributes['account_number']],
+            $attributes,
+        );
+
+        if ($account->trashed()) {
+            $account->restore();
+        }
+    }
+
+    /**
+     * "UPDATED" = 0, "LAST PAID 1 MONTH AGO" = 1, "LAST PAID 3 MONTHS AGO" = 3, ...
+     * Only used to fill the balance/date filler columns.
+     */
+    private function monthsUnpaid(string $nonPayments): int
+    {
+        return preg_match('/LAST PAID (\d+) MONTHS? AGO/', $nonPayments, $matches) ? (int) $matches[1] : 0;
+    }
+
+    private function account(
+        int $index,
+        string $accountNumber,
+        string $customerName,
+        string $dpdBucket,
+        string $nonPayments,
+        string $paymentStatus,
+        bool $isForcePrioritized,
+        bool $isContacted,
+        Carbon $dueDate,
+        Carbon $today,
+        int $assignedCcId,
+    ): array {
+        $monthsUnpaid = $this->monthsUnpaid($nonPayments);
+        $outstandingBalance = self::MONTHLY_AMORTIZATION * 12;
+
+        return [
+            'account_number' => $accountNumber,
+            'customer_id' => 130000000 + $index,
+            'customer_name' => $customerName,
+            'monthly_amortization' => self::MONTHLY_AMORTIZATION,
+            'last_payment_amount' => self::MONTHLY_AMORTIZATION,
+            'past_due_balance' => self::MONTHLY_AMORTIZATION * $monthsUnpaid,
+            'days_past_due' => self::DAYS_PAST_DUE[$dpdBucket],
+            'dpd_bucket' => $dpdBucket,
+            'no_of_non_payments' => $nonPayments,
+            'outstanding_balance' => $outstandingBalance,
+            'last_payment_date' => $today->copy()->subMonthsNoOverflow($monthsUnpaid)->subDays(5)->toDateString(),
+            'payment_status' => $paymentStatus,
+            'asset' => 'MOTORCYCLE',
+            'psgc_code' => self::PSGC_CODES[$index % count(self::PSGC_CODES)],
+            'is_force_prioritized' => $isForcePrioritized,
+            'assigned_cc_id' => $assignedCcId,
             'assigned_ch_id' => 6,
-            'assigned_am_id' => 7,
-            'assigned_dh_id' => 8,
-            'assigned_date' => '2026-09-21',
-            'follow_up_date' => '2026-10-01',
-            'created_at' =>  $now,
-        ]);
+            'assigned_am_ar_id' => 7,
+            'assigned_rm__dh_id' => 8,
+            'is_contacted' => $isContacted,
+            'due_date' => $dueDate->toDateString(),
+            'send_date' => null,
+        ];
     }
 }

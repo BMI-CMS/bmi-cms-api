@@ -16,6 +16,9 @@ return new class extends Migration
             $table->foreignId('contact_recording_id')
                 ->constrained('contact_recordings')
                 ->cascadeOnDelete();
+            $table->string('customer_capacity', 100)->nullable();
+            $table->string('unit_condition', 50)->nullable();
+            $table->string('customer_character', 100)->nullable();
             $table->boolean('is_first_level_approved')->default(false);
             $table->string('first_level_approved_by', 10)->nullable();
             $table->dateTime('first_level_review_at')->nullable();
@@ -28,6 +31,7 @@ return new class extends Migration
             $table->string('third_level_approved_by', 10)->nullable();
             $table->dateTime('third_level_review_at')->nullable();
             $table->string('third_level_approved_remarks', 255)->nullable();
+            $table->string('status', 15)->default('FOR APPROVAL');
             $table->softDeletes();
             $table->timestamp('created_at')->index();
             $table->timestamp('updated_at');

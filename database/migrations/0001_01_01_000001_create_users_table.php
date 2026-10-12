@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('cms_user_id')
                 ->constrained('cms_users')
                 ->cascadeOnDelete();
-            $table->string('phone_imei', 15);
+            $table->string('phone_imei', 30);
             $table->rememberToken();
             $table->softDeletes();
             $table->timestamps();

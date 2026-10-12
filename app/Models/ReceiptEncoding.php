@@ -14,6 +14,7 @@ class ReceiptEncoding extends Model
         'contact_recording_id',
         'for_repossession_id',
         'collection_id',
+        'payment_type',
         'ar_number',
         'ar_date',
         'amount',

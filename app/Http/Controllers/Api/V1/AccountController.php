@@ -16,15 +16,17 @@ class AccountController extends Controller
     {
         $validated = $request->validated();
 
-        // $result = $this->userService->attestation($request->validated(), $user);
+        $result = $this->accountService->markAsForcePrioritized($validated['account_id'], $validated['account_number']);
 
-        // if (!$result['is_attested']) {
-        //     $user->currentAccessToken()->delete();
-        // }
+        if (!$result['success']) {
+            return response()->json([
+                'message' => $result['message'],
+            ], $result['code']);
+        }
 
-        // return response()->json([
-        //     'message' => $result['message'],
-        //     'data' => $result['is_attested'],
-        // ], 200);
+        return response()->json([
+            'message' => 'Account marked as force prioritized successfully.',
+            'data' => $result['data'],
+        ]);
     }
 }

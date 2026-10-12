@@ -2,256 +2,74 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\Account;
 use App\Models\CollectionAddress;
 
+/**
+ * Collecting address of every account, in the city of the account's own psgc_code,
+ * so the address always agrees with accounts.psgc_code (see AccountSeeder::PSGC_CODES).
+ * Street, barangay and lot are filler that vary per account.
+ * Safe to rerun: addresses are matched by account_id.
+ */
 class CollectionAddressSeeder extends Seeder
 {
+    private const AREAS = [
+        // Quezon City
+        '137404000' => [
+            'city_municipality' => 'Quezon City',
+            'postal_code' => '1100',
+            'street_name' => 'Commonwealth Avenue',
+            'subdivision_village' => 'Villa Beatriz',
+            'barangays' => ['Batasan Hills', 'Bagumbayan', 'Holy Spirit'],
+        ],
+        // Pasig City
+        '137403000' => [
+            'city_municipality' => 'Pasig City',
+            'postal_code' => '1600',
+            'street_name' => 'Shaw Boulevard',
+            'subdivision_village' => 'Greenmeadows',
+            'barangays' => ['San Antonio', 'Kapitolyo', 'Ugong'],
+        ],
+        // Makati City
+        '137602000' => [
+            'city_municipality' => 'Makati City',
+            'postal_code' => '1200',
+            'street_name' => 'Makati Avenue',
+            'subdivision_village' => 'Bel-Air Village',
+            'barangays' => ['Poblacion', 'Bel-Air', 'San Lorenzo'],
+        ],
+    ];
+
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        $addresses = [
-            // PSGC: 137404000 — 3 accounts
-            [
-                'account_id' => 1,
-                'psgc_code' => '137404000',
-                'unit_lot_block' => 'Unit 101',
-                'street_name' => 'Ayala Avenue',
-                'subdivision_village' => 'Bel-Air Village',
-                'province' => 'Metro Manila',
-                'postal_code' => '1200',
-                'barangay' => 'Bel-Air',
-                'city_municipality' => 'Makati City',
-                'region' => 'NCR',
-            ],
-            [
-                'account_id' => 2,
-                'psgc_code' => '137404000',
-                'unit_lot_block' => 'Lot 12 Block 5',
-                'street_name' => 'Makati Avenue',
-                'subdivision_village' => 'Urdaneta Village',
-                'province' => 'Metro Manila',
-                'postal_code' => '1226',
-                'barangay' => 'Urdaneta',
-                'city_municipality' => 'Makati City',
-                'region' => 'NCR',
-            ],
-            [
-                'account_id' => 3,
-                'psgc_code' => '137404000',
-                'unit_lot_block' => 'Unit 305',
-                'street_name' => 'Jupiter Street',
-                'subdivision_village' => 'Bel-Air',
-                'province' => 'Metro Manila',
-                'postal_code' => '1209',
-                'barangay' => 'Bel-Air',
-                'city_municipality' => 'Makati City',
-                'region' => 'NCR',
-            ],
+        foreach (Account::query()->orderBy('id')->get(['id', 'psgc_code']) as $account) {
+            $area = self::AREAS[$account->psgc_code] ?? null;
 
-            // PSGC: 137501000 — 3 accounts
-            [
-                'account_id' => 4,
-                'psgc_code' => '137501000',
-                'unit_lot_block' => 'Lot 8 Block 2',
-                'street_name' => 'Rizal Avenue',
-                'subdivision_village' => 'San Antonio Village',
-                'province' => 'Metro Manila',
-                'postal_code' => '1103',
-                'barangay' => 'San Antonio',
-                'city_municipality' => 'Quezon City',
-                'region' => 'NCR',
-            ],
-            [
-                'account_id' => 5,
-                'psgc_code' => '137501000',
-                'unit_lot_block' => 'Unit 204',
-                'street_name' => 'Commonwealth Avenue',
-                'subdivision_village' => 'Teachers Village',
-                'province' => 'Metro Manila',
-                'postal_code' => '1101',
-                'barangay' => 'Teachers Village East',
-                'city_municipality' => 'Quezon City',
-                'region' => 'NCR',
-            ],
-            [
-                'account_id' => 6,
-                'psgc_code' => '137501000',
-                'unit_lot_block' => 'Lot 15 Block 7',
-                'street_name' => 'Katipunan Avenue',
-                'subdivision_village' => 'Blue Ridge',
-                'province' => 'Metro Manila',
-                'postal_code' => '1109',
-                'barangay' => 'Blue Ridge A',
-                'city_municipality' => 'Quezon City',
-                'region' => 'NCR',
-            ],
+            if (! $area) {
+                $this->command?->warn("No address area for psgc_code {$account->psgc_code} (account {$account->id}); skipped.");
 
-            // PSGC: 042108000 — 3 accounts
-            [
-                'account_id' => 7,
-                'psgc_code' => '042108000',
-                'unit_lot_block' => 'Lot 10 Block 4',
-                'street_name' => 'Governor Drive',
-                'subdivision_village' => 'Dasmarinas Village',
-                'province' => 'Cavite',
-                'postal_code' => '4114',
-                'barangay' => 'Salitran',
-                'city_municipality' => 'Dasmarinas City',
-                'region' => 'CALABARZON',
-            ],
-            [
-                'account_id' => 8,
-                'psgc_code' => '042108000',
-                'unit_lot_block' => 'Unit 3A',
-                'street_name' => 'Paliparan Road',
-                'subdivision_village' => 'Springville',
-                'province' => 'Cavite',
-                'postal_code' => '4114',
-                'barangay' => 'Paliparan I',
-                'city_municipality' => 'Dasmarinas City',
-                'region' => 'CALABARZON',
-            ],
-            [
-                'account_id' => 9,
-                'psgc_code' => '042108000',
-                'unit_lot_block' => 'Lot 22 Block 8',
-                'street_name' => 'Molino Boulevard',
-                'subdivision_village' => 'Lancaster',
-                'province' => 'Cavite',
-                'postal_code' => '4102',
-                'barangay' => 'Buhay na Tubig',
-                'city_municipality' => 'Imus City',
-                'region' => 'CALABARZON',
-            ],
+                continue;
+            }
 
-            // PSGC: 138060000 — 3 accounts
-            [
-                'account_id' => 10,
-                'psgc_code' => '138060000',
-                'unit_lot_block' => 'Lot 5 Block 3',
-                'street_name' => 'MacArthur Highway',
-                'subdivision_village' => 'San Fernando Heights',
-                'province' => 'Pampanga',
-                'postal_code' => '2000',
-                'barangay' => 'Dolores',
-                'city_municipality' => 'San Fernando City',
-                'region' => 'CENTRAL LUZON',
-            ],
-            [
-                'account_id' => 11,
-                'psgc_code' => '138060000',
-                'unit_lot_block' => 'Unit 201',
-                'street_name' => 'Jose Abad Santos Avenue',
-                'subdivision_village' => 'Greenfields',
-                'province' => 'Pampanga',
-                'postal_code' => '2000',
-                'barangay' => 'San Agustin',
-                'city_municipality' => 'San Fernando City',
-                'region' => 'CENTRAL LUZON',
-            ],
-            [
-                'account_id' => 12,
-                'psgc_code' => '138060000',
-                'unit_lot_block' => 'Lot 18 Block 6',
-                'street_name' => 'Sindalan Road',
-                'subdivision_village' => 'Sunrise Village',
-                'province' => 'Pampanga',
-                'postal_code' => '2000',
-                'barangay' => 'Sindalan',
-                'city_municipality' => 'San Fernando City',
-                'region' => 'CENTRAL LUZON',
-            ],
+            $barangays = $area['barangays'];
 
-            // PSGC: 072217000 — 2 accounts
-            [
-                'account_id' => 13,
-                'psgc_code' => '072217000',
-                'unit_lot_block' => 'Lot 7 Block 2',
-                'street_name' => 'Osmena Boulevard',
-                'subdivision_village' => 'Capitol Site',
-                'province' => 'Cebu',
-                'postal_code' => '6000',
-                'barangay' => 'Capitol Site',
-                'city_municipality' => 'Cebu City',
-                'region' => 'CENTRAL VISAYAS',
-            ],
-            [
-                'account_id' => 14,
-                'psgc_code' => '072217000',
-                'unit_lot_block' => 'Unit 4B',
-                'street_name' => 'Fuente Osmena',
-                'subdivision_village' => 'Mango Avenue',
-                'province' => 'Cebu',
-                'postal_code' => '6000',
-                'barangay' => 'Kamputhaw',
-                'city_municipality' => 'Cebu City',
-                'region' => 'CENTRAL VISAYAS',
-            ],
-
-            [
-                'account_id' => 15,
-                'psgc_code' => '042108000',
-                'unit_lot_block' => 'Lot 10 Block 4',
-                'street_name' => 'Governor Drive',
-                'subdivision_village' => 'Dasmarinas Village',
-                'province' => 'Cavite',
-                'postal_code' => '4114',
-                'barangay' => 'Salitran',
-                'city_municipality' => 'Dasmarinas City',
-                'region' => 'CALABARZON',
-            ],
-
-            [
-                'account_id' => 16,
-                'psgc_code' => '042108000',
-                'unit_lot_block' => 'Lot 10 Block 4',
-                'street_name' => 'Governor Drive',
-                'subdivision_village' => 'Dasmarinas Village',
-                'province' => 'Cavite',
-                'postal_code' => '4114',
-                'barangay' => 'Salitran',
-                'city_municipality' => 'Dasmarinas City',
-                'region' => 'CALABARZON',
-            ],
-
-            [
-                'account_id' => 17,
-                'psgc_code' => '138060000',
-                'unit_lot_block' => 'Lot 18 Block 6',
-                'street_name' => 'Sindalan Road',
-                'subdivision_village' => 'Sunrise Village',
-                'province' => 'Pampanga',
-                'postal_code' => '2000',
-                'barangay' => 'Sindalan',
-                'city_municipality' => 'San Fernando City',
-                'region' => 'CENTRAL LUZON',
-            ],
-
-            [
-                'account_id' => 18,
-                'psgc_code' => '138060000',
-                'unit_lot_block' => 'Lot 18 Block 6',
-                'street_name' => 'Sindalan Road',
-                'subdivision_village' => 'Sunrise Village',
-                'province' => 'Pampanga',
-                'postal_code' => '2000',
-                'barangay' => 'Sindalan',
-                'city_municipality' => 'San Fernando City',
-                'region' => 'CENTRAL LUZON',
-            ]
-        ];
-
-        $count = 1;
-        foreach ($addresses as $accountNumber => $address) {
-            CollectionAddress::create([
-                'account_id' => $count,
-                ...$address,
-            ]);
-            $count++;
+            CollectionAddress::updateOrCreate(
+                ['account_id' => $account->id],
+                [
+                    'unit_lot_block' => 'Lot ' . (($account->id % 30) + 1) . ' Block ' . (($account->id % 9) + 1),
+                    'street_name' => $area['street_name'],
+                    'subdivision_village' => $area['subdivision_village'],
+                    'province' => 'Metro Manila',
+                    'postal_code' => $area['postal_code'],
+                    'barangay' => $barangays[$account->id % count($barangays)],
+                    'city_municipality' => $area['city_municipality'],
+                    'region' => 'NCR',
+                ],
+            );
         }
     }
 }

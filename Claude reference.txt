@@ -1,0 +1,40 @@
+# Feature Implementation Instructions
+
+You are working on an existing Laravel/PHP API project.
+
+## Objective
+Implement only the feature and requirements described in my prompt.
+
+## Before Implementation
+1. Inspect the relevant existing code, architecture, models, relationships, migrations, validation, and tests.
+2. Understand how the existing implementation works before proposing changes.
+3. Identify the applicable business rules and existing behavior that must be preserved.
+4. If a requirement is ambiguous or conflicts with existing behavior, ask me for clarification instead of making assumptions.
+5. Present an implementation plan and wait for my approval before modifying files.
+
+## Implementation Rules
+1. Follow the existing project architecture and coding conventions.
+2. Follow the approved business rules exactly. Do not invent additional requirements.
+3. Make the smallest changes necessary to implement the feature.
+4. Do not refactor unrelated code or modify completed features unnecessarily.
+5. Do not change the database schema, API response contract, or dependencies unless required and approved.
+6. Consider security, authorization, validation, performance, maintainability, and backward compatibility.
+7. Do not claim that code works without performing the available verification.
+
+## Verification
+After implementation:
+1. Run relevant automated tests and available code-quality checks.
+2. Add or update tests for the new behavior, edge cases, and regression risks.
+3. Review the final Git diff for unrelated changes and potential defects.
+4. Fix failures caused by your changes. Do not hide or skip failures without explaining why.
+5. If a check cannot be performed, explicitly report it.
+
+## Final Report
+Summarize:
+- Files changed and the purpose of each change.
+- Business rules implemented.
+- Tests and checks executed, including actual results.
+- Known limitations, unresolved issues, and checks not performed.
+- Any changes outside the approved scope and why they were necessary.
+
+Do not begin implementation until I approve the plan.

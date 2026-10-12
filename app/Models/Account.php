@@ -16,43 +16,51 @@ class Account extends Model
         'customer_id',
         'customer_name',
         'monthly_amortization',
+        'last_payment_amount',
         'past_due_balance',
         'days_past_due',
         'dpd_bucket',
         'no_of_non_payments',
         'outstanding_balance',
         'last_payment_date',
+        'payment_status',
         'asset',
+        'psgc_code',
         'is_force_prioritized',
-        'cms_user_id',
-        'assigned_date',
-        'follow_up_date',
-        'created_at'
+        'assigned_cc_id',
+        'assigned_ch_id',
+        'assigned_am_ar_id',
+        'assigned_rm__dh_id',
+        'is_contacted',
+        'due_date',
+        'send_date'
     ];
+
 
     public const DEFAULT_FIELDS = [
         'account_number',
         'customer_id',
         'customer_name',
         'monthly_amortization',
+        'last_payment_amount',
         'past_due_balance',
         'days_past_due',
         'dpd_bucket',
         'no_of_non_payments',
         'outstanding_balance',
         'last_payment_date',
+        'due_date',
+        'payment_status',
         'asset',
         'psgc_code',
+        'is_force_prioritized',
         'assigned_cc_id',
         'assigned_ch_id',
-        'assigned_am_id',
-        'assigned_dh_id',
-        'assigned_date',
-        'follow_up_date',
-        'collecting_address',
-        'email',
-        'social_media_account',
-        'contact_number',
+        'assigned_am_ar_id',
+        'assigned_rm__dh_id',
+        'is_contacted',
+        'due_date',
+        'send_date'
     ];
 
     public function scopeWithDefaultFields(Builder $query): Builder
@@ -63,5 +71,21 @@ class Account extends Model
     public function CmsUser(): BelongsTo
     {
         return $this->belongsTo(CmsUser::class, 'cms_user_id', 'id');
+    }
+
+    public function contactRecordings()
+    {
+        return $this->hasMany(ContactRecording::class, 'account_id');
+    }
+
+    public function todayContactRecording()
+    {
+        return $this->hasOne(ContactRecording::class, 'account_id')
+            ->ofMany([
+                'next_action_date' => 'max',
+            ], function ($query) {
+                $query->where('next_action_date', '>=', today()->startOfDay())
+                    ->where('next_action_date', '<', today()->addDay()->startOfDay());
+            });
     }
 }

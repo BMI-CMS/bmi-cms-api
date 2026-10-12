@@ -28,6 +28,7 @@ return new class extends Migration
                 ->nullable()
                 ->constrained('collections')
                 ->nullOnDelete();
+            $table->string('payment_type', 50)->default('MI');
             $table->string('ar_number', 50)->index();
             $table->dateTime('ar_date');
             $table->decimal('amount', 15, 2)->default(0.00);;

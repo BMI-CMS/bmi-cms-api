@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('account_id')
                 ->constrained('accounts')
                 ->cascadeOnDelete();
+            $table->string('current_category', 70)->nullable();
             $table->string('follow_up_mode', 30);
             $table->string('action_taken', 30);
             $table->string('reason_for_default', 50)->nullable();
@@ -24,7 +25,7 @@ return new class extends Migration
             $table->string('remarks', 255)->nullable();
             $table->string('geotagging', 255)->nullable();
             $table->unsignedBigInteger('recorded_by')->index();
-            $table->dateTime('contact_date');
+            $table->dateTime('contact_date')->nullable()->index();
             $table->dateTime('next_action_date')->nullable()->index();
             $table->softDeletes();
             $table->timestamp('created_at')->index();

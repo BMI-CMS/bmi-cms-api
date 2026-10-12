@@ -4,6 +4,7 @@ namespace App\Helpers;
 
 use App\Constants\Constants;
 use App\Models\Account;
+use Carbon\Carbon;
 
 class AllocateAccountsHelper
 {
@@ -12,15 +13,20 @@ class AllocateAccountsHelper
         $allocatedAccounts = [];
         foreach ($accounts as $account) {
 
-            if ($account['non_starter_payment_id']) {
-                $allocatedAccounts[Constants::PRIORITIZATION][Constants::PROPERTY_FDD_NS][] = $account;
+            if ($account['is_force_prioritized']) {
+                $allocatedAccounts[Constants::PRIORITIZATION][Constants::NEXT_ACTION_PLAN][Constants::PROPERTY_FORCE_PRIORITIZED][] = $account;
                 continue;
             }
 
             if (!$account['next_action_date']) {
 
-                if ($account['is_force_prioritized']) {
-                    $allocatedAccounts[Constants::PRIORITIZATION][Constants::NEXT_ACTION_PLAN][Constants::PROPERTY_FORCE_PRIORITIZED][] = $account;
+                if (!$account['is_contacted'] && Carbon::parse($account['visit_date'])->isLastMonth()) {
+                    $allocatedAccounts[Constants::REGULAR][Constants::PROPERTY_CONTACT_RECORDING][] = $account;
+                    continue;
+                }
+
+                if ($account['payment_status'] === Constants::FIRSTDUEDATE || $account['payment_status'] === Constants::NONSTARTER) {
+                    $allocatedAccounts[Constants::PRIORITIZATION][Constants::PROPERTY_FDD_NS][] = $account;
                     continue;
                 }
 
@@ -84,14 +90,17 @@ class AllocateAccountsHelper
 
     public static function accountsClassificationPSGC(Account $account): ?string
     {
-        if ($account['non_starter_payment_id']) {
-            return Constants::CLASSIFICATION_FDD_NS;
+        if ($account['is_force_prioritized']) {
+            return Constants::CLASSIFICATION_FORCE_PRIORITIZED;
         }
 
         if (!$account['next_action_date']) {
+            if (!$account['is_contacted'] && $account['visit_date']->isLastMonth()) {
+                return Constants::CLASSIFICATION_CONTACT_RECORDING;
+            }
 
-            if ($account['is_force_prioritized']) {
-                return Constants::CLASSIFICATION_FORCE_PRIORITIZED;
+            if ($account['payment_status'] === Constants::FIRSTDUEDATE || $account['payment_status'] === Constants::NONSTARTER) {
+                return Constants::CLASSIFICATION_FDD_NS;
             }
 
             if (

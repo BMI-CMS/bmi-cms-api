@@ -12,34 +12,25 @@ class ForRepossessionSeeder extends Seeder
      * Run the database seeds.
      */
     public function run(): void
-    {
+    {   //approved
         ForRepossession::create([
-            'account_id' => 5,
+            'account_id' => 6,
+            'contact_recording_id' => 6,
             'repossession_request_id' => 1,
             'stockyard' => '1004 MNC AROROY',
             'payment_status' => 'NO PAYMENT',
             'reason_for_unrepossessed' => '',
-            'status_name' => 'Repossessed',
             'status' => true
         ]);
 
-        ForRepossession::create([
-            'account_id' => 6,
-            'repossession_request_id' => 2,
-            'stockyard' => '1004 MNC AROROY',
-            'payment_status' => 'NO PAYMENT',
-            'reason_for_unrepossessed' => '',
-            'status_name' => 'Repossessed',
-            'status' => true
-        ]);
-
+        // //direct plan to for repo
         ForRepossession::create([
             'account_id' => 7,
-            'repossession_request_id' => 3,
-            'stockyard' => '1004 MNC AROROY',
+            'contact_recording_id' => NULL,
+            'repossession_request_id' => NULL,
+            'stockyard' => '1002 MNC AROROY',
             'payment_status' => 'NO PAYMENT',
             'reason_for_unrepossessed' => '',
-            'status_name' => 'Repossessed',
             'status' => true
         ]);
     }

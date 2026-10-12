@@ -14,8 +14,15 @@ class RestructuringSeeder extends Seeder
     public function run(): void
     {
         Restructuring::create([
-            'account_id' => 11,
-            'new_monthly_amortization' => 120000,
+            'account_id' => 5,
+            'contact_recording_id' => 5,
+            'original_balance' => 56300.00,
+            'restructured_balance' => 53000.00,
+            'original_monthly_amortization' => 7100.00,
+            'new_monthly_amortization' => 5200.00,
+            'original_interest_rate' => 16.00,
+            'new_interest_rate' => 12.50,
+            'remarks' => 'Long-term restructuring approved due to prolonged delinquency.',
         ]);
     }
 }

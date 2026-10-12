@@ -16,7 +16,7 @@ class AccountService
             return [
                 'success' => false,
                 'message' => 'Account not found.',
-                'data' => null,
+                'code' => 404,
             ];
         }
 
@@ -26,9 +26,6 @@ class AccountService
 
         return [
             'success' => true,
-            'message' => true
-                ? 'Account has been force prioritized successfully.'
-                : 'Account force priority has been removed successfully.',
             'data' => [
                 'id' => $account->id,
                 'account_number' => $account->account_number,

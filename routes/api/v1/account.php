@@ -5,6 +5,6 @@ use App\Http\Controllers\Api\V1\AccountController;
 
 Route::prefix('account')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
-        Route::patch('/force-prioritized', [AccountController::class, 'updateForcePriority']);
+        Route::patch('/force-prioritized', [AccountController::class, 'markAsForcePrioritized']);
     });
 });

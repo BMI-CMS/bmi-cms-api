@@ -16,13 +16,17 @@ return new class extends Migration
             $table->foreignId('account_id')
                 ->constrained('accounts')
                 ->cascadeOnDelete();
+            $table->foreignId('contact_recording_id')
+                ->nullable()
+                ->constrained('contact_recordings')
+                ->cascadeOnDelete();
             $table->foreignId('repossession_request_id')
+                ->nullable()
                 ->constrained('repossession_requests')
                 ->cascadeOnDelete();
             $table->string('stockyard', 50)->nullable();
             $table->string('payment_status', 20)->nullable();
             $table->string('reason_for_unrepossessed', 50)->nullable();
-            $table->string('status_name', 20);
             $table->boolean('status')->default(false);
             $table->softDeletes();
             $table->timestamp('created_at')->index();
