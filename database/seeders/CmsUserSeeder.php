@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\CMSUser;
+use App\Models\CmsUser;
 
 class CmsUserSeeder extends Seeder
 {
@@ -34,7 +34,7 @@ class CmsUserSeeder extends Seeder
         ];
 
         foreach ($users as $user) {
-            CMSUser::create([
+            CmsUser::create([
                 'name' => $user['name'],
                 'role_id' => $user['role_id'],
                 'company_id' => $user['company'],
