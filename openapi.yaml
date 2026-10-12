@@ -1,0 +1,1016 @@
+openapi: 3.0.3
+info:
+  title: Mobile CMS API (bmi-cms-api)
+  version: 1.0.0
+  description: |
+    REST API for the Mobile Collection Management System, used by field personnel
+    (Credit Counselors, Remedial Specialists, Cluster Heads).
+
+    This file documents the **current implemented behavior** (derived from routes, form requests and
+    service code). It does not define or approve business rules.
+
+    ## Authentication
+    * Every endpoint requires the `BMI_CMS_KEY` header (`ApiKey`). Missing/invalid -> `401 {"message":"Invalid API key."}`.
+    * Endpoints marked with a lock also require a Sanctum bearer token obtained from `POST /login`
+      (`BearerAuth`).
+
+    ## Implementation notes (observations, not changes)
+    * **Demo data:** `Collections`, `Customers` and `First Encounter` endpoints currently return hard-coded
+      demo data from their services. They are protected by the API key only (no `auth:sanctum`),
+      and their POST/PUT bodies are not validated by Form Requests.
+    * `RepossessionController` exists but has **no registered routes**, so it is not documented as an endpoint.
+    * Plural/singular route aliases (`/collections` & `/collection`, `/customers` & `/customer`) are identical;
+      only the plural form is documented.
+    * Dashboard endpoints take `user_id` from the client; only the `team-*` endpoints and
+      `PATCH /account/force-prioritized` check the caller's level (2, 3, 4).
+    * `team-assigned-accounts-psgc` returns hard-coded counts for `repossession_request` (5),
+      `fec_approval` (3) and `collections` (5).
+    * Classification output depends on the `account_classifications` / rules tables. If they are
+      missing or invalid, dashboard visit-plan endpoints return `500` with a fixed message.
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local development
+  - url: '{scheme}://{host}/api/v1'
+    description: Custom host
+    variables:
+      scheme:
+        default: https
+        enum: [http, https]
+      host:
+        default: example.com
+tags:
+  - name: Auth
+  - name: User
+  - name: Account
+  - name: Dashboard
+  - name: Collections
+    description: Demo data - not backed by the database yet.
+  - name: Customers
+    description: Demo data - not backed by the database yet.
+  - name: First Encounter
+    description: Demo data - not backed by the database yet.
+security:
+  - ApiKey: []
+paths:
+  /login:
+    post:
+      tags: [Auth]
+      summary: Log in and obtain a Sanctum token
+      description: |
+        Validates credentials and that `phone_imei` matches the user's registered device.
+        All previously issued tokens of the user are revoked.
+      security:
+        - ApiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Authenticated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: Authenticated successfully. }
+                  data: { $ref: '#/components/schemas/LoginData' }
+        '401':
+          description: Invalid API key, or invalid credentials (`Invalid credentials.`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Message' }
+        '403':
+          description: Device not recognized.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Message' }
+              example: { message: Device not recognized. Please use your registered device. }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /logout:
+    post:
+      tags: [Auth]
+      summary: Revoke the current token
+      security:
+        - ApiKey: []
+          BearerAuth: []
+      responses:
+        '200':
+          description: Logged out.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Message' }
+              example: { message: Logged out successfully }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /me:
+    get:
+      tags: [Auth]
+      summary: Current user's CMS profile
+      description: Returns the `CmsUser` model directly (no `message`/`data` wrapper).
+      security:
+        - ApiKey: []
+          BearerAuth: []
+      responses:
+        '200':
+          description: CMS user record.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /user/attestation:
+    post:
+      tags: [User]
+      summary: Record the user's attestation
+      description: |
+        Stores an attestation event. If `is_attested` is `false`, the current access token is deleted.
+        Throttled to 60 requests per minute.
+      security:
+        - ApiKey: []
+          BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [is_attested]
+              properties:
+                is_attested: { type: boolean }
+      responses:
+        '200':
+          description: Attestation recorded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, enum: [Attestation Accepted., Attestation Declined.] }
+                  data: { type: boolean, description: Echo of `is_attested`. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+  /account/force-prioritized:
+    patch:
+      tags: [Account]
+      summary: Mark an account as force prioritized
+      description: Allowed only for users whose `level` is 2, 3 or 4 (otherwise `403`).
+      security:
+        - ApiKey: []
+          BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [account_id, account_number]
+              properties:
+                account_id: { type: integer, minimum: 1 }
+                account_number: { type: string, maxLength: 15 }
+      responses:
+        '200':
+          description: Account updated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: Account marked as force prioritized successfully. }
+                  data:
+                    type: object
+                    properties:
+                      id: { type: integer }
+                      account_number: { type: string }
+                      is_force_prioritized: { type: boolean, example: true }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: Account not found for the given id + account number.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Message' }
+              example: { message: Account not found. }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /dashboard:
+    get:
+      tags: [Dashboard]
+      summary: Account performance and collection target summary
+      security:
+        - ApiKey: []
+          BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Dashboard summary.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: Dashboard summary retrieved successfully. }
+                  data:
+                    type: object
+                    properties:
+                      account_performance:
+                        type: object
+                        properties:
+                          total_accounts: { type: integer }
+                          paid: { type: integer }
+                          repossessed: { type: integer }
+                          restructured: { type: integer }
+                      collection_target:
+                        type: object
+                        properties:
+                          target_due: { type: number }
+                          paid: { type: number }
+                          repossessed: { type: number }
+                          restructured: { type: number }
+                      accounts: { type: integer }
+                      fec_accounts: { type: integer }
+                      collections: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /dashboard/assigned-accounts:
+    get:
+      tags: [Dashboard]
+      summary: Visit Plan of a user, classified by the rules table
+      description: |
+        Accounts are grouped by classification. The grouping keys come from each classification's
+        `response_path` (e.g. `prioritization.*`, `regular.np_1`), so the exact tree depends on configured
+        rules. `visited` lists accounts already visited in the period.
+      security:
+        - ApiKey: []
+          BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/Period'
+      responses:
+        '200':
+          description: Classified Visit Plan.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: Dashboard summary retrieved successfully. }
+                  data: { $ref: '#/components/schemas/ClassifiedAccounts' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '500': { $ref: '#/components/responses/ClassificationRulesError' }
+  /dashboard/assigned-accounts-psgc:
+    get:
+      tags: [Dashboard]
+      summary: Monthly Visit Plan of a user grouped by PSGC / city
+      description: |
+        Keys are `"<psgc_code> - <city_municipality>"`. Each account carries `account_classification`
+        (label, or `null` when no rule matches - the account is kept, not dropped).
+      security:
+        - ApiKey: []
+          BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: Accounts grouped by PSGC.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: Dashboard summary retrieved successfully. }
+                  data:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items: { $ref: '#/components/schemas/ClassifiedAccount' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '500': { $ref: '#/components/responses/ClassificationRulesError' }
+  /dashboard/team-assigned-accounts:
+    get:
+      tags: [Dashboard]
+      summary: Team Visit Plan (paginated by credit counselor)
+      description: |
+        Restricted to users with level 2, 3 or 4. Pagination is per credit counselor, so each entry
+        carries all of its accounts. `repossession_request`, `fec_approval` and `collections` are
+        currently hard-coded values.
+      security:
+        - ApiKey: []
+          BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/PsgcCode'
+        - $ref: '#/components/parameters/Period'
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: per_page
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 50, default: 15 }
+      responses:
+        '200':
+          description: Team Visit Plan.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: Dashboard summary retrieved successfully. }
+                  data:
+                    type: object
+                    properties:
+                      repossession_request: { type: integer, example: 5 }
+                      visit_plan:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            credit_counselor_name: { type: string }
+                            total_accounts: { type: integer }
+                            accounts: { $ref: '#/components/schemas/ClassifiedAccounts' }
+                      fec_approval: { type: integer, example: 3 }
+                      collections: { type: integer, example: 5 }
+                      pagination:
+                        type: object
+                        properties:
+                          current_page: { type: integer }
+                          per_page: { type: integer }
+                          total: { type: integer }
+                          last_page: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '500': { $ref: '#/components/responses/ClassificationRulesError' }
+  /dashboard/team-assigned-accounts-psgc:
+    get:
+      tags: [Dashboard]
+      summary: Team accounts grouped by PSGC / city and credit counselor
+      description: Restricted to users with level 2, 3 or 4. Counselors with no classified accounts are omitted.
+      security:
+        - ApiKey: []
+          BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/PsgcCode'
+        - $ref: '#/components/parameters/Period'
+      responses:
+        '200':
+          description: Team accounts by PSGC.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: Dashboard summary retrieved successfully. }
+                  data:
+                    type: object
+                    properties:
+                      repossession_request: { type: integer, example: 5 }
+                      visit_plan:
+                        type: object
+                        description: Keyed by `"<psgc_code> - <city_municipality>"`.
+                        additionalProperties:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              credit_counselor_name: { type: string }
+                              total_accounts: { type: integer }
+                              accounts:
+                                type: array
+                                items: { $ref: '#/components/schemas/ClassifiedAccount' }
+                      fec_approval: { type: integer, example: 3 }
+                      collections: { type: integer, example: 5 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /collections:
+    get:
+      tags: [Collections]
+      summary: List collection accounts (demo data)
+      parameters:
+        - name: status
+          in: query
+          description: Case-insensitive match on `collection_status`.
+          schema: { type: string, example: Pending Visit }
+        - name: dpd_bucket
+          in: query
+          description: Case-insensitive match on `dpd_bucket`.
+          schema: { type: string, example: 30-59 days }
+        - name: search
+          in: query
+          description: Matches customer name, account number or asset.
+          schema: { type: string }
+      responses:
+        '200':
+          description: Collection list.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: Collection accounts retrieved successfully. }
+                  data:
+                    type: object
+                    properties:
+                      total_count: { type: integer }
+                      summary:
+                        type: object
+                        properties:
+                          total_past_due: { type: number }
+                          total_outstanding: { type: number }
+                          pending_visits: { type: integer }
+                          critical_accounts: { type: integer }
+                      items:
+                        type: array
+                        items: { $ref: '#/components/schemas/CollectionItem' }
+        '401': { $ref: '#/components/responses/ApiKeyInvalid' }
+  /collections/{id}:
+    get:
+      tags: [Collections]
+      summary: Collection case details (demo data)
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Collection detail. Shape is the demo payload (asset_details, address, loan_summary, collection_info, recent_history).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: Collection account details retrieved successfully. }
+                  data: { type: object, additionalProperties: true }
+        '401': { $ref: '#/components/responses/ApiKeyInvalid' }
+  /collections/{id}/action:
+    post:
+      tags: [Collections]
+      summary: Record a collection action / field visit (demo)
+      description: Body is not validated; the listed fields are echoed back with defaults when omitted.
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action_type: { type: string }
+                follow_up_mode: { type: string }
+                reason_for_default: { type: string }
+                next_action_plan: { type: string }
+                remarks: { type: string }
+                latitude: { type: number }
+                longitude: { type: number }
+      responses:
+        '201':
+          description: Action recorded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: Collection action recorded successfully. }
+                  data:
+                    type: object
+                    properties:
+                      action_id: { type: integer }
+                      collection_id: { type: integer }
+                      account_number: { type: string }
+                      action_taken_type: { type: string }
+                      follow_up_mode: { type: string }
+                      reason_for_default: { type: string }
+                      next_action_plan: { type: string }
+                      remarks: { type: string }
+                      geo_location:
+                        type: object
+                        properties:
+                          latitude: { type: number }
+                          longitude: { type: number }
+                          captured_at: { type: string, format: date-time }
+                      recorded_by: { type: string }
+                      recorded_at: { type: string, format: date-time }
+                      sync_status: { type: string, example: Synced }
+        '401': { $ref: '#/components/responses/ApiKeyInvalid' }
+  /collections/{id}/receipt:
+    post:
+      tags: [Collections]
+      summary: Record a field payment receipt (demo)
+      description: Body is not validated. Recording only; no payment posting.
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount_paid: { type: number, example: 3850.00 }
+                or_number: { type: string }
+                payment_method: { type: string, example: Cash }
+                payment_date: { type: string, format: date }
+      responses:
+        '201':
+          description: Receipt recorded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: Payment receipt recorded successfully. }
+                  data:
+                    type: object
+                    properties:
+                      receipt_id: { type: integer }
+                      collection_id: { type: integer }
+                      account_number: { type: string }
+                      or_number: { type: string }
+                      amount_paid: { type: number }
+                      payment_method: { type: string }
+                      payment_date: { type: string, format: date }
+                      acknowledgement_code: { type: string }
+                      issued_by: { type: string }
+                      status: { type: string, example: Verified }
+                      created_at: { type: string, format: date-time }
+        '401': { $ref: '#/components/responses/ApiKeyInvalid' }
+  /customers/{id}:
+    get:
+      tags: [Customers]
+      summary: Customer profile (demo data)
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Customer profile (personal_info, contact_info, residence_info, employment_info, co_maker_info, account_status).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: Customer details retrieved successfully. }
+                  data: { type: object, additionalProperties: true }
+        '401': { $ref: '#/components/responses/ApiKeyInvalid' }
+  /customers/{id}/contact:
+    put:
+      tags: [Customers]
+      summary: Update customer contact / social media info (demo)
+      description: Body is not validated and nothing is persisted yet; supplied fields are echoed back.
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contact_number: { type: string }
+                secondary_contact: { type: string }
+                email: { type: string }
+                social_media_account: { type: string }
+                notes: { type: string }
+      responses:
+        '200':
+          description: Contact info echoed back.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: Customer contact information updated successfully. }
+                  data:
+                    type: object
+                    properties:
+                      customer_id: { type: integer }
+                      contact_number: { type: string }
+                      secondary_contact: { type: string }
+                      email: { type: string }
+                      social_media_account: { type: string }
+                      notes: { type: string }
+                      updated_by: { type: string }
+                      updated_at: { type: string, format: date-time }
+        '401': { $ref: '#/components/responses/ApiKeyInvalid' }
+  /customers/{id}/financial-profile:
+    get:
+      tags: [Customers]
+      summary: Customer loan and balance profile (demo data)
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Financial profile (loan_details, balance_breakdown, payment_status, last_payment).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: Customer financial profile retrieved successfully. }
+                  data: { type: object, additionalProperties: true }
+        '401': { $ref: '#/components/responses/ApiKeyInvalid' }
+  /customers/{id}/history:
+    get:
+      tags: [Customers]
+      summary: Customer interaction history (demo data)
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Interaction timeline.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: Customer interaction history retrieved successfully. }
+                  data:
+                    type: object
+                    properties:
+                      customer_id: { type: integer }
+                      total_interactions: { type: integer }
+                      timeline:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id: { type: integer }
+                            type: { type: string, example: Field Visit }
+                            date: { type: string, example: '2026-09-28 14:30:00' }
+                            collector: { type: string }
+                            action: { type: string }
+                            notes: { type: string }
+                            status: { type: string }
+        '401': { $ref: '#/components/responses/ApiKeyInvalid' }
+  /first-encounter:
+    get:
+      tags: [First Encounter]
+      summary: List First Encounter Checklist accounts (demo data)
+      parameters:
+        - name: status
+          in: query
+          description: Case-insensitive match on `form_status`.
+          schema: { type: string, example: Pending Visit }
+      responses:
+        '200':
+          description: FEC list.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: First Encounter accounts retrieved successfully. }
+                  data:
+                    type: object
+                    properties:
+                      total_fec_accounts: { type: integer }
+                      summary:
+                        type: object
+                        properties:
+                          pending_visits: { type: integer }
+                          in_progress: { type: integer }
+                          with_adverse_findings: { type: integer }
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            fec_account_id: { type: integer }
+                            account_number: { type: string }
+                            customer_name: { type: string }
+                            contact_number: { type: string }
+                            asset: { type: string }
+                            plate_number: { type: string }
+                            address: { type: string }
+                            monthly_amortization: { type: number }
+                            past_due_balance: { type: number }
+                            days_past_due: { type: integer }
+                            form_status: { type: string, example: Pending Visit }
+                            is_force_prioritized: { type: boolean }
+                            is_adverse_finding: { type: boolean }
+                            visit_due_date: { type: string, format: date }
+                            assigned_date: { type: string, format: date }
+        '401': { $ref: '#/components/responses/ApiKeyInvalid' }
+  /first-encounter/{id}:
+    get:
+      tags: [First Encounter]
+      summary: FEC account details and checklist template (demo data)
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: FEC detail (asset, address, form_status, checklist_template.table_a / table_b).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: First Encounter account details retrieved successfully. }
+                  data: { type: object, additionalProperties: true }
+        '401': { $ref: '#/components/responses/ApiKeyInvalid' }
+  /first-encounter/{id}/evaluation:
+    post:
+      tags: [First Encounter]
+      summary: Submit the FEC evaluation checklist (demo)
+      description: Body is not validated; supplied fields are echoed back with defaults when omitted.
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                is_adverse_finding: { type: boolean }
+                unit_condition: { type: string }
+                odometer_reading: { type: integer }
+                neighborhood_feedback: { type: string }
+                risk_level: { type: string }
+                remarks: { type: string }
+                latitude: { type: number }
+                longitude: { type: number }
+      responses:
+        '201':
+          description: Evaluation submitted.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: First Encounter evaluation submitted successfully. }
+                  data:
+                    type: object
+                    properties:
+                      evaluation_id: { type: integer }
+                      fec_account_id: { type: integer }
+                      account_number: { type: string }
+                      submission_status: { type: string, example: Submitted for Verification }
+                      is_adverse_finding: { type: boolean }
+                      table_a_summary:
+                        type: object
+                        properties:
+                          residence_verified: { type: boolean }
+                          unit_inspected: { type: boolean }
+                          unit_condition: { type: string }
+                          odometer_reading: { type: integer }
+                      table_b_summary:
+                        type: object
+                        properties:
+                          neighborhood_feedback: { type: string }
+                          risk_level: { type: string }
+                      remarks: { type: string }
+                      geo_location:
+                        type: object
+                        properties:
+                          latitude: { type: number }
+                          longitude: { type: number }
+                      evaluated_by: { type: string }
+                      submitted_at: { type: string, format: date-time }
+        '401': { $ref: '#/components/responses/ApiKeyInvalid' }
+  /first-encounter/{id}/visit:
+    post:
+      tags: [First Encounter]
+      summary: Log a FEC visit attempt (demo)
+      description: Body is not validated. Attempt-count and reassignment rules are not implemented here.
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                is_customer_available: { type: boolean }
+                next_visit_date: { type: string, format: date }
+                remarks: { type: string }
+      responses:
+        '201':
+          description: Visit attempt logged.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: First Encounter visit attempt logged successfully. }
+                  data:
+                    type: object
+                    properties:
+                      visit_id: { type: integer }
+                      fec_account_id: { type: integer }
+                      is_customer_available: { type: boolean }
+                      next_visit_date: { type: string, format: date }
+                      remarks: { type: string }
+                      logged_by: { type: string }
+                      recorded_at: { type: string, format: date-time }
+        '401': { $ref: '#/components/responses/ApiKeyInvalid' }
+components:
+  securitySchemes:
+    ApiKey:
+      type: apiKey
+      in: header
+      name: BMI_CMS_KEY
+      description: Static API key checked by `ApiKeyMiddleware` on all `/api/v1` routes.
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: Laravel Sanctum token from `POST /login`.
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer }
+    UserId:
+      name: user_id
+      in: query
+      required: true
+      schema: { type: integer, minimum: 1 }
+    PsgcCode:
+      name: psgc_code
+      in: query
+      required: true
+      schema: { type: string, maxLength: 10 }
+    Period:
+      name: period
+      in: query
+      required: true
+      schema: { type: string, enum: [daily, monthly] }
+  responses:
+    ApiKeyInvalid:
+      description: Missing or invalid `BMI_CMS_KEY`.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Message' }
+          example: { message: Invalid API key. }
+    Unauthorized:
+      description: Invalid API key (`Invalid API key.`) or missing/invalid bearer token (`Unauthenticated.`).
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Message' }
+          example: { message: Unauthenticated. }
+    Forbidden:
+      description: Caller's level is not allowed (only levels 2, 3, 4).
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Message' }
+          example: { message: This action is unauthorized. }
+    ValidationError:
+      description: Validation failed (Laravel standard format).
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message: { type: string, example: The user id field is required. }
+              errors:
+                type: object
+                additionalProperties:
+                  type: array
+                  items: { type: string }
+    TooManyRequests:
+      description: Throttle limit (60/min) exceeded.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Message' }
+    ClassificationRulesError:
+      description: Classification rules are missing or invalid.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Message' }
+          example: { message: Account classification rules are not configured correctly. }
+  schemas:
+    Message:
+      type: object
+      properties:
+        message: { type: string }
+    LoginRequest:
+      type: object
+      required: [username, password, phone_imei]
+      properties:
+        username: { type: string }
+        password: { type: string, format: password }
+        phone_imei:
+          type: string
+          pattern: '^[0-9]{15}$'
+          description: Exactly 15 digits; must match the registered device.
+    LoginData:
+      type: object
+      properties:
+        token: { type: string, description: Sanctum plain-text token. }
+        id: { type: integer }
+        name: { type: string }
+        role_id: { type: integer }
+        role: { type: string }
+        company_id: { type: integer }
+        company_name: { type: string }
+        level: { type: integer }
+        psgc_code: { type: string }
+    ActivityRecord:
+      type: object
+      properties:
+        current_category: { type: string, nullable: true }
+        follow_up_mode: { type: string, nullable: true }
+        reason_for_default: { type: string, nullable: true }
+        action_taken: { type: string, nullable: true }
+        next_action_plan: { type: string, nullable: true }
+        remarks: { type: string, nullable: true }
+        geotagging: { type: string, nullable: true }
+        recorded_by: { type: string, nullable: true }
+        contact_date: { type: string, nullable: true }
+    Account:
+      type: object
+      properties:
+        accounts_id: { type: integer }
+        account_number: { type: string }
+        customer_name: { type: string }
+        monthly_amortization: { type: number }
+        past_due_balance: { type: number }
+        days_past_due: { type: integer }
+        dpd_bucket: { type: string }
+        no_of_non_payments: { type: string, example: LAST PAID 1 MONTH AGO }
+        outstanding_balance: { type: number }
+        last_payment_date: { type: string, nullable: true }
+        asset: { type: string }
+        payment_status: { type: string }
+        is_force_prioritized: { type: boolean }
+        psgc_code: { type: string }
+        is_contacted: { type: boolean }
+        visit_date: { type: string, nullable: true }
+        assigned_cc_id: { type: integer, nullable: true }
+        assigned_ch_id: { type: integer, nullable: true }
+        assigned_am_id: { type: integer, nullable: true }
+        assigned_dh_id: { type: integer, nullable: true }
+        unit_lot_block: { type: string, nullable: true }
+        street_name: { type: string, nullable: true }
+        subdivision_village: { type: string, nullable: true }
+        province: { type: string, nullable: true }
+        postal_code: { type: string, nullable: true }
+        barangay: { type: string, nullable: true }
+        city_municipality: { type: string, nullable: true }
+        region: { type: string, nullable: true }
+        contact_number: { type: string, nullable: true }
+        email: { type: string, nullable: true }
+        social_media_account: { type: string, nullable: true }
+        next_action_date: { type: string, nullable: true }
+        next_action_plan: { type: string, nullable: true }
+        activity_records:
+          type: array
+          items: { $ref: '#/components/schemas/ActivityRecord' }
+    ClassifiedAccount:
+      allOf:
+        - $ref: '#/components/schemas/Account'
+        - type: object
+          properties:
+            account_classification:
+              type: string
+              nullable: true
+              description: Classification label from the rules table, or null when no rule matches.
+              example: Priority 1 Accounts
+    ClassifiedAccounts:
+      type: object
+      description: |
+        Nested tree of account arrays. Branches come from each classification's `response_path`
+        (e.g. `prioritization.force_prioritized`, `regular.np_1`); leaves are arrays of accounts.
+        `visited` is always present.
+      additionalProperties: true
+      properties:
+        visited:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+    CollectionItem:
+      type: object
+      properties:
+        id: { type: integer }
+        account_id: { type: integer }
+        account_number: { type: string }
+        customer_name: { type: string }
+        contact_number: { type: string }
+        asset: { type: string }
+        plate_number: { type: string }
+        address:
+          type: object
+          properties:
+            street: { type: string }
+            barangay: { type: string }
+            city: { type: string }
+            province: { type: string }
+            psgc_code: { type: string }
+            latitude: { type: number }
+            longitude: { type: number }
+        monthly_amortization: { type: number }
+        past_due_balance: { type: number }
+        outstanding_balance: { type: number }
+        days_past_due: { type: integer }
+        dpd_bucket: { type: string }
+        no_of_non_payments: { type: integer }
+        last_payment_date: { type: string, format: date }
+        due_date: { type: string, format: date }
+        payment_status: { type: string }
+        collection_status: { type: string }
+        priority: { type: string }
+        is_force_prioritized: { type: boolean }
+        assigned_collector: { type: string }
