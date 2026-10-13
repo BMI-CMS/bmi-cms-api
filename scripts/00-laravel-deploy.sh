@@ -43,4 +43,10 @@ if [ "$RUN_USER_SYNC" = "true" ]; then
     php artisan db:seed --class=SyncUsersSeeder --force
 fi
 
+# Re-seed the accounts and their contact information when RUN_ACCOUNT_SYNC is true
+if [ "$RUN_ACCOUNT_SYNC" = "true" ]; then
+    echo "Syncing accounts and contact information..."
+    php artisan db:seed --class=SyncAccountsSeeder --force
+fi
+
 echo "=== Laravel Deploy Script Completed Successfully ==="

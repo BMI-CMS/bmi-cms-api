@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             CmsUserSeeder::class,
             AccountClassificationRuleSeeder::class,
             AccountSeeder::class,
+            ContactInformationSeeder::class,
             UserSeeder::class,
             ContactRecordingSeeder::class,
             //  RepossessionRequestSeeder::class,

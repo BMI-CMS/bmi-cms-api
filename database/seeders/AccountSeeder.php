@@ -182,6 +182,17 @@ class AccountSeeder extends Seeder
     }
 
     /**
+     * Seeded from the account number so reruns produce the same name for the same account.
+     */
+    private function fakeCustomerName(string $accountNumber): string
+    {
+        $faker = fake('en_PH');
+        $faker->seed((int) $accountNumber);
+
+        return $faker->firstName() . ' ' . $faker->lastName();
+    }
+
+    /**
      * "UPDATED" = 0, "LAST PAID 1 MONTH AGO" = 1, "LAST PAID 3 MONTHS AGO" = 3, ...
      * Only used to fill the balance/date filler columns.
      */
@@ -209,7 +220,7 @@ class AccountSeeder extends Seeder
         return [
             'account_number' => $accountNumber,
             'customer_id' => 130000000 + $index,
-            'customer_name' => $customerName,
+            'customer_name' => $this->fakeCustomerName($accountNumber),
             'monthly_amortization' => self::MONTHLY_AMORTIZATION,
             'last_payment_amount' => self::MONTHLY_AMORTIZATION,
             'past_due_balance' => self::MONTHLY_AMORTIZATION * $monthsUnpaid,
