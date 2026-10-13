@@ -26,6 +26,7 @@ class User extends Authenticatable
         'name',
         'user_level',
         'phone_imei',
+        'cms_user_id',
     ];
 
     /**

@@ -37,4 +37,10 @@ if [ "$RESET_USER_PASSWORDS" = "true" ]; then
     php artisan db:seed --class=ResetUserPasswordsSeeder --force
 fi
 
+# Add users from CmsUserSeeder and UserSeeder that do not exist yet when RUN_USER_SYNC is true
+if [ "$RUN_USER_SYNC" = "true" ]; then
+    echo "Syncing missing users..."
+    php artisan db:seed --class=SyncUsersSeeder --force
+fi
+
 echo "=== Laravel Deploy Script Completed Successfully ==="
