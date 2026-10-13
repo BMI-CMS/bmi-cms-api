@@ -111,6 +111,21 @@ class SyncUsersSeederTest extends TestCase
         $this->assertSame(1, User::withTrashed()->where('username', 'shaw')->count());
     }
 
+    public function test_synced_user_can_log_in_with_seeded_password(): void
+    {
+        $this->seedReferenceData();
+        $this->seed(SyncUsersSeeder::class);
+
+        $response = $this->withHeaders(['x-api-key' => config('services.api.key')])
+            ->postJson('/api/v1/login', [
+                'username' => 'eddiediaz',
+                'password' => 'Pass@123',
+                'phone_imei' => '22a617969c4cc223',
+            ]);
+
+        $response->assertOk();
+    }
+
     public function test_sync_aborts_when_companies_or_roles_are_missing(): void
     {
         $this->expectException(RuntimeException::class);
