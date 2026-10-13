@@ -24,10 +24,27 @@ services:
         value: stderr
       - key: DB_CONNECTION
         value: pgsql
-      - key: DATABASE_URL
+      # Render PostgreSQL connection, read by the 'pgsql' connection in config/database.php.
+      - key: DB_HOST
         fromDatabase:
-          name: bmi-cms-db
-          property: connectionString
+          name: mobile-cms-api-database
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: mobile-cms-api-database
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: mobile-cms-api-database
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: mobile-cms-api-database
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: mobile-cms-api-database
+          property: password
       - key: SESSION_DRIVER
         value: database
       - key: CACHE_STORE
@@ -36,8 +53,10 @@ services:
         value: sync
 
 databases:
-  - name: bmi-cms-db
-    databaseName: bmi_cms_db
-    user: bmi_user
+  # Existing Render PostgreSQL instance (service ID dpg-db690s2jnfac73csrfcg-a).
+  # The name must match the dashboard name, otherwise a Blueprint sync creates a new database.
+  - name: mobile-cms-api-database
+    databaseName: mobile_cms_api
+    user: mobile_cms_api_user
     plan: free
     postgresMajorVersion: "16"

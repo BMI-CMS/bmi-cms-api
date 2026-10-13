@@ -109,6 +109,22 @@ Other tests (pre-existing, unrelated to Visit Plan):
 
 Open business rules: see `docs/general-business-rules.md` section 9.
 
+## Deployment (Render)
+
+### Database environments (2026-10-12)
+
+| Environment | Connection (`DB_CONNECTION`) | Settings source |
+|---|---|---|
+| Local development | `mysql` | local `.env` `DB_*` (unchanged) |
+| Render web service | `pgsql` (Render PostgreSQL) | Render env vars `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`, optional `DB_URL`, `DB_SSLMODE` (default `prefer`) |
+| Future option (inactive) | Neon PostgreSQL | commented-out `neon` block in `config/database.php`, commented `NEON_DB_*` in `.env` |
+
+- **Fixed (2026-10-12):** Render requests failed with `connection to server at "127.0.0.1", port 5432 failed` (database `laravel`, user `root`). The `pgsql` connection read only `NEON_DB_*` variables, which Render does not set, so Laravel used the fallback values. `pgsql` now reads the standard `DB_*` variables; the Neon settings are kept as a commented block.
+- `scripts/00-laravel-deploy.sh` no longer runs migrations on every start. They run only when `RUN_MIGRATIONS=true` (same pattern as `RUN_SEEDERS`).
+- **To do:** the Render database is empty. Until migrations run once (with approval: set `RUN_MIGRATIONS=true`, redeploy, set it back), routes using database sessions or cache fail with "relation does not exist".
+- **Done (2026-10-12):** `render.yaml` now references the existing database `mobile-cms-api-database` (`mobile_cms_api`, user `mobile_cms_api_user`) and links `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` to it with `fromDatabase`. The unused `DATABASE_URL` entry was removed from the Blueprint; delete it in the dashboard too. `postgresMajorVersion: "16"` was not changed — confirm it matches the instance.
+- Not verified: application behaviour on PostgreSQL (tests run on MySQL only). Raw SQL reviewed (aggregates, `ROW_NUMBER()`) is portable.
+
 ## API documentation
 
 - `docs/openapi.yaml` (OpenAPI 3.0.3) documents all 29 routed `/api/v1` endpoints (21 operations; singular/plural aliases of collection and customer routes are documented once). Validated with `@redocly/cli lint` (valid; only `operationId` warnings). Collections, Customers and First Encounter are demo-data endpoints, and `RepossessionController` has no routes.
