@@ -20,8 +20,16 @@ use PHPUnit\Framework\Attributes\DataProvider;
 class SettingServiceTest extends VisitPlanTestCase
 {
     private const FOR_REPO_BUCKETS = [
-        'DPD 91-120', 'DPD 121-150', 'DPD 151-180', 'DPD 181-210', 'DPD 211-240',
-        'DPD 241-270', 'DPD 271-300', 'DPD 301-330', 'DPD 331-360', 'DPD MORE THAN 360',
+        'DPD 91-120',
+        'DPD 121-150',
+        'DPD 151-180',
+        'DPD 181-210',
+        'DPD 211-240',
+        'DPD 241-270',
+        'DPD 271-300',
+        'DPD 301-330',
+        'DPD 331-360',
+        'DPD MORE THAN 360',
     ];
 
     private const BELOW_REPO_BUCKETS = ['DPD 0', 'DPD 1-30', 'DPD 31-60', 'DPD 61-90'];
@@ -55,7 +63,7 @@ class SettingServiceTest extends VisitPlanTestCase
         $this->assertSame(11, AccountClassificationRule::count(), 'Re-seeding does not duplicate.');
         $this->assertSame(
             [],
-            AccountClassificationRule::all()->filter(fn ($rule) => str_contains(json_encode($rule->conditions), '"np"'))->pluck('classification')->all(),
+            AccountClassificationRule::all()->filter(fn($rule) => str_contains(json_encode($rule->conditions), '"np"'))->pluck('classification')->all(),
             'The seeded rules classify by DPD bucket and do not use NP.',
         );
         $this->assertSame('For Repossession', $this->classify($this->account(['dpd_bucket' => 'DPD 91-120'])));
@@ -168,7 +176,9 @@ class SettingServiceTest extends VisitPlanTestCase
     public function test_fdd_and_non_starter_accounts_are_never_for_repossession(string $status, string $bucket): void
     {
         $this->assertSame('FDD/NS', $this->classify($this->account([
-            'payment_status' => $status, 'dpd_bucket' => $bucket, 'no_of_non_payments' => self::NP[6],
+            'payment_status' => $status,
+            'dpd_bucket' => $bucket,
+            'no_of_non_payments' => self::NP[6],
         ])));
     }
 
@@ -184,7 +194,9 @@ class SettingServiceTest extends VisitPlanTestCase
         foreach (['FIRST DUE DATE', 'NON-STARTER'] as $status) {
             foreach (['DPD 1-30', 'DPD 91-120', 'DPD MORE THAN 360'] as $bucket) {
                 $this->assertSame('Forced Prioritized', $this->classify($this->account([
-                    'payment_status' => $status, 'dpd_bucket' => $bucket, 'is_force_prioritized' => true,
+                    'payment_status' => $status,
+                    'dpd_bucket' => $bucket,
+                    'is_force_prioritized' => true,
                 ])), "{$status} {$bucket}");
             }
         }
@@ -232,8 +244,10 @@ class SettingServiceTest extends VisitPlanTestCase
         foreach (['DPD 1-30 Days', 'NP0', 'NP1', 'Priority 1 Accounts', 'FDD/NS', 'For Repossession'] as $category) {
             // A paying account whose data would give another classification: the recorded category wins.
             $this->assertSame($category, $this->classify($this->account([
-                'dpd_bucket' => 'DPD 31-60', 'no_of_non_payments' => self::NP[1],
-                'next_action_plan' => $plan, 'current_category' => $category,
+                'dpd_bucket' => 'DPD 31-60',
+                'no_of_non_payments' => self::NP[1],
+                'next_action_plan' => $plan,
+                'current_category' => $category,
             ])), "{$plan} / {$category}");
         }
     }
@@ -250,7 +264,9 @@ class SettingServiceTest extends VisitPlanTestCase
     public function test_the_category_is_read_from_the_latest_recording_in_activity_records(): void
     {
         $entry = $this->account([
-            'dpd_bucket' => 'DPD 1-30', 'no_of_non_payments' => self::NP[1], 'next_action_plan' => 'FOR FIELD VISIT',
+            'dpd_bucket' => 'DPD 1-30',
+            'no_of_non_payments' => self::NP[1],
+            'next_action_plan' => 'FOR FIELD VISIT',
             'activity_records' => [['current_category' => 'Priority 1 Accounts', 'next_action_plan' => 'FOR FIELD VISIT']],
         ]);
 
@@ -266,8 +282,10 @@ class SettingServiceTest extends VisitPlanTestCase
     public function test_a_recorded_for_repossession_category_cannot_make_an_fdd_ns_account_for_repossession(): void
     {
         $this->assertSame('FDD/NS', $this->classify($this->account([
-            'payment_status' => 'NON-STARTER', 'dpd_bucket' => 'DPD 1-30',
-            'next_action_plan' => 'FOR FIELD VISIT', 'current_category' => 'For Repossession',
+            'payment_status' => 'NON-STARTER',
+            'dpd_bucket' => 'DPD 1-30',
+            'next_action_plan' => 'FOR FIELD VISIT',
+            'current_category' => 'For Repossession',
         ])));
     }
 
@@ -286,8 +304,10 @@ class SettingServiceTest extends VisitPlanTestCase
     public function test_plans_without_a_dedicated_group_use_the_base_classification(string $plan): void
     {
         $this->assertSame('Priority 1 Accounts', $this->classify($this->account([
-            'dpd_bucket' => 'DPD 61-90', 'no_of_non_payments' => self::NP[2],
-            'next_action_plan' => $plan, 'current_category' => 'NP0',
+            'dpd_bucket' => 'DPD 61-90',
+            'no_of_non_payments' => self::NP[2],
+            'next_action_plan' => $plan,
+            'current_category' => 'NP0',
         ])));
     }
 
@@ -311,7 +331,7 @@ class SettingServiceTest extends VisitPlanTestCase
 
         $groups = app(SettingService::class)->classify($accounts);
 
-        $numbers = fn (array $list) => array_column($list, 'account_number');
+        $numbers = fn(array $list) => array_column($list, 'account_number');
 
         $this->assertSame(['prioritization', 'regular'], array_keys($groups));
         $this->assertSame(['for_repossession', 'next_action_plan', 'promise_to_pay', 'fdd_ns', 'priority_1_accounts'], array_keys($groups['prioritization']));
@@ -354,7 +374,7 @@ class SettingServiceTest extends VisitPlanTestCase
         $this->assertSame(['regular' => ['dpd_1_30_days' => [$this->account(['account_number' => 'OK', 'dpd_bucket' => 'DPD 1-30'])]]], $groups);
 
         Log::shouldHaveReceived('warning')->once()->withArgs(
-            fn ($message, $context) => str_contains($message, 'could not be classified')
+            fn($message, $context) => str_contains($message, 'could not be classified')
                 && $context['count'] === 3
                 && $context['account_numbers'] === ['BAD1', 'BAD2', 'BAD3']
         );
@@ -432,7 +452,7 @@ class SettingServiceTest extends VisitPlanTestCase
         Log::spy();
         AccountClassificationRule::query()->forceDelete();
 
-        $this->assertConfigurationError('no active', fn () => $this->classify($this->account()));
+        $this->assertConfigurationError('no active', fn() => $this->classify($this->account()));
 
         Log::shouldHaveReceived('error')->once();
     }
@@ -441,7 +461,7 @@ class SettingServiceTest extends VisitPlanTestCase
     {
         AccountClassificationRule::query()->update(['is_active' => false]);
 
-        $this->assertConfigurationError('no active', fn () => $this->classify($this->account()));
+        $this->assertConfigurationError('no active', fn() => $this->classify($this->account()));
     }
 
     public static function invalidRules(): array
@@ -475,7 +495,7 @@ class SettingServiceTest extends VisitPlanTestCase
         }
         $rule->saveQuietly();
 
-        $this->assertConfigurationError($expectedMessagePart, fn () => $this->classify($this->account()));
+        $this->assertConfigurationError($expectedMessagePart, fn() => $this->classify($this->account()));
 
         Log::shouldHaveReceived('error')->once();
     }
@@ -485,7 +505,7 @@ class SettingServiceTest extends VisitPlanTestCase
         $order = AccountClassificationRule::where('classification', 'FDD/NS')->value('precedence');
         AccountClassificationRule::where('classification', 'Priority 1 Accounts')->update(['precedence' => $order]);
 
-        $this->assertConfigurationError('precedence', fn () => $this->classify($this->account()));
+        $this->assertConfigurationError('precedence', fn() => $this->classify($this->account()));
     }
 
     public function test_the_error_message_does_not_expose_internals(): void

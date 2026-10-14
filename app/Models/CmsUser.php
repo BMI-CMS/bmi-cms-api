@@ -17,6 +17,8 @@ class CmsUser extends Model
     protected $fillable = [
         'name',
         'role_id',
+        'company_id',
+        'level',
         'assigned_ch_ro_id',
         'assigned_ch_ro',
         'assigned_rm_dh_id',
