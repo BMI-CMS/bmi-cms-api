@@ -51,6 +51,7 @@ class AuthService
             'CmsUser.company:id,name',
             'CmsUser.role:id,name'
         ]);
+        $cms_user = $user->CmsUser;
 
         return [
             'success' => true,
@@ -58,14 +59,14 @@ class AuthService
                 'token' => $token,
                 'user' => [
                     'id' => $user->id,
-                    'name' => $user->CmsUser->name,
+                    'name' => $cms_user->name,
                     'username' => $user->username,
-                    'role_id' => $user->CmsUser->role_id,
-                    'role' => $user->CmsUser->role->name,
-                    'company_id' => $user->CmsUser->company_id,
-                    'company_name' => $user->CmsUser->company->name,
-                    'level' => $user->CmsUser->level,
-                    'psgc_code' => $user->CmsUser->psgc_code
+                    'role_id' => $cms_user->role_id,
+                    'role' => $cms_user->role->name,
+                    'company_id' => $cms_user->company_id,
+                    'company_name' => $cms_user->company->name,
+                    'level' => $cms_user->level,
+                    'psgc_code' => $cms_user->psgc_code
                 ]
             ]
         ];
