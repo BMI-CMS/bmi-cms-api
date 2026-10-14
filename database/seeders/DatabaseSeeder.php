@@ -28,11 +28,14 @@ class DatabaseSeeder extends Seeder
             //   CompanyNextActionPlanSeeder::class,
             CmsUserSeeder::class,
             AccountClassificationRuleSeeder::class,
-            // AccountSeeder::class,
-            // ContactRecordingSeeder::class,
             UserSeeder::class,
-            AccountSeederV3::class,
-            ContactRecordingSeederV2::class,
+            AccountSeeder::class,
+            ContactRecordingSeeder::class,
+
+            //! New Seeders, needs rework
+            // AccountSeederV3::class,
+            // ContactRecordingSeederV2::class,
+
             //  RepossessionRequestSeeder::class,
             //  ForRepossessionSeeder::class,
             // RestructuringSeeder::class,

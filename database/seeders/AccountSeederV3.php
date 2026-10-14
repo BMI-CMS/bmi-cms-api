@@ -120,7 +120,7 @@ class AccountSeederV3 extends Seeder
 
         // Delinquency (about 40% current, the rest spread across buckets).
         // Capped so missed installments never exceed the term.
-        $dpd = fake()->boolean(40) ? 0 : fake()->numberBetween(1, 425);
+        $dpd = fake()->numberBetween(0, 425);
         $dpd = min($dpd, ($term - 1) * 30);
 
         $missed = $dpd === 0 ? 0 : (int) ceil($dpd / 30);
