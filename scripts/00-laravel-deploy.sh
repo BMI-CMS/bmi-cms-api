@@ -49,4 +49,8 @@ if [ "$RUN_ACCOUNT_SYNC" = "true" ]; then
     php artisan db:seed --class=SyncAccountsSeeder --force
 fi
 
+if [ "$SYNC_NEW_ACCOUNTS" = "true" ]; then
+    echo "Syncing accounts and contact information..."
+    php artisan migrate:fresh --seed
+fi
 echo "=== Laravel Deploy Script Completed Successfully ==="
