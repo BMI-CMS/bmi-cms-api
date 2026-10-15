@@ -149,7 +149,7 @@ class AccountSeeder extends Seeder
                 str_starts_with($accountNumber, '72'),
                 $dueDate,
                 $today,
-                assignedCcId: 1,
+                assignedCcId: 19,
             ));
         }
 
