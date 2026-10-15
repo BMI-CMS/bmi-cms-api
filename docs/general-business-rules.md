@@ -7,7 +7,7 @@ Reference for the confirmed Visit Plan business rules. Each rule is marked:
 
 Sources: `docs/visit_plan_business_rules_claude.md` (primary feature spec) and the owner's clarifications of 2026-10-10. If this file and the spec disagree, ask the owner.
 
-Last updated: 2026-10-10 (NP string conversion and monthly archive basis confirmed).
+Last updated: 2026-10-14 (section 10: maintenance guide for the classification rules and the planned back-office sync decisions).
 
 ---
 
@@ -232,8 +232,67 @@ The rules in sections 4-6 are data, read on every request of `GET /api/v1/dashbo
 
 - **Fields:** `dpd_bucket`, `payment_status`, `is_force_prioritized`, `next_action_plan`, and `np` (non-payments converted from the stored text: `UPDATED` = 0, `LAST PAID n MONTH(S) AGO` = n; unrecognised text never matches). **No seeded rule uses `np`**; it stays available so a rule row can use it if the business ever asks.
 - **Operators:** `=`, `!=`, `in`, `not_in`; `>`, `>=`, `<`, `<=` on `np` only.
-- **Response property names are not in the table.** The label → response property map is `Constants::CLASSIFICATION_RESPONSE_PATHS` (the API contract). A new label needs code and a mobile-app change.
+- **Labels and response positions** are in the table `account_classifications` (`parent`, `label` (unique), `response_path`, `is_active`, soft deletes). `response_path` is where the label's accounts appear in the `assigned-accounts` response, e.g. `["regular", "np_1"]`; it is the API contract with the mobile app. The baseline rows are in `AccountClassificationSeeder::BASELINE` (insert-only). A new label needs a mobile-app change (see 10.1).
 - **Seeded rules:** `AccountClassificationRuleSeeder` (also called by `DatabaseSeeder`) — precedence 10 For Repossession (`dpd_bucket in DPD 91-120 … DPD MORE THAN 360` and `payment_status not_in FIRST DUE DATE, NON-STARTER`), 20 Forced Prioritized, 30 Promise To Pay, 31 Skiptrace, 32 Notice & Demand Letter, 33 fallback (`NULL`), 40 FDD/NS, 50 Priority 1 Accounts (`DPD 61-90`), 60 DPD 1-30 Days (`DPD 1-30`), 70 NP1 (`DPD 31-60`), 80 NP0 (`DPD 0`). Re-running it resets these rows to the values above.
 - **Invalid or missing configuration** (no active rule, unknown field/operator/classification, wrong parent, missing/duplicate precedence, malformed conditions, table not migrated): the endpoint returns HTTP 500 `{"message": "Account classification rules are not configured correctly."}` and the details are logged (`Account classification rules are invalid: …`). There are no default rules.
 - **Unclassifiable accounts** (missing or unknown `dpd_bucket`): left out of the response; one warning per request lists their count and up to 50 account numbers (Open question 22).
 - **Deploying:** run `php artisan migrate` (adds `precedence`) and `php artisan db:seed --class=AccountClassificationRuleSeeder` on every environment; without rows the endpoint returns the error above.
+
+### 10.1 Maintaining the rules: when a code change is needed
+
+**Data only, no code change** (edit a row, then check the log for `Account classification rules are invalid`):
+
+| Change | Where |
+|---|---|
+| Change a rule's conditions, `precedence` or `is_active` | row in `account_classification_rules` |
+| Add a rule that uses an existing label | new row in `account_classification_rules` with a unique `precedence` |
+| Turn a rule off or remove it | `is_active = false` or soft delete |
+| Change which DPD buckets, payment statuses or next action plans a rule matches | the rule's `value`; spell it exactly as received from LUCAS (section 2) |
+
+**Needs a code change:**
+
+| Change | What to do |
+|---|---|
+| New label (new classification) | Add a row to `account_classifications` (`label`, `parent`, `response_path`) and the rule row. Add the label to `AccountClassificationSeeder::BASELINE` so new databases and tests have it. The mobile app must handle the new `response_path` first. (`assigned-accounts-psgc` returns the label as plain text.) Once the back office manages the data (10.2), the admin adds the label and its `response_path` there instead. |
+| Move a label to another place in the response | Mobile contract change: update `account_classifications.response_path` and the mobile app together. |
+| Rule on a field that is not in the list (`np`, `dpd_bucket`, `payment_status`, `is_force_prioritized`, `next_action_plan`) | (1) select the column in each `DashboardRepository` Visit Plan query that selects `accounts.dpd_bucket`; (2) add the key to the account arrays in `DashboardService` (`assignedAccounts`, `assignedAccountsByPSGC`, `teamAssignedAccounts` via `teamAccountEntry`); (3) add it to `SettingService::FIELDS` and `facts()`, and to `validatedValue()` if it is not text; (4) add tests and update this section. |
+| New operator | `SettingService::OPERATORS`, `holds()` and the condition validation. |
+| Change how `np` is converted from text | `SettingService::nonPayments()`. |
+| Change the evaluation: all conditions must hold, lowest `precedence` wins, fallback to the recording's `current_category` | `SettingService`; needs the owner's approval first. |
+
+**A rule row is valid only if:**
+
+- `conditions` is `{"all": [{"field", "operator", "value"}, ...]}` with a non-empty list.
+- `field` is one of the five fields. `operator` is `=`, `!=`, `in` or `not_in`; `>`, `>=`, `<`, `<=` only on `np`.
+- `in` / `not_in` take a non-empty list. `np` is a whole number, `is_force_prioritized` is true or false, every other field is text.
+- `precedence` is set and unique among active rules.
+- `classification` exists and is active in `account_classifications`, and `parent` matches the classification's parent (case-insensitive). `classification = NULL` is the fallback rule (section 6).
+
+**Warnings:**
+
+- One invalid active rule makes every Visit Plan classification endpoint return HTTP 500 (there are no default rules).
+- Run `AccountClassificationRuleSeeder` only to set up an environment (see Deploying). Do not rerun it on a database whose rules were edited: it resets the seeded rules, which it matches by `parent` + `classification`. `AccountClassificationSeeder` is insert-only and safe to rerun.
+- If a new or changed rule should also exist on new databases and in tests, update `AccountClassificationRuleSeeder` and the counts asserted in `SettingServiceTest`.
+- Rule changes are business-rule changes: get the owner's approval first, update sections 4-6 of this file once it is confirmed, and run `php artisan test tests/Feature/VisitPlan`.
+
+### 10.2 Back-office sync (planned, not built)
+
+**Status (2026-10-14): no sync exists.** There is no scheduler, job, HTTP client or inbound route for it. Until it is built, rules are edited in the Mobile CMS tables as described in 10.1.
+
+**Confirmed decisions for the future sync endpoint (2026-10-14):**
+
+1. The back office becomes the source of the rows in `account_classification_rules` and `account_classifications`.
+2. **The back office supplies `response_path` (changed 2026-10-14; it replaces the earlier decision that only Mobile CMS owns it).** When an admin creates a classification in the back office, the admin picks `response_path` from the paths already known, or adds a new path there when the new classification needs a new position in the response. The Mobile CMS API needs no code change for a new path (the response tree is built from the table); the mobile app must be able to show it, so the admin confirms that support when adding a new path.
+3. **An invalid payload is rejected as a whole and the last good rules stay active.** The failure is logged. This does not create default rules.
+4. The condition fields stay the five listed in this section. A new field is a code change (10.1).
+5. **Deleting a classification that still has active rules (2026-10-14):** the back office blocks it by default. A separate, confirmed "retire together" action retires the rules first and then the classification, in one transaction. "Delete" is a soft delete.
+
+The back office CRUD, the identifiers to preserve and the seeder transition are described in `docs/backoffice-classification-crud-guide.md`.
+
+**Open:**
+
+- **Delivery method:** the back office pushes to an endpoint, Mobile CMS pulls on a schedule (needs a Render Cron Job; none exists), or an import from an export file. Decide before building.
+- Any HTTP entry point is security-sensitive: it needs its own credential (the existing `api.key` is `APP_KEY`, shared by every caller), throttling and audit logging, and approval.
+- **Proposed, not confirmed:** match rows by `label` (classifications) and `precedence` (rules), send the full snapshot, and soft-delete rows missing from it. Confirm the payload with the back-office team.
+
+**Once sync is live:** do not edit these tables by hand and do not run the rule seeder, because the next sync overwrites hand edits.

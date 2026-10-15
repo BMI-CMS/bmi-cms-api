@@ -51,6 +51,8 @@ class UserSeeder extends Seeder
             ['username' => 'miaroad',      'password' => 'password123', 'cms_user_id' => 16, 'phone_imei' => '143456789123456'],
             ['username' => 'evanbuckley',  'password' => 'Test@123',    'cms_user_id' => 17, 'phone_imei' => 'ca98ad9edaaa9f75'],
             ['username' => 'eddiediaz',    'password' => 'Pass@123',    'cms_user_id' => 18, 'phone_imei' => '22a617969c4cc223'],
+            ['username' => 'emmancc',  'password' => 'dev123',    'cms_user_id' => 19, 'phone_imei' => '957826f50488decf'],
+            ['username' => 'emmanch',    'password' => 'dev123',    'cms_user_id' => 20, 'phone_imei' => '957826f50488decf'],
         ];
     }
 }
