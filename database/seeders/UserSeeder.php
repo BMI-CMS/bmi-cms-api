@@ -33,7 +33,8 @@ class UserSeeder extends Seeder
     public static function records(): array
     {
         return [
-            ['username' => 'chinkeetan',   'password' => 'password123', 'cms_user_id' => 1,  'phone_imei' => 'ca98ad9edaaa9f75'],
+            ['username' => 'chinkeetan',   'password' => 'password123', 'cms_user_id' => 1,  'phone_imei' => '957826f50488decf'],
+            // ['username' => 'chinkeetan',   'password' => 'password123', 'cms_user_id' => 1,  'phone_imei' => 'ca98ad9edaaa9f75'],
             ['username' => 'henrysy',      'password' => 'password123', 'cms_user_id' => 2,  'phone_imei' => '123456789123457'],
             ['username' => 'mikemorales',  'password' => 'password123', 'cms_user_id' => 3,  'phone_imei' => '123456789123458'],
             ['username' => 'ayala',        'password' => 'password123', 'cms_user_id' => 4,  'phone_imei' => '123456789123459'],

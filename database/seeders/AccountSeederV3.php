@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Account;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 
@@ -120,8 +121,8 @@ class AccountSeederV3 extends Seeder
 
         // Delinquency (about 40% current, the rest spread across buckets).
         // Capped so missed installments never exceed the term.
-        $dpd = fake()->numberBetween(0, 425);
-        $dpd = min($dpd, ($term - 1) * 30);
+        $dpd = fake()->boolean(60) ? fake()->numberBetween(0, 30) : fake()->numberBetween(31, 425);
+        // $dpd = min($dpd, ($term - 1) * 30);
 
         $missed = $dpd === 0 ? 0 : (int) ceil($dpd / 30);
         $paid   = fake()->numberBetween(1, $term - $missed);
@@ -131,8 +132,8 @@ class AccountSeederV3 extends Seeder
             $dueDate  = $today->copy()->subDays($dpd);   // oldest unpaid due date
             $sendDate = $today->copy();
         } else {
-            $dueDate  = $today->copy()->addDays(fake()->numberBetween(1, 30));
-            $sendDate = $dueDate->copy()->subDays(3);
+            $dueDate  = $today->copy()->startOfMonth()->addDays(fake()->numberBetween(0, 27));
+            $sendDate = $today->copy()->startOfMonth();
         }
         $lastPaymentDate = $dueDate->copy()->subMonth();
 
