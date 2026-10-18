@@ -168,7 +168,7 @@ class AccountSeederV3 extends Seeder
 
     private function usersByRole(int $roleId): Collection
     {
-        return User::whereHas('CmsUser', fn ($q) => $q->where('role_id', $roleId))->get();
+        return User::whereHas('CmsUser', fn($q) => $q->where('role_id', $roleId))->get();
     }
 
     private function pick(Collection $ids): ?int

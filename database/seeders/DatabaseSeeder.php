@@ -30,12 +30,12 @@ class DatabaseSeeder extends Seeder
             AccountClassificationRuleSeeder::class,
             UserSeeder::class,
 
-            // AccountSeeder::class,
-            // ContactRecordingSeeder::class,
+            AccountSeeder::class,
+            ContactRecordingSeeder::class,
 
             //! New Seeders, needs rework
-            AccountSeederV3::class,
-            ContactRecordingSeederV2::class,
+            // AccountSeederV3::class,
+            // ContactRecordingSeederV2::class,
 
             //  RepossessionRequestSeeder::class,
             //  ForRepossessionSeeder::class,

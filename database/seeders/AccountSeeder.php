@@ -9,38 +9,6 @@ use App\Models\CmsUser;
 
 class AccountSeeder extends Seeder
 {
-    private const MOTORCYCLES = [
-        'Honda' => [
-            'Beat'       => 71900.00,
-            'Click 125'  => 79900.00,
-            'Click 160'  => 112900.00,
-            'TMX 125'    => 61900.00,
-            'XRM 125'    => 74900.00,
-            'ADV 160'    => 165900.00,
-            'PCX 160'    => 149900.00,
-        ],
-        'Yamaha' => [
-            'Mio i 125'  => 76900.00,
-            'Mio Gear'   => 79900.00,
-            'Aerox 155'  => 133900.00,
-            'NMAX 155'   => 144900.00,
-            'Sniper 155' => 118900.00,
-            'XSR 155'    => 149900.00,
-        ],
-        'Suzuki' => [
-            'Smash 115'          => 58900.00,
-            'Skydrive 125'       => 75900.00,
-            'Raider R150'        => 107900.00,
-            'Burgman Street 125' => 99900.00,
-        ],
-        'Kawasaki' => [
-            'CT100'        => 56900.00,
-            'Barako 175'   => 95900.00,
-            'Rouser NS200' => 149900.00,
-            'Ninja 400'    => 389000.00,
-        ],
-    ];
-
     private const MONTHLY_AMORTIZATION = 8500.00;
 
     // Quezon City, Pasig City, Makati City. Accounts take them in turn by index.
