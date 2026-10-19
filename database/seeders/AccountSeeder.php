@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use App\Models\Account;
 use Carbon\Carbon;
 
+
 /**
  * Visit Plan sample accounts.
  *
@@ -149,7 +150,7 @@ class AccountSeeder extends Seeder
                 str_starts_with($accountNumber, '72'),
                 $dueDate,
                 $today,
-                assignedCcId: 19,
+                assignedCcId: 1,
             ));
         }
 

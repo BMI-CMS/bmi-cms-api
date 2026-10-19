@@ -1,0 +1,46 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bmi-cms-app
+    volumes:
+      - ./:/var/www
+    networks:
+      - bmi-network
+
+  webserver:
+    image: nginx:alpine
+    container_name: bmi-cms-webserver
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx:/etc/nginx/conf.d
+    depends_on:
+      - app
+    networks:
+      - bmi-network
+
+  db:
+    image: mysql:8.0
+    container_name: bmi-cms-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - bmi-network
+
+volumes:
+  dbdata:
+
+networks:
+  bmi-network:
+    driver: bridge
