@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
+use App\Models\User;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -32,7 +33,7 @@ class AuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = $request->user();
 
         if (! $user) {
@@ -48,7 +49,7 @@ class AuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = $request->user();
 
         if ($user) {
@@ -60,17 +61,20 @@ class AuthController extends Controller
         ]);
     }
 
-    public function verifyToken(Request $request) {
+    public function verifyToken(Request $request)
+    {
         $user = $request->user();
         $token = $user->currentAccessToken();
         $cms_user = $user->CmsUser;
 
         return response()->json([
-            'valid'      => true,
-            'id' => $user->id,
-            'username' => $user->username,
-            'name' => $cms_user->name,
-            'role_id' => $cms_user->role_id,
-        ]);
+            'message' => 'Token successfully validate',
+            'data' => [
+                'valid' => true,
+                'id' => $user->id,
+                'username' => $user->username,
+                'name' => $cms_user->name,
+                'role_id' => $cms_user->role_id,
+            ]]);
     }
 }

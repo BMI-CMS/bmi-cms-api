@@ -12,9 +12,9 @@ class AccountSeederV2 extends Seeder
 {
     private const TERMS_IN_MONTHS = [12, 18, 24, 36];
 
-    private const DOWNPAYMENT_RATE = 0.20;  // placeholder, use your real rule
+    private const DOWNPAYMENT_RATE = 0.20;
 
-    private const FLAT_ANNUAL_RATE = 0.20;  // placeholder, use your real formula
+    private const FLAT_ANNUAL_RATE = 0.20;
 
     private function dpdBucket(int $days): string
     {
@@ -202,23 +202,8 @@ class AccountSeederV2 extends Seeder
         $monthlyAmortization = round($totalPayable / $term, 2);
         $outstandingBalance = $monthlyAmortization * 12;
 
-        $dpd = fake()->boolean(60) ? fake()->numberBetween(0, 30) : fake()->numberBetween(31, 425);
-        $missed = $dpd === 0 ? 0 : (int) ceil($dpd / 30);
-
-        // Dates
-        if ($dpd > 0) {
-            $dueDate = $today->copy()->subDays($dpd);   // oldest unpaid due date
-            $sendDate = $today->copy();
-        } else {
-            $dueDate = $today->copy()->startOfMonth()->addDays(fake()->numberBetween(0, 27));
-            $sendDate = $today->copy()->startOfMonth();
-        }
-        $lastPaymentDate = $dueDate->copy()->subMonth();
-
-        // $city = fake()->randomElement(array_keys(self::PSGC));
         $barangay = fake()->randomElement(array_keys(self::PSGC['MUNTINLUPA']));
 
-        // \Log::info()
         return [
             'account_number' => $accountNumber,
             'customer_id' => 130000000 + $index,
@@ -245,7 +230,7 @@ class AccountSeederV2 extends Seeder
             'assigned_rm_dh_id' => $assignedRMDH,
             // 'last_payment_amount' => $monthlyAmortization,
             'is_force_prioritized' => $isForcePrioritized,
-            'is_contacted' => fake()->boolean($dpd > 0 ? 60 : 20),
+            'is_contacted' => $isContacted,
             'send_date' => null,
         ];
     }

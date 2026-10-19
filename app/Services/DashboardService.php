@@ -2,10 +2,9 @@
 
 namespace App\Services;
 
-
-use App\Repositories\DashboardRepository;
 use App\Constants\Constants;
 use App\Helpers\AllocateAccountsHelper;
+use App\Repositories\DashboardRepository;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -21,21 +20,21 @@ class DashboardService
         $getAccountPerformance = $this->dashboardRepository->getAccountPerformance($userId);
 
         return [
-            "account_performance" =>  [
-                "total_accounts" => $getAccountPerformance?->total_accounts ?? 0,
-                "paid" => $getAccountPerformance?->total_paid_accounts ?? 0,
-                "repossessed" => $getAccountPerformance?->total_repossessed_accounts ?? 0,
-                "restructured" => $getAccountPerformance?->total_restructured_accounts ?? 0,
+            'account_performance' => [
+                'total_accounts' => $getAccountPerformance?->total_accounts ?? 0,
+                'paid' => $getAccountPerformance?->total_paid_accounts ?? 0,
+                'repossessed' => $getAccountPerformance?->total_repossessed_accounts ?? 0,
+                'restructured' => $getAccountPerformance?->total_restructured_accounts ?? 0,
             ],
-            "collection_target" => [
-                "target_due" => $getAccountPerformance?->total_past_due_amount ?? 0,
-                "paid" => $getAccountPerformance?->total_receipt_encode_amount ?? 0,
-                "repossessed" => $getAccountPerformance?->total_repossessed_amount ?? 0,
-                "restructured" => $getAccountPerformance?->total_restructured_amount ?? 0,
+            'collection_target' => [
+                'target_due' => $getAccountPerformance?->total_past_due_amount ?? 0,
+                'paid' => $getAccountPerformance?->total_receipt_encode_amount ?? 0,
+                'repossessed' => $getAccountPerformance?->total_repossessed_amount ?? 0,
+                'restructured' => $getAccountPerformance?->total_restructured_amount ?? 0,
             ],
-            "accounts" => $getAccountPerformance?->total_accounts ?? 0,
-            "fec_accounts" => $getAccountPerformance?->total_accounts ?? 0,
-            "collections" => $getAccountPerformance?->total_paid_accounts ?? 0,
+            'accounts' => $getAccountPerformance?->total_accounts ?? 0,
+            'fec_accounts' => $getAccountPerformance?->total_accounts ?? 0,
+            'collections' => $getAccountPerformance?->total_paid_accounts ?? 0,
         ];
     }
 
@@ -51,9 +50,9 @@ class DashboardService
         foreach ($getAccounts['for_visit'] as $item) {
             $accountId = $item->id;
 
-            if (!isset($accounts[$accountId])) {
+            if (! isset($accounts[$accountId])) {
                 $accounts[$accountId] = [
-                    'accounts_id' => $item->id,
+                    'account_id' => $item->id,
                     'account_number' => $item->account_number,
                     'customer_name' => $item->customer_name,
                     'monthly_amortization' => $item->monthly_amortization,
@@ -104,8 +103,9 @@ class DashboardService
 
         $accountAllocation = $this->settingService->classify($accounts);
 
-        return [...$accountAllocation, "visited" => $getAccounts['visited']];
+        return [...$accountAllocation, 'visited' => $getAccounts['visited']];
     }
+
     public function assignedAccountsByPSGC(int $userId)
     {
         $getAccounts = $this->dashboardRepository->getVisitPlanAccounts($userId, Carbon::now(), Constants::PERIOD_MONTHLY);
@@ -116,7 +116,7 @@ class DashboardService
         // One row per account, with its latest contact recording.
         foreach ($getAccounts as $item) {
             $account = [
-                'accounts_id' => $item->id,
+                'account_id' => $item->id,
                 'account_number' => $item->account_number,
                 'customer_name' => $item->customer_name,
                 'monthly_amortization' => $item->monthly_amortization,
@@ -169,7 +169,7 @@ class DashboardService
                 $unclassified[] = $account['account_number'];
             }
 
-            $accountsByPSGC[$item->psgc_code . ' - ' . $item->city_municipality][] = $account;
+            $accountsByPSGC[$item->psgc_code.' - '.$item->city_municipality][] = $account;
         }
 
         if ($unclassified !== []) {
@@ -182,7 +182,7 @@ class DashboardService
         return $accountsByPSGC;
     }
 
-    //Higher ups
+    // Higher ups
     public function teamAssignedAccounts(int $level, int $userId, string $psgc_code, string $period, int $page = 1, int $perPage = Constants::TEAM_ACCOUNTS_PER_PAGE)
     {
         $now = Carbon::now();
@@ -215,22 +215,22 @@ class DashboardService
             $classified = $this->settingService->classify($counselor['accounts'] ?? []);
 
             $allocatedAccounts[] = [
-                "credit_counselor_name" => $counselor['name'],
-                "total_accounts" => $this->countClassified($classified),
-                "accounts" => [...$classified, "visited" => $visited[$counselorId] ?? []],
+                'credit_counselor_name' => $counselor['name'],
+                'total_accounts' => $this->countClassified($classified),
+                'accounts' => [...$classified, 'visited' => $visited[$counselorId] ?? []],
             ];
         }
 
         return [
-            "repossession_request" => 5,
-            "visit_plan" => $allocatedAccounts,
-            "fec_approval" =>  3,
-            "collections" => 5,
-            "pagination" => [
-                "current_page" => $page,
-                "per_page" => $perPage,
-                "total" => count($counselorIds),
-                "last_page" => max(1, (int) ceil(count($counselorIds) / $perPage)),
+            'repossession_request' => 5,
+            'visit_plan' => $allocatedAccounts,
+            'fec_approval' => 3,
+            'collections' => 5,
+            'pagination' => [
+                'current_page' => $page,
+                'per_page' => $perPage,
+                'total' => count($counselorIds),
+                'last_page' => max(1, (int) ceil(count($counselorIds) / $perPage)),
             ],
         ];
     }
@@ -238,7 +238,7 @@ class DashboardService
     private function teamAccountEntry($item): array
     {
         $account = [
-            'accounts_id' => $item->id,
+            'account_id' => $item->id,
             'account_number' => $item->account_number,
             'customer_name' => $item->customer_name,
             'monthly_amortization' => $item->monthly_amortization,
@@ -254,7 +254,7 @@ class DashboardService
             'assigned_cc_id' => $item->assigned_cc_id,
             'assigned_ch_id' => $item->assigned_ch_id,
             'assigned_am_id' => $item->assigned_am_ar_id,
-            'assigned_dh_id' => $item->assigned_rm__dh_id,
+            'assigned_dh_id' => $item->assigned_rm_dh_id,
             'unit_lot_block' => $item->unit_lot_block,
             'street_name' => $item->street_name,
             'subdivision_village' => $item->subdivision_village,
@@ -294,7 +294,7 @@ class DashboardService
             return count($node);
         }
 
-        return array_sum(array_map(fn(array $child) => $this->countClassified($child), $node));
+        return array_sum(array_map(fn (array $child) => $this->countClassified($child), $node));
     }
 
     public function teamAssignedAccountsPSGC(int $userId, string $psgc_code, string $period)
@@ -311,7 +311,7 @@ class DashboardService
             $accountId = $item->account_id;
             $name = $item->credit_counselor_name;
 
-            if (!isset($accounts[$psgc_code][$name][$accountId])) {
+            if (! isset($accounts[$psgc_code][$name][$accountId])) {
                 $accounts[$psgc_code][$name][$accountId] = [
                     ...$item->toArray(),
                     'activity_records' => [],
@@ -329,7 +329,7 @@ class DashboardService
                     'recorded_by' => $item->recorded_by,
                     'contact_date' => $item->contact_date,
                 ];
-            };
+            }
         }
 
         $allocatedAccounts = [];
@@ -340,7 +340,7 @@ class DashboardService
                     $allocatedAccounts[$groupKey][] = [
                         'credit_counselor_name' => $counselorName,
                         'total_accounts' => count($classifiedAccounts),
-                        'accounts' => $classifiedAccounts
+                        'accounts' => $classifiedAccounts,
 
                     ];
                 }
@@ -348,10 +348,10 @@ class DashboardService
         }
 
         return [
-            "repossession_request" => 5,
-            "visit_plan" => $allocatedAccounts,
-            "fec_approval" =>  3,
-            "collections" => 5,
+            'repossession_request' => 5,
+            'visit_plan' => $allocatedAccounts,
+            'fec_approval' => 3,
+            'collections' => 5,
         ];
         // $getRepossessionRequests = $this->dashboardRepository->getRepossessionRequests($userId, $psgc_code, $period);
         // $getPaymentCollected = $this->dashboardRepository->getPaymentCollected($userId, $psgc_code, $period);
