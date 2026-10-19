@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Account extends Model
@@ -30,12 +30,11 @@ class Account extends Model
         'assigned_cc_id',
         'assigned_ch_id',
         'assigned_am_ar_id',
-        'assigned_rm__dh_id',
+        'assigned__rm_dh_id',
         'is_contacted',
         'due_date',
-        'send_date'
+        'send_date',
     ];
-
 
     public const DEFAULT_FIELDS = [
         'account_number',
@@ -60,7 +59,7 @@ class Account extends Model
         'assigned_rm__dh_id',
         'is_contacted',
         'due_date',
-        'send_date'
+        'send_date',
     ];
 
     public function scopeWithDefaultFields(Builder $query): Builder

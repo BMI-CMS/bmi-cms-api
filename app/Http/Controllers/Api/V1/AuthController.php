@@ -43,9 +43,25 @@ class AuthController extends Controller
 
         $user->load('CmsUser:id,name,role_id,company_id,level,psgc_code');
 
-        \Log::info($user);
-
         return response()->json($user->CmsUser);
+    }
+
+
+    public function verifyToken(Request $request) {
+        $user = $request->user();
+        $token = $user->currentAccessToken();
+        $cms_user = $user->CmsUser;
+
+        return response()->json([
+            'message' => "Token successfully validated",
+            'data' => [
+                'valid' => true,
+                'id' => $user->id,
+                'username' => $user->username,
+                'name' => $cms_user->name,
+                'role_id' => $cms_user->role_id,
+            ]
+        ]);
     }
 
     public function logout(Request $request): JsonResponse
@@ -59,6 +75,20 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Logged out successfully.',
+        ]);
+    }
+
+    public function verifyToken(Request $request) {
+        $user = $request->user();
+        $token = $user->currentAccessToken();
+        $cms_user = $user->CmsUser;
+
+        return response()->json([
+            'valid'      => true,
+            'id' => $user->id,
+            'username' => $user->username,
+            'name' => $cms_user->name,
+            'role_id' => $cms_user->role_id,
         ]);
     }
 }
