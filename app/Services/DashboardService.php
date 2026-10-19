@@ -58,9 +58,7 @@ class DashboardService
                     'customer_name' => $item->customer_name,
                     'monthly_amortization' => $item->monthly_amortization,
                     'past_due_balance' => $item->past_due_balance,
-                    'days_past_due' => $item->days_past_due,
                     'dpd_bucket' => $item->dpd_bucket,
-                    'no_of_non_payments' => $item->no_of_non_payments,
                     'outstanding_balance' => $item->outstanding_balance,
                     'last_payment_date' => $item->last_payment_date,
                     'asset' => $item->asset,
@@ -68,11 +66,10 @@ class DashboardService
                     'is_force_prioritized' => $item->is_force_prioritized,
                     'psgc_code' => $item->psgc_code,
                     'is_contacted' => $item->is_contacted,
-                    'visit_date' => $item->visit_date,
                     'assigned_cc_id' => $item->assigned_cc_id,
                     'assigned_ch_id' => $item->assigned_ch_id,
-                    'assigned_am_id' => $item->assigned_am_id,
-                    'assigned_dh_id' => $item->assigned_dh_id,
+                    'assigned_am_ar_id' => $item->assigned_am_ar_id,
+                    'assigned_rm_dh_id' => $item->assigned_rm_dh_id,
                     'unit_lot_block' => $item->unit_lot_block,
                     'street_name' => $item->street_name,
                     'subdivision_village' => $item->subdivision_village,
@@ -109,12 +106,6 @@ class DashboardService
 
         return [...$accountAllocation, "visited" => $getAccounts['visited']];
     }
-
-    /**
-     * The monthly Visit Plan accounts of the credit counselor (the same accounts as assigned-accounts
-     * for the monthly period), grouped by "psgc_code - city_municipality". Each account carries its
-     * rules-table classification, or null when no rule classifies it (it is kept, not dropped).
-     */
     public function assignedAccountsByPSGC(int $userId)
     {
         $getAccounts = $this->dashboardRepository->getVisitPlanAccounts($userId, Carbon::now(), Constants::PERIOD_MONTHLY);
@@ -130,9 +121,7 @@ class DashboardService
                 'customer_name' => $item->customer_name,
                 'monthly_amortization' => $item->monthly_amortization,
                 'past_due_balance' => $item->past_due_balance,
-                'days_past_due' => $item->days_past_due,
                 'dpd_bucket' => $item->dpd_bucket,
-                'no_of_non_payments' => $item->no_of_non_payments,
                 'outstanding_balance' => $item->outstanding_balance,
                 'last_payment_date' => $item->last_payment_date,
                 'asset' => $item->asset,
@@ -140,11 +129,10 @@ class DashboardService
                 'is_force_prioritized' => $item->is_force_prioritized,
                 'psgc_code' => $item->psgc_code,
                 'is_contacted' => $item->is_contacted,
-                'visit_date' => $item->visit_date,
                 'assigned_cc_id' => $item->assigned_cc_id,
                 'assigned_ch_id' => $item->assigned_ch_id,
-                'assigned_am_id' => $item->assigned_am_ar_id,
-                'assigned_dh_id' => $item->assigned_rm__dh_id,
+                'assigned_am_ar_id' => $item->assigned_am_ar_id,
+                'assigned_rm_dh_id' => $item->assigned_rm_dh_id,
                 'unit_lot_block' => $item->unit_lot_block,
                 'street_name' => $item->street_name,
                 'subdivision_village' => $item->subdivision_village,
@@ -255,9 +243,7 @@ class DashboardService
             'customer_name' => $item->customer_name,
             'monthly_amortization' => $item->monthly_amortization,
             'past_due_balance' => $item->past_due_balance,
-            'days_past_due' => $item->days_past_due,
             'dpd_bucket' => $item->dpd_bucket,
-            'no_of_non_payments' => $item->no_of_non_payments,
             'outstanding_balance' => $item->outstanding_balance,
             'last_payment_date' => $item->last_payment_date,
             'asset' => $item->asset,
@@ -265,7 +251,6 @@ class DashboardService
             'is_force_prioritized' => $item->is_force_prioritized,
             'psgc_code' => $item->psgc_code,
             'is_contacted' => $item->is_contacted,
-            'visit_date' => $item->visit_date,
             'assigned_cc_id' => $item->assigned_cc_id,
             'assigned_ch_id' => $item->assigned_ch_id,
             'assigned_am_id' => $item->assigned_am_ar_id,
