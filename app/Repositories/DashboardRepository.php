@@ -210,25 +210,29 @@ class DashboardRepository
         $accounts = Account::select([
             'accounts.id',
             'accounts.account_number',
+            'accounts.customer_id',
+            'accounts.cust_code',
             'accounts.customer_name',
             'accounts.monthly_amortization',
-            'accounts.past_due_balance',
-            'accounts.days_past_due',
-            'accounts.dpd_bucket',
-            'accounts.no_of_non_payments',
-            'accounts.outstanding_balance',
             'accounts.last_payment_date',
-            'accounts.asset',
+            'accounts.due_date',
             'accounts.payment_status',
+            'accounts.payment_history',
+            'accounts.past_due_balance',
+            'accounts.dpd_bucket',
+            'accounts.soa_balance',
+            'accounts.total_due_balance',
+            'accounts.past_due_balance',
+            'accounts.outstanding_balance',
+            'accounts.asset',
+            'accounts.pre_qualified_for_restructuring',
+            'accounts.psgc_code',
             'accounts.is_force_prioritized',
             'accounts.assigned_cc_id',
             'accounts.assigned_ch_id',
             'accounts.assigned_am_ar_id',
-            'accounts.assigned_rm__dh_id',
-            'accounts.due_date',
-            'accounts.psgc_code',
+            'accounts.assigned_rm_dh_id',
             'accounts.is_contacted',
-            'accounts.created_at',
             'collecting_addresses.unit_lot_block',
             'collecting_addresses.street_name',
             'collecting_addresses.subdivision_village',
@@ -321,9 +325,7 @@ class DashboardRepository
             'accounts.customer_name',
             'accounts.monthly_amortization',
             'accounts.past_due_balance',
-            'accounts.days_past_due',
             'accounts.dpd_bucket',
-            'accounts.no_of_non_payments',
             'accounts.outstanding_balance',
             'accounts.last_payment_date',
             'accounts.asset',
@@ -332,7 +334,7 @@ class DashboardRepository
             'accounts.assigned_cc_id',
             'accounts.assigned_ch_id',
             'accounts.assigned_am_ar_id',
-            'accounts.assigned_rm__dh_id',
+            'accounts.assigned_rm_dh_id',
             'accounts.due_date',
             'accounts.psgc_code',
             'accounts.is_contacted',
@@ -357,7 +359,26 @@ class DashboardRepository
             ->get();
     }
 
+    public function getVisitPlanAccountsV2()
+    {
+        // SELECT 
+        //     accounts.id,
+        //     contact_recordings.id
+        // FROM accounts
+        // LEFT JOIN contact_recordings
+        // ON accounts.id = contact_recordings.account_id
+        // WHERE accounts.assigned_cc_id = 1
+        // AND (
+        //     accounts.is_contacted = FALSE
+        //     OR (
+        //         contact_recordings.next_action_date >= CURDATE()
+        //         AND contact_recordings.next_action_date < CURDATE() + INTERVAL 1 DAY
+        //         and contact_recordings.is_contacted = FALSE
+        //     )
+        // );
 
+
+    }
     //higher up
     public function getDailyTeamAccounts(int $userId, string $psgc_code, string $period)
     {
@@ -398,9 +419,7 @@ class DashboardRepository
                 'accounts.customer_name',
                 'accounts.monthly_amortization',
                 'accounts.past_due_balance',
-                'accounts.days_past_due',
                 'accounts.dpd_bucket',
-                'accounts.no_of_non_payments',
                 'accounts.outstanding_balance',
                 'accounts.last_payment_date',
                 'accounts.asset',
@@ -418,7 +437,7 @@ class DashboardRepository
                 'accounts.assigned_cc_id',
                 'accounts.assigned_ch_id',
                 'accounts.assigned_am_ar_id',
-                'accounts.assigned_rm__dh_id',
+                'accounts.assigned_rm_dh_id',
                 'accounts.due_date',
                 'accounts.psgc_code',
                 'collecting_addresses.unit_lot_block',
@@ -441,9 +460,6 @@ class DashboardRepository
             ->orderBy('accounts.id', 'asc')
             ->orderBy('accounts.created_at', 'desc')
             ->get();
-        if ($period === Constants::PERIOD_DAILY) {
-        } else {
-        }
     }
     public function getMonthlyTeamAccounts(int $userId, string $psgc_code, string $period)
     {
@@ -486,9 +502,7 @@ class DashboardRepository
                 'accounts.customer_name',
                 'accounts.monthly_amortization',
                 'accounts.past_due_balance',
-                'accounts.days_past_due',
                 'accounts.dpd_bucket',
-                'accounts.no_of_non_payments',
                 'accounts.outstanding_balance',
                 'accounts.last_payment_date',
                 'accounts.asset',
@@ -505,7 +519,7 @@ class DashboardRepository
                 'accounts.assigned_cc_id',
                 'accounts.assigned_ch_id',
                 'accounts.assigned_am_ar_id',
-                'accounts.assigned_rm__dh_id',
+                'accounts.assigned_rm_dh_id',
                 'accounts.due_date',
                 'accounts.psgc_code',
                 'accounts.is_contacted',
@@ -606,9 +620,7 @@ class DashboardRepository
                 'accounts.customer_name',
                 'accounts.monthly_amortization',
                 'accounts.past_due_balance',
-                'accounts.days_past_due',
                 'accounts.dpd_bucket',
-                'accounts.no_of_non_payments',
                 'accounts.outstanding_balance',
                 'accounts.last_payment_date',
                 'accounts.asset',
@@ -617,7 +629,7 @@ class DashboardRepository
                 'accounts.assigned_cc_id',
                 'accounts.assigned_ch_id',
                 'accounts.assigned_am_ar_id',
-                'accounts.assigned_rm__dh_id',
+                'accounts.assigned_rm_dh_id',
                 'accounts.due_date',
                 'accounts.psgc_code',
                 'accounts.is_contacted',
@@ -694,9 +706,7 @@ class DashboardRepository
             'accounts.customer_name',
             'accounts.monthly_amortization',
             'accounts.past_due_balance',
-            'accounts.days_past_due',
             'accounts.dpd_bucket',
-            'accounts.no_of_non_payments',
             'accounts.outstanding_balance',
             'accounts.last_payment_date',
             'accounts.asset',
@@ -705,7 +715,7 @@ class DashboardRepository
             'accounts.assigned_cc_id',
             'accounts.assigned_ch_id',
             'accounts.assigned_am_ar_id',
-            'accounts.assigned_rm__dh_id',
+            'accounts.assigned_rm_dh_id',
             'accounts.due_date',
             'accounts.psgc_code',
             'accounts.is_contacted',
@@ -759,7 +769,7 @@ class DashboardRepository
         return match ($level) {
             2 => 'assigned_ch_id',
             3 => 'assigned_am_ar_id',
-            4 => 'assigned_rm__dh_id',
+            4 => 'assigned_rm_dh_id',
             default => throw new \InvalidArgumentException("Level {$level} has no team."),
         };
     }

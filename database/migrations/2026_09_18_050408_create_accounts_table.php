@@ -41,7 +41,7 @@ return new class extends Migration
             $table->foreignId('assigned_am_ar_id')
                 ->constrained('cms_users')
                 ->cascadeOnDelete();
-            $table->foreignId('assigned_rm__dh_id')
+            $table->foreignId('assigned_rm_dh_id')
                 ->constrained('cms_users')
                 ->cascadeOnDelete();
             $table->date('send_date')->nullable();

@@ -203,7 +203,7 @@ class AccountSeeder extends Seeder
             'assigned_cc_id' => $this->fakeCC(),
             'assigned_ch_id' => 6,
             'assigned_am_ar_id' => 7,
-            'assigned_rm__dh_id' => 8,
+            'assigned_rm_dh_id' => 8,
             'is_contacted' => $isContacted,
             'send_date' => null,
         ];

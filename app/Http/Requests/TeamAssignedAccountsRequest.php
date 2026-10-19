@@ -32,18 +32,8 @@ class TeamAssignedAccountsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_id' => [
-                'required',
-                'integer',
-                'min:1',
-            ],
-
-            'psgc_code' => [
-                'required',
-                'string',
-                'max:10',
-            ],
-
+            'user_id' => 'required|integer|min:1',
+            'psgc_code' => 'required|string|max:10',
             'period' => [
                 'required',
                 Rule::in([Constants::PERIOD_DAILY, Constants::PERIOD_MONTHLY]),
