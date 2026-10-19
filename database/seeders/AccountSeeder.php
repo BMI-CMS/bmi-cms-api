@@ -2,8 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Account;
+use App\Models\CmsUser;
+use App\Models\User;
 use Carbon\Carbon;
 use App\Models\CmsUser;
 
@@ -15,6 +16,27 @@ class AccountSeeder extends Seeder
     private const PSGC_CODES = ['137404000', '137403000', '137602000'];
 
     public function run(): void
+    {
+
+        $ccUsers = $this->usersByRole(1);
+
+        foreach ($ccUsers as $ccUser) {
+            $this->buildCCVisitPlan();
+
+            for ($i = 0; $i < $count; $i++) {
+                $account =
+
+                Account::create($account + [
+                    'assigned_cc_id' => $ccUser->id,
+                    'assigned_ch_id' => $this->pick($chIds),
+                    'assigned_am_ar_id' => $this->pick($amIds),
+                    'assigned_rm__dh_id' => $this->pick($rmIds),
+                ]);
+            }
+        }
+    }
+
+    private function buildCCVisitPlan()
     {
         $today = Carbon::today();
 
@@ -104,8 +126,6 @@ class AccountSeeder extends Seeder
             ['7200000029',  'DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
             ['7200000030',  'DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
             ['7200000031',  'DPD 31-60', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
-        ];
-
         foreach ($accounts as $index => [$accountNumber,  $dpdBucket, $nonPayments, $paymentStatus, $isForcePrioritized, $dueDate]) {
             $this->upsert($this->account(
                 $index,
@@ -138,7 +158,29 @@ class AccountSeeder extends Seeder
         $faker = fake('en_PH');
         $faker->seed((int) $accountNumber);
 
-        return $faker->firstName() . ' ' . $faker->lastName();
+        return $faker->firstName().' '.$faker->lastName();
+    }
+
+    private function fakeAsset(): string
+    {
+        $motorcycleModels = [
+            'Honda Click 125i',
+            'Honda Beat',
+            'Yamaha NMAX',
+            'Yamaha Mio i 125',
+            'Suzuki Raider R150',
+        ];
+
+        return fake()->randomElement($motorcycleModels);
+    }
+
+    private function fakeCC(): string
+    {
+        $ccUser = CmsUser::where('level', 1)
+            ->pluck('id')
+            ->toArray();
+
+        return fake()->randomElement($ccUser);
     }
 
     private function fakeAsset(): string
@@ -186,9 +228,11 @@ class AccountSeeder extends Seeder
             'account_number' => $accountNumber,
             'customer_id' => 130000000 + $index,
             'cust_code' => 130000000 + $index + 2,
+            'cust_code' => 130000000 + $index + 2,
             'customer_name' => $this->fakeCustomerName($accountNumber),
             'monthly_amortization' => self::MONTHLY_AMORTIZATION,
             'last_payment_date' => $today->copy()->subMonthsNoOverflow($monthsUnpaid)->subDays(5)->toDateString(),
+            'due_date' => $dueDate->toDateString(),
             'due_date' => $dueDate->toDateString(),
             'payment_status' => $paymentStatus,
             'payment_history' => "LAST PAID 1 MONTH AGO",
@@ -207,5 +251,15 @@ class AccountSeeder extends Seeder
             'is_contacted' => $isContacted,
             'send_date' => null,
         ];
+    }
+
+    private function usersByRole(int $roleId): Collection
+    {
+        return User::whereHas('CmsUser', fn ($q) => $q->where('role_id', $roleId))->get();
+    }
+
+    private function pick(Collection $ids): ?int
+    {
+        return $ids->isNotEmpty() ? $ids->random() : null;
     }
 }
