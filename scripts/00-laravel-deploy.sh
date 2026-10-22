@@ -26,10 +26,10 @@ else
 fi
 
 # Run database seeders if RUN_SEEDERS environment variable is set to true
-if [ "$RUN_SEEDERS" = "true" ]; then
-    echo "Running production seeder (runs once; skipped if data already exists)..."
-    php artisan db:seed --class=ProductionSeeder --force
-fi
+# if [ "$RUN_SEEDERS" = "true" ]; then
+#     echo "Running production seeder (runs once; skipped if data already exists)..."
+#     php artisan db:seed --class=ProductionSeeder --force
+# fi
 
 # Reset every existing user's password to the development password when RESET_USER_PASSWORDS is true
 if [ "$RESET_USER_PASSWORDS" = "true" ]; then
