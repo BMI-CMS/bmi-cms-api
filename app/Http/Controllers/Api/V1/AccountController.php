@@ -29,4 +29,6 @@ class AccountController extends Controller
             'data' => $result['data'],
         ]);
     }
+
+    public function contactRecording() {}
 }

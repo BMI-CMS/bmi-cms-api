@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         $this->call([
-            //FollowUpModeSeeder::class,
+            // FollowUpModeSeeder::class,
             CompanySeeder::class,
             // CompanyFollowUpModeSeeder::class,
             //  ReasonForDefaultSeeder::class,
@@ -27,20 +27,17 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             //   CompanyNextActionPlanSeeder::class,
             CmsUserSeeder::class,
-            AccountClassificationRuleSeeder::class,
             UserSeeder::class,
-
+            AccountClassificationRuleSeeder::class,
+            AccountSeederV2::class,
             // AccountSeeder::class,
-            // ContactRecordingSeeder::class,
-
-            //! New Seeders, needs rework
-            AccountSeederV3::class,
+            ContactInformationSeeder::class,
             ContactRecordingSeederV2::class,
-
+            // ContactRecordingSeeder::class,
             //  RepossessionRequestSeeder::class,
             //  ForRepossessionSeeder::class,
             // RestructuringSeeder::class,
-            //PromiseToPaySeeder::class,
+            // PromiseToPaySeeder::class,
             CustomerDetailSeeder::class,
             CollectionAddressSeeder::class,
             // NonStarterPaymentSeeder::class,

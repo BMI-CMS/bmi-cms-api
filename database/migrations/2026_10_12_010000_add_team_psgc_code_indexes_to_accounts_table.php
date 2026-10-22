@@ -9,7 +9,7 @@ return new class extends Migration
     private const INDEXES = [
         'accounts_assigned_ch_id_psgc_code_index' => ['assigned_ch_id', 'psgc_code'],
         'accounts_assigned_am_ar_id_psgc_code_index' => ['assigned_am_ar_id', 'psgc_code'],
-        'accounts_assigned_rm__dh_id_psgc_code_index' => ['assigned_rm__dh_id', 'psgc_code'],
+        'accounts_assigned_rm_dh_id_psgc_code_index' => ['assigned_rm_dh_id', 'psgc_code'],
     ];
 
     public function up(): void

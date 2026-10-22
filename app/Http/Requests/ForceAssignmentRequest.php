@@ -31,18 +31,8 @@ class ForceAssignmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'account_id' => [
-                'required',
-                'integer',
-                'min:1',
-            ],
-
-            'account_number' => [
-                'required',
-                'string',
-                'max:15',
-            ],
-
+            'account_id' => 'required|integer|min:1',
+            'account_number' => 'required|string|max:15'
         ];
     }
 }

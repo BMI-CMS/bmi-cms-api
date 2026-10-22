@@ -23,17 +23,22 @@ class ContactRecordingSeederV2 extends Seeder
 {
     private const MARKER = 'Visit Plan sample data.';
 
-    private const PROMISE_TO_PAY    = 'PROMISE TO PAY';
-    private const SKIPTRACE         = 'FOR SKIPTRACE';
+    private const PROMISE_TO_PAY = 'PROMISE TO PAY';
+
+    private const SKIPTRACE = 'FOR SKIPTRACE';
+
     private const NOTICE_AND_DEMAND = 'FOR SERVICE OF COLLECTION NOTICE';
-    private const FOR_REPO          = 'FOR REPO';
-    private const FIELD_VISIT       = 'FOR FIELD VISIT';
+
+    private const FOR_REPO = 'FOR REPO';
+
+    private const FIELD_VISIT = 'FOR FIELD VISIT';
 
     public function run(): void
     {
         $scenarios = $this->scenarios();
 
-        $pool = Account::select('id', 'account_number', 'days_past_due', 'assigned_cc_id')
+        // run(): select dpd_bucket instead of days_past_due
+        $pool = Account::select('id', 'account_number', 'dpd_bucket', 'assigned_cc_id')
             ->inRandomOrder()
             ->get();
 
@@ -47,34 +52,33 @@ class ContactRecordingSeederV2 extends Seeder
 
         // Remove this seeder's previous output, including soft-deleted rows.
         ContactRecording::withTrashed()
-            ->where('remarks', 'like', self::MARKER . '%')
+            ->where('remarks', 'like', self::MARKER.'%')
             ->forceDelete();
 
         // Scenarios that need a specific account pick first so they can't be starved.
         // (usort is stable in PHP 8+, so the original order is kept otherwise.)
-        usort($scenarios, fn ($a, $b) => isset($b['dpd']) <=> isset($a['dpd']));
-
+        usort($scenarios, fn ($a, $b) => isset($b['bucket']) <=> isset($a['bucket']));
         $summary = [];
 
         foreach ($scenarios as $scenario) {
-            $account = $this->takeAccount($pool, $scenario['dpd'] ?? null);
+            $account = $this->takeAccount($pool, $scenario['bucket'] ?? null);
 
             foreach ($scenario['rows'] as $row) {
                 [$category, $actionTaken, $plan, $contactDate, $nextActionDate, $softDeleted] = $row;
 
                 $recording = ContactRecording::create([
-                    'account_id'         => $account->id,
-                    'current_category'   => $category,
-                    'follow_up_mode'     => 'FIELD VISIT',
-                    'action_taken'       => $actionTaken,
+                    'account_id' => $account->id,
+                    'current_category' => $category,
+                    'follow_up_mode' => 'FIELD VISIT',
+                    'action_taken' => $actionTaken,
                     'reason_for_default' => 'JOB/SALARY RELATED',
-                    'next_action_plan'   => $plan,
-                    'remarks'            => self::MARKER . " [{$scenario['label']}]",
-                    'geotagging'         => '14.5547,121.0244',
-                    'recorded_by'        => $account->assigned_cc_id ?? 1,
-                    'contact_date'       => $contactDate,
-                    'next_action_date'   => $nextActionDate,
-                    'is_contacted'       => $row[6] ?? false,
+                    'next_action_plan' => $plan,
+                    'remarks' => self::MARKER." [{$scenario['label']}]",
+                    'geotagging' => '14.5547,121.0244',
+                    'recorded_by' => $account->assigned_cc_id ?? 1,
+                    'contact_date' => $contactDate,
+                    'next_action_date' => $nextActionDate,
+                    'is_contacted' => $row[6] ?? false,
                 ]);
 
                 if ($softDeleted) {
@@ -82,26 +86,19 @@ class ContactRecordingSeederV2 extends Seeder
                 }
             }
 
-            $summary[] = [$scenario['label'], $account->account_number, $account->days_past_due];
+            $summary[] = [$scenario['label'], $account->account_number, $account->dpd_bucket];
         }
 
         usort($summary, fn ($a, $b) => strcmp($a[0], $b[0]));
-        $this->command?->table(['Scenario', 'Account number', 'DPD'], $summary);
+        $this->command?->table(['Scenario', 'Account number', 'Bucket'], $summary);
     }
 
-    /**
-     * Remove and return one account from the pool.
-     * $dpd = [min, max] prefers an account in that days_past_due range
-     * and falls back to any account if none matches.
-     */
-    private function takeAccount(Collection $pool, ?array $dpd): Account
+    private function takeAccount(Collection $pool, ?string $bucket): Account
     {
         $key = $pool->keys()->first();
 
-        if ($dpd !== null) {
-            $match = $pool->search(
-                fn ($a) => $a->days_past_due >= $dpd[0] && $a->days_past_due <= $dpd[1]
-            );
+        if ($bucket !== null) {
+            $match = $pool->search(fn ($a) => $a->dpd_bucket === $bucket);
 
             if ($match !== false) {
                 $key = $match;
@@ -120,17 +117,17 @@ class ContactRecordingSeederV2 extends Seeder
      */
     private function scenarios(): array
     {
-        $now   = Carbon::now();
+        $now = Carbon::now();
         $today = Carbon::today();
 
         // Already due when seeded, but still today.
         $earlierToday = $now->copy()->subHour()->max($today);
         // Same day, not yet due when seeded (becomes due later today).
         $laterToday = $now->copy()->addHour()->min($today->copy()->endOfDay());
-        $yesterday  = $today->copy()->subDay()->setTime(10, 0);
-        $tomorrow   = $today->copy()->addDay()->setTime(10, 0);
-        $daysAgo    = fn (int $days) => $today->copy()->subDays($days)->setTime(10, 0);
-        $lastMonth  = $today->copy()->subMonthNoOverflow()->startOfMonth()->addDays(11)->setTime(10, 0);
+        $yesterday = $today->copy()->subDay()->setTime(10, 0);
+        $tomorrow = $today->copy()->addDay()->setTime(10, 0);
+        $daysAgo = fn (int $days) => $today->copy()->subDays($days)->setTime(10, 0);
+        $lastMonth = $today->copy()->subMonthNoOverflow()->startOfMonth()->addDays(11)->setTime(10, 0);
 
         return [
             // ===== Due next action plans =====
@@ -153,7 +150,7 @@ class ContactRecordingSeederV2 extends Seeder
             ['label' => 'B13', 'rows' => [['FDD/NS', 'FOR WRITE OFF(MINIMAL BALANCE)', 'FOR WRITE OFF (MINIMAL BALANCE)', $daysAgo(3), $earlierToday, false]]],
             ['label' => 'B14', 'rows' => [[null, 'FOLLOW UP PAYMENT', self::FIELD_VISIT, $daysAgo(3), $earlierToday, false]]],
             // Category recorded at visit time differs from the account's current attributes (now DPD 1-30).
-            ['label' => 'B15', 'dpd' => [1, 30], 'rows' => [['Priority 1 Accounts', 'FOLLOW UP PAYMENT', self::FIELD_VISIT, $daysAgo(3), $earlierToday, false]]],
+            ['label' => 'B15', 'bucket' => 'DPD 1-30', 'rows' => [['Priority 1 Accounts', 'FOLLOW UP PAYMENT', self::FIELD_VISIT, $daysAgo(3), $earlierToday, false]]],
 
             // ===== Precedence with a due next action plan =====
             ['label' => 'B16', 'rows' => [['DPD 1-30 Days', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $daysAgo(3), $earlierToday, false]]],

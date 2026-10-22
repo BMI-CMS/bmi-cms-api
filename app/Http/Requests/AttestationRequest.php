@@ -23,12 +23,7 @@ class AttestationRequest extends FormRequest
     public function rules(): array
     {
         return [
-
-            'is_attested' => [
-                'required',
-                'boolean',
-            ],
-
+            'is_attested' => 'required|boolean'
         ];
     }
 }
