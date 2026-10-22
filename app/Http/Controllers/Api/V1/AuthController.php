@@ -47,7 +47,8 @@ class AuthController extends Controller
     }
 
 
-    public function verifyToken(Request $request) {
+    public function verifyToken(Request $request)
+    {
         $user = $request->user();
         $token = $user->currentAccessToken();
         $cms_user = $user->CmsUser;
@@ -75,20 +76,6 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Logged out successfully.',
-        ]);
-    }
-
-    public function verifyToken(Request $request) {
-        $user = $request->user();
-        $token = $user->currentAccessToken();
-        $cms_user = $user->CmsUser;
-
-        return response()->json([
-            'valid'      => true,
-            'id' => $user->id,
-            'username' => $user->username,
-            'name' => $cms_user->name,
-            'role_id' => $cms_user->role_id,
         ]);
     }
 }
