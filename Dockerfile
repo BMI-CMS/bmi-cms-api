@@ -1,23 +1,42 @@
-FROM php:8.2-fpm
+FROM richarvey/nginx-php-fpm:3.1.6
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    git curl zip unzip \
-    libpng-dev libonig-dev libxml2-dev libzip-dev \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
+# Install PostgreSQL client libraries and PHP pdo_pgsql extension
+RUN apk add --no-cache postgresql-dev \
+    && docker-php-ext-install pdo_pgsql
 
-# Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Environment variables for the base image
+ENV SKIP_COMPOSER 1
+ENV WEBROOT /var/www/html/public
+ENV PHP_ERRORS_STDERR 1
+ENV RUN_SCRIPTS 1
+ENV REAL_IP_HEADER 1
+ENV PHP_CATCHALL 1
 
-WORKDIR /var/www
+# Laravel default production settings
+ENV APP_ENV production
+ENV APP_DEBUG false
+ENV LOG_CHANNEL stderr
+ENV COMPOSER_ALLOW_SUPERUSER 1
 
-COPY . .
+# Copy application files
+COPY . /var/www/html
 
-RUN composer install --no-interaction --optimize-autoloader --no-dev
+# Normalize line endings and set permissions on scripts
+RUN sed -i 's/\r$//' /var/www/html/scripts/00-laravel-deploy.sh \
+    && chmod +x /var/www/html/scripts/00-laravel-deploy.sh
 
-RUN chown -R www-data:www-data /var/www \
-    && chmod -R 755 /var/www/storage
+# Install production composer packages
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts \
+    && php artisan package:discover --ansi
 
-EXPOSE 9000
+# Ensure storage directories exist and grant permissions
+RUN mkdir -p /var/www/html/storage/framework/sessions \
+    /var/www/html/storage/framework/views \
+    /var/www/html/storage/framework/cache \
+    /var/www/html/storage/logs \
+    && chown -R nginx:nginx /var/www/html \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-CMD ["php-fpm"]
+EXPOSE 80
+
+CMD ["/start.sh"]
