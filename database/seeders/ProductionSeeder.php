@@ -63,7 +63,8 @@ class ProductionSeeder extends Seeder
 
             if (($table['schema'] ?? 'public') !== 'public'
                 || !Schema::hasColumn($name, 'id')
-                || DB::table($name)->exists()) {
+                || DB::table($name)->exists()
+            ) {
                 continue;
             }
 
