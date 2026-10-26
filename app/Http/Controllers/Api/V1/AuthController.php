@@ -47,7 +47,6 @@ class AuthController extends Controller
         return response()->json($user->CmsUser);
     }
 
-
     public function verifyToken(Request $request)
     {
         $user = $request->user();
@@ -55,14 +54,16 @@ class AuthController extends Controller
         $cms_user = $user->CmsUser;
 
         return response()->json([
-            'message' => "Token successfully validated",
+            'message' => 'Token successfully validated',
             'data' => [
                 'valid' => true,
                 'id' => $user->id,
                 'username' => $user->username,
                 'name' => $cms_user->name,
                 'role_id' => $cms_user->role_id,
-            ]
+                'company_name' => $cms_user->company->name,
+                'psgc_code' => $cms_user->psgc_code,
+            ],
         ]);
     }
 
