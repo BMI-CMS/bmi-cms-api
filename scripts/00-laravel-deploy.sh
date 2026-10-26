@@ -16,26 +16,6 @@ echo "Caching Laravel configuration, routes, and views..."
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
-echo "NICE"
-echo "NICE"
-echo "NICE"
-echo "NICE"
-echo "NICE"
-echo "NICE"
-echo "NICE"
-echo "NICE"
-echo "NICE"
-echo "NICE"
-echo "NICE"
-echo "NICE"
-echo "NICE"
-echo "NICE"
-echo "NICE"
-echo "NICE"
-echo "NICE"
-echo "NICE"
-echo "NICE"
-echo "NICE"
 php artisan optimize:clear
 
 # Run database migrations only when RUN_MIGRATIONS environment variable is set to true
@@ -72,6 +52,6 @@ fi
 
 if [ "$SYNC_NEW_ACCOUNTS" = "true" ]; then
     echo "Syncing accounts and contact information..."
-    php artisan migrate:fresh --seed
+    php artisan migrate:fresh --seed --force
 fi
 echo "=== Laravel Deploy Script Completed Successfully ==="
