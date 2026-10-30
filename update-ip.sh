@@ -106,7 +106,19 @@ fi
 
 echo "Successfully updated APP_URL in $ENV_FILE to $NEW_URL"
 
+# Clear cached config/routes/views so the new .env values take effect
+echo "Clearing cached config, routes, views and application cache..."
+php artisan optimize:clear || echo "Warning: php artisan optimize:clear failed."
+
+# Offer to start the server when --serve wasn't passed (interactive sessions only)
+if [ "$SERVE" = false ] && [ -t 0 ]; then
+    read -r -p "Start the Laravel server now? (y/N) " ANSWER
+    case "$ANSWER" in
+        [yY]|[yY][eE][sS]) SERVE=true ;;
+    esac
+fi
+
 if [ "$SERVE" = true ]; then
     echo "Starting Laravel server on $IP:$PORT..."
-    php artisan serve --host="$IP" --port="$PORT"
+    php artisan serve --host="0.0.0.0" --port="$PORT" --no-reload
 fi

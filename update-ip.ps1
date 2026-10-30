@@ -55,7 +55,20 @@ if ($content -match "(?m)^APP_URL=.*$") {
 [System.IO.File]::WriteAllText($envFile, $content)
 Write-Host "Successfully updated APP_URL in .env to $newUrl" -ForegroundColor Green
 
+# Clear cached config/routes/views so the new .env values take effect
+Write-Host "Clearing cached config, routes, views and application cache..." -ForegroundColor Cyan
+php artisan optimize:clear
+if ($LASTEXITCODE -ne 0) {
+    Write-Warning "optimize:clear failed (exit code $LASTEXITCODE)."
+}
+
+# Offer to start the server when -Serve wasn't passed (interactive sessions only)
+if (-not $Serve -and [Environment]::UserInteractive) {
+    $answer = Read-Host "Start the Laravel server now? (y/N)"
+    if ($answer -match '^(y|yes)$') { $Serve = $true }
+}
+
 if ($Serve) {
     Write-Host "Starting Laravel server on ${ip}:$Port..." -ForegroundColor Cyan
-    php artisan serve --host=$ip --port=$Port
+    php artisan serve --host=0.0.0.0 --port=$Port --no-reload
 }
