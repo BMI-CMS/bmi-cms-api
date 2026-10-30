@@ -13,18 +13,17 @@ return new class extends Migration
     {
         Schema::create('collecting_addresses', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('account_id')
-                ->unique()
-                ->constrained('accounts')
+            $table->foreignId('customer_details_id')
+                ->constrained('customer_details')
                 ->cascadeOnDelete();
-            $table->string('unit_lot_block', 255)->nullable();
-            $table->string('street_name', 255)->nullable();
-            $table->string('subdivision_village', 255)->nullable();
-            $table->string('province', 255)->nullable();
-            $table->string('postal_code', 4)->nullable();
-            $table->string('barangay', 255);
-            $table->string('city_municipality', 255);
-            $table->string('region', 255);
+            $table->string('unit_lot_block')->nullable();
+            $table->string('street_name')->nullable();
+            $table->string('subdivision_village')->nullable();
+            $table->string('barangay')->nullable();
+            $table->string('city_municipality');
+            $table->string('province')->nullable();
+            $table->string('region')->nullable();
+            $table->string('postal_code', 20)->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

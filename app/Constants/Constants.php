@@ -55,4 +55,9 @@ class Constants
     public const TEAM_ACCOUNTS_MAX_PER_PAGE = 50;
     public const FIRSTDUEDATE = 'FIRST DUE DATE';
     public const NONSTARTER = 'NON-STARTER';
+
+    // Login lockout (docs/security.md)
+    public const LOGIN_ATTEMPTS_BEFORE_FREEZE = 3;
+    public const LOGIN_FREEZE_MINUTES = 15;
+    public const LOGIN_ATTEMPTS_AFTER_FREEZE = 2;
 }

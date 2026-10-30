@@ -17,12 +17,16 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request): JsonResponse
     {
-        $result = $this->authService->login($request->validated());
+        $result = $this->authService->login($request->validated(), $request->ip());
 
         if (! $result['success']) {
+            $data = $result['data'] ?? [];
+            $headers = isset($data['retry_after']) ? ['Retry-After' => $data['retry_after']] : [];
+
             return response()->json([
                 'message' => $result['message'],
-            ], $result['code']);
+                ...$data,
+            ], $result['code'], $headers);
         }
 
         return response()->json([

@@ -49,6 +49,9 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'failed_login_attempts' => 'integer',
+            'login_frozen_until' => 'datetime',
+            'locked_at' => 'datetime',
         ];
     }
 

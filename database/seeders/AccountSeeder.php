@@ -16,26 +16,6 @@ class AccountSeeder extends Seeder
 
     private const FLAT_ANNUAL_RATE = 0.20;
 
-    private function dpdBucket(int $days): string
-    {
-        return match (true) {
-            $days <= 0 => 'DPD 0',
-            $days <= 30 => 'DPD 1-30',
-            $days <= 60 => 'DPD 31-60',
-            $days <= 90 => 'DPD 61-90',
-            $days <= 120 => 'DPD 91-120',
-            $days <= 150 => 'DPD 121-150',
-            $days <= 180 => 'DPD 151-180',
-            $days <= 210 => 'DPD 181-210',
-            $days <= 240 => 'DPD 211-240',
-            $days <= 270 => 'DPD 241-270',
-            $days <= 300 => 'DPD 271-300',
-            $days <= 330 => 'DPD 301-330',
-            $days <= 360 => 'DPD 331-360',
-            default => 'DPD MORE THAN 360',
-        };
-    }
-
     private const MOTORCYCLES = [
         'Honda' => [
             'Beat' => 71900.00,
@@ -88,7 +68,7 @@ class AccountSeeder extends Seeder
     {
         //
 
-        $ccUsers = $this->usersByRole(1);
+        $rsUsers = $this->usersByRole(12);
 
         $today = Carbon::today();
 
@@ -98,9 +78,9 @@ class AccountSeeder extends Seeder
         $dueLastMonth = $today->copy()->subMonthNoOverflow()->startOfMonth()->addDays(9);
         $dueNextMonth = $today->copy()->addMonthNoOverflow()->startOfMonth()->addDays(4);
 
-        foreach ($ccUsers as $ccUser) {
+        foreach ($rsUsers as $rsUser) {
             $this->buildCCVisitPlan(
-                $ccUser->id,
+                $rsUser->id,
                 $today,
                 $dueToday,
                 $dueEarlierThisMonth,
@@ -112,7 +92,7 @@ class AccountSeeder extends Seeder
     }
 
     private function buildCCVisitPlan(
-        int $ccUserId,
+        int $rsUserId,
         Carbon $today,
         Carbon $dueToday,
         Carbon $dueEarlierThisMonth,
@@ -120,9 +100,9 @@ class AccountSeeder extends Seeder
         Carbon $dueLastMonth,
         Carbon $dueNextMonth,
     ) {
-        $chIds = $this->usersByRole(2)->pluck('id');  // placeholder role ids
-        $amIds = $this->usersByRole(3)->pluck('id');
-        $rmIds = $this->usersByRole(4)->pluck('id');
+        $roIds = $this->usersByRole(13)->pluck('id');  // placeholder role ids
+        $armIds = $this->usersByRole(14)->pluck('id');
+        $dhIds = $this->usersByRole(15)->pluck('id');
 
         $noContactRecording = $this->getNoContactRecording($dueToday);
         $verlappingConditions = $this->getOverlappingConditions($dueToday);
@@ -153,9 +133,9 @@ class AccountSeeder extends Seeder
             ...$outOfScope,
         ];
 
-        $assignedCH = $this->pick($chIds);
-        $assignedAMRM = $this->pick($amIds);
-        $assignedRMDH = $this->pick($rmIds);
+        $assignedRO = $this->pick($roIds);
+        $assignedARM = $this->pick($armIds);
+        $assignedDH = $this->pick($dhIds);
 
         foreach ($accounts as $index => [$dpdBucket, $nonPayments, $paymentStatus, $isForcePrioritized, $dueDate]) {
             $accountAttributes = $this->buildAccountAttributes(
@@ -165,12 +145,12 @@ class AccountSeeder extends Seeder
                 $nonPayments,
                 $paymentStatus,
                 $isForcePrioritized,
-                str_starts_with($this->getAccountNumber($ccUserId, $index), '72'),
+                str_starts_with($this->getAccountNumber($rsUserId, $index), '72'),
                 $dueDate,
-                $ccUserId,
-                $assignedCH,
-                $assignedAMRM,
-                $assignedRMDH,
+                $rsUserId,
+                $assignedRO,
+                $assignedARM,
+                $assignedDH,
             );
 
             $this->upsert($accountAttributes);
@@ -186,12 +166,12 @@ class AccountSeeder extends Seeder
         bool $isForcePrioritized,
         bool $isContacted,
         Carbon $dueDate,
-        int $assignedCC,
-        int $assignedCH,
-        int $assignedAMRM,
-        int $assignedRMDH,
+        int $assignedRS,
+        int $assignedRO,
+        int $assignedARM,
+        int $assignedDH,
     ) {
-        $accountNumber = $this->getAccountNumber($assignedCC, $index);
+        $accountNumber = $this->getAccountNumber($assignedRS, $index);
         $monthsUnpaid = $this->monthsUnpaid($nonPayments);
 
         // Unit
@@ -227,11 +207,11 @@ class AccountSeeder extends Seeder
             'past_due_balance' => $monthlyAmortization * $monthsUnpaid,
             'outstanding_balance' => $outstandingBalance,
             'asset' => $brand . ' - ' . $model,
-            'psgc_code' => self::PSGC['MUNTINLUPA'][$barangay],
-            'assigned_cc_id' => $assignedCC,
-            'assigned_ch_id' => $assignedCH,
-            'assigned_am_ar_id' => $assignedAMRM,
-            'assigned_rm_dh_id' => $assignedRMDH,
+            'psgc_code' => $this->getRandomPSGCByUser($assignedRS),
+            'assigned_cc_id' => $assignedRS,
+            'assigned_ch_id' => $assignedRO,
+            'assigned_am_ar_id' => $assignedARM,
+            'assigned_rm_dh_id' => $assignedDH,
             // 'last_payment_amount' => $monthlyAmortization,
             'is_force_prioritized' => $isForcePrioritized,
             'is_contacted' => $isContacted,
@@ -241,7 +221,12 @@ class AccountSeeder extends Seeder
 
     private function usersByRole(int $roleId): Collection
     {
-        return User::whereHas('CmsUser', fn($q) => $q->where('role_id', $roleId))->get();
+        return User::whereHas('CmsUser', function ($query) use ($roleId) {
+            $query->where('role_id', $roleId)
+                ->whereHas('company', function ($query) {
+                    $query->where('name', 'RCD');
+                });
+        })->get();
     }
 
     private function pick(Collection $ids): ?int
@@ -404,5 +389,28 @@ class AccountSeeder extends Seeder
             ['DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
             ['DPD 31-60', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueEarlierThisMonth],
         ];
+    }
+
+    private function getRandomPSGCByUser(string $id): string
+    {
+        $psgc_code = [
+            '5' => [
+                '1380800003',
+                '1380800004',
+                '1380800005',
+            ],
+            '13' => [
+                '1380800006',
+                '1380800007',
+                '1380800008',
+            ],
+            '21' => [
+                '1380800009',
+                '1380800010',
+                '1380800011',
+            ],
+        ];
+
+        return fake()->randomElement($psgc_code[$id]);
     }
 }
