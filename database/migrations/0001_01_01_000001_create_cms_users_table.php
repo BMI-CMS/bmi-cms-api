@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('cms_users', function (Blueprint $table) {
             $table->id();
-
             $table->string('name');
             $table->foreignId('role_id')
                 ->constrained('roles')

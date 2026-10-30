@@ -33,27 +33,38 @@ class CmsUserSeeder extends Seeder
     public static function records(): array
     {
         return [
-            ['name' => 'CHINKEE TAN',        'company' => 1, 'role_id' => 1, 'level' => 1, 'psgc_code' => '137404000'],
-            ['name' => 'HENRY SY',           'company' => 1, 'role_id' => 1, 'level' => 1, 'psgc_code' => '1234567890'],
-            ['name' => 'MIKE MORALES',       'company' => 1, 'role_id' => 1, 'level' => 1, 'psgc_code' => '1234567890'],
-            ['name' => 'AYALA',              'company' => 1, 'role_id' => 1, 'level' => 1, 'psgc_code' => '1234567890'],
-            ['name' => 'EDSA',               'company' => 1, 'role_id' => 1, 'level' => 1, 'psgc_code' => '1234567890'],
-            ['name' => 'CATHERINE DE JESUS', 'company' => 1, 'role_id' => 2, 'level' => 2, 'psgc_code' => '137404000'],
-            ['name' => 'PEDRO GIL',          'company' => 1, 'role_id' => 3, 'level' => 3, 'psgc_code' => '137404000'],
-            ['name' => 'BACLARAN',           'company' => 1, 'role_id' => 4, 'level' => 4, 'psgc_code' => '1234567890'],
-            ['name' => 'SHAW',               'company' => 2, 'role_id' => 1, 'level' => 1, 'psgc_code' => '1234567890'],
-            ['name' => 'BONI',               'company' => 2, 'role_id' => 1, 'level' => 1, 'psgc_code' => '1234567890'],
-            ['name' => 'ASIA WORLD',         'company' => 2, 'role_id' => 1, 'level' => 1, 'psgc_code' => '1234567890'],
-            ['name' => 'LIBERTAD',           'company' => 2, 'role_id' => 1, 'level' => 1, 'psgc_code' => '1234567890'],
-            ['name' => 'ORTIGAS',            'company' => 2, 'role_id' => 1, 'level' => 1, 'psgc_code' => '1234567890'],
-            ['name' => 'GIL PUYAT',          'company' => 2, 'role_id' => 2, 'level' => 2, 'psgc_code' => '1234567890'],
-            ['name' => 'TAFT AVENUE',        'company' => 2, 'role_id' => 3, 'level' => 3, 'psgc_code' => '1234567890'],
-            ['name' => 'MIA ROAD',           'company' => 2, 'role_id' => 4, 'level' => 4, 'psgc_code' => '1234567890'],
-            ['name' => 'EVAN BUCKLEY',        'company' => 1, 'role_id' => 1, 'level' => 1, 'psgc_code' => '137404000'],
-            ['name' => 'EDDIE DIAZ', 'company' => 1, 'role_id' => 2, 'level' => 2, 'psgc_code' => '137404000'],
-            ['name' => 'EMMAN CC',        'company' => 1, 'role_id' => 1, 'level' => 1, 'psgc_code' => '137404000'],
-            ['name' => 'EMMAN CH', 'company' => 1, 'role_id' => 2, 'level' => 2, 'psgc_code' => '137404000'],
+            ['name' => 'EVAN BUCKLEY CC', 'company' => 1, 'role_id' => 1, 'level' => 1, 'psgc_code' => '137404000'],
+            ['name' => 'EVAN BUCKLEY CH', 'company' => 1, 'role_id' => 6, 'level' => 2, 'psgc_code' => '137404000'],
+            ['name' => 'EVAN BUCKLEY AM', 'company' => 1, 'role_id' => 8, 'level' => 3, 'psgc_code' => '137404000'],
+            ['name' => 'EVAN BUCKLEY GH', 'company' => 1, 'role_id' => 10, 'level' => 4, 'psgc_code' => '137404000'],
 
+            ['name' => 'EVAN BUCKLEY RS', 'company' => 2, 'role_id' => 12, 'level' => 1, 'psgc_code' => '137404000'],
+            ['name' => 'EVAN BUCKLEY RO', 'company' => 2, 'role_id' => 13, 'level' => 2, 'psgc_code' => '137404000'],
+            ['name' => 'EVAN BUCKLEY ARM', 'company' => 2, 'role_id' => 14, 'level' => 3, 'psgc_code' => '137404000'],
+            ['name' => 'EVAN BUCKLEY DH', 'company' => 2, 'role_id' => 15, 'level' => 4, 'psgc_code' => '137404000'],
+
+            ['name' => 'EDDIE DIAZ CC', 'company' => 1, 'role_id' => 1, 'level' => 1, 'psgc_code' => '137404000'],
+            ['name' => 'EDDIE DIAZ CH', 'company' => 1, 'role_id' => 6, 'level' => 2, 'psgc_code' => '137404000'],
+            ['name' => 'EDDIE DIAZ AM', 'company' => 1, 'role_id' => 8, 'level' => 3, 'psgc_code' => '137404000'],
+            ['name' => 'EDDIE DIAZ GH', 'company' => 1, 'role_id' => 10, 'level' => 4, 'psgc_code' => '137404000'],
+
+            ['name' => 'EDDIE DIAZ RS', 'company' => 2, 'role_id' => 12, 'level' => 1, 'psgc_code' => '137404000'],
+            ['name' => 'EDDIE DIAZ RO', 'company' => 2, 'role_id' => 13, 'level' => 2, 'psgc_code' => '137404000'],
+            ['name' => 'EDDIE DIAZ ARM', 'company' => 2, 'role_id' => 14, 'level' => 3, 'psgc_code' => '137404000'],
+            ['name' => 'EDDIE DIAZ DH', 'company' => 2, 'role_id' => 15, 'level' => 4, 'psgc_code' => '137404000'],
+
+            ['name' => 'EMMAN CC', 'company' => 1, 'role_id' => 1, 'level' => 1, 'psgc_code' => '137404000'],
+            ['name' => 'EMMAN CH', 'company' => 1, 'role_id' => 6, 'level' => 2, 'psgc_code' => '137404000'],
+            ['name' => 'EMMAN AM', 'company' => 1, 'role_id' => 8, 'level' => 3, 'psgc_code' => '137404000'],
+            ['name' => 'EMMAN GH', 'company' => 1, 'role_id' => 10, 'level' => 4, 'psgc_code' => '137404000'],
+
+            ['name' => 'EMMAN RS', 'company' => 2, 'role_id' => 12, 'level' => 1, 'psgc_code' => '137404000'],
+            ['name' => 'EMMAN RO', 'company' => 2, 'role_id' => 13, 'level' => 2, 'psgc_code' => '137404000'],
+            ['name' => 'EMMAN ARM', 'company' => 2, 'role_id' => 14, 'level' => 3, 'psgc_code' => '137404000'],
+            ['name' => 'EMMAN DH', 'company' => 2, 'role_id' => 15, 'level' => 4, 'psgc_code' => '137404000'],
+
+            ['name' => 'JAYREN CC', 'company' => 1, 'role_id' => 3, 'level' => 3, 'psgc_code' => '137404000'],
+            ['name' => 'JAYREN CH', 'company' => 1, 'role_id' => 4, 'level' => 4, 'psgc_code' => '1234567890'],
         ];
     }
 }

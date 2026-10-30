@@ -78,6 +78,7 @@ Follow the documented architecture and existing project conventions. Prefer clea
 - **API Resources:** Use consistent response structures where appropriate.
 - **Middleware, Policies, and Exceptions:** Apply authentication, authorization, request handling, and error-handling responsibilities consistently.
 - **Naming Conventions:** Use clear, descriptive names for classes, methods, variables, and database columns.
+- **Code Comments:** Describe each function in one sentence only. Do not add comments that explain step by step how a function works.
 - **Existing Patterns:** Inspect completed features before introducing a new pattern. Do not refactor unrelated code merely to impose a preferred architecture.
 
 ## SOLID Principles
@@ -284,7 +285,7 @@ Ask focused questions when business requirements are ambiguous. Clearly distingu
 Summarize:
 
 - What was implemented.
-- Files created or modified.
+- Affected files, as two separate lists: **Modified files** and **New files** (paths relative to the project root). Show these lists at the end of every task, even small ones.
 - Relevant database, API, or integration changes.
 - Tests and verification actually performed.
 - Known limitations and unresolved issues.

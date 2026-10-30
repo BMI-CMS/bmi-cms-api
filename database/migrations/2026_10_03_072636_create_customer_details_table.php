@@ -18,8 +18,8 @@ return new class extends Migration
                 ->constrained('accounts')
                 ->cascadeOnDelete();
             $table->string('contact_number', 30);
-            $table->string('email', 255);
-            $table->string('social_media_account', 255);
+            $table->string('email');
+            $table->string('social_media_account');
             $table->softDeletes();
             $table->timestamps();
         });
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('contact_information');
+        Schema::dropIfExists('customer_details');
     }
 };

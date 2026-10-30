@@ -1,6 +1,23 @@
 # Project Status
 
-Last updated: 2026-10-11.
+Last updated: 2026-10-30.
+
+## Authentication
+
+### Done — login lockout (2026-10-30; awaiting your review)
+
+Rules: `docs/security.md` section 1 (confirmed 2026-10-30).
+
+- 3 wrong passwords → login frozen for 15 minutes (429 with `retry_after` and a `Retry-After` header); 2 more wrong passwords after the freeze → account locked (423). Frozen and locked attempts are rejected without checking the password and are not counted. Only wrong passwords for existing usernames count; the counter resets only on a successful login.
+- Unlock only with `php artisan user:unlock {username}` (`App\Console\Commands\UnlockUserLogin`).
+- Freeze, lock and unlock are written to `audit_logs` (new `App\Models\AuditLog`; first code to write to that table).
+- Code: `AuthService` (lockout logic), `AuthController::login` (passes the IP, returns `retry_after`), `User` casts, `Constants::LOGIN_*`.
+- Database: migration `2026_10_30_000000_add_login_lockout_columns_to_users_table` (`failed_login_attempts`, `login_frozen_until`, `locked_at`). Verified roll back / re-apply on the test DB.
+- **API change:** the mobile app must handle the new 429 and 423 responses on `/login`.
+- **To do on each existing database:** `php artisan migrate` (dev DB; on Render set `RUN_MIGRATIONS=true` once).
+- Tests: new `tests/Feature/LoginLockoutTest.php` — 15/15 pass. Full suite on the current working tree: 241 passed, 215 failed, 8 incomplete; none of the failures go through the login code. They come from: Visit Plan tests sending a `BMI_CMS_KEY` header while `ApiKeyMiddleware` reads `x-api-key` (401 "Invalid API key."); `UserFactory` using the missing `App\Models\UserLevel`; and the uncommitted schema changes (roles now need `company_id`, `CustomerDetailSeeder` renamed, `accounts` columns changed) breaking the seeders and sample data.
+- Not tested: the mobile app's handling of 429/423; behavior on PostgreSQL (row lock is standard `SELECT … FOR UPDATE`).
+- Open: no throttling for unknown usernames or by IP; tokens are not revoked on lock (see `docs/security.md` 1.6).
 
 ## Visit Plan
 
