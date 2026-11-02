@@ -3,20 +3,21 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class CollectionAddress extends Model
+class CollectingAddress extends Model
 {
-    protected $table = 'collecting_addresses';
+    use SoftDeletes;
 
     protected $fillable = [
-        'account_id',
+        'customer_details_id',
         'unit_lot_block',
         'street_name',
         'subdivision_village',
-        'province',
-        'postal_code',
         'barangay',
         'city_municipality',
+        'province',
         'region',
+        'postal_code'
     ];
 }

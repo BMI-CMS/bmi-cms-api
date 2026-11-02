@@ -80,6 +80,7 @@ class DashboardService
                     'contact_number' => $item->contact_number,
                     'email' => $item->email,
                     'social_media_account' => $item->social_media_account,
+                    'due_date' => $item->due_date,
                     'next_action_date' => $item->next_action_date,
                     'next_action_plan' => $item->next_action_plan,
                     'activity_records' => [],
@@ -144,6 +145,7 @@ class DashboardService
                 'contact_number' => $item->contact_number,
                 'email' => $item->email,
                 'social_media_account' => $item->social_media_account,
+                'due_date' => $item->due_date,
                 'next_action_date' => $item->next_action_date,
                 'next_action_plan' => $item->next_action_plan,
                 'activity_records' => [],
@@ -169,7 +171,7 @@ class DashboardService
                 $unclassified[] = $account['account_number'];
             }
 
-            $accountsByPSGC[$item->psgc_code.' - '.$item->city_municipality][] = $account;
+            $accountsByPSGC[$item->psgc_code . ' - ' . $item->city_municipality][] = $account;
         }
 
         if ($unclassified !== []) {
@@ -294,7 +296,7 @@ class DashboardService
             return count($node);
         }
 
-        return array_sum(array_map(fn (array $child) => $this->countClassified($child), $node));
+        return array_sum(array_map(fn(array $child) => $this->countClassified($child), $node));
     }
 
     public function teamAssignedAccountsPSGC(int $userId, string $psgc_code, string $period)
