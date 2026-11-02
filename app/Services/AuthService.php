@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class AuthService
 {
@@ -13,14 +14,70 @@ class AuthService
      * @param array<string, mixed> $credentials
      * @return array{success: bool, message?: string, code?: int, token?: string, user?: User}
      */
+
     public function login(array $credentials): array
     {
+        $user = User::where('username', $credentials['username'])->first();
+
+        if ($user && $user->is_permanently_locked) {
+            return [
+                'success' => false,
+                'message' => 'Your account has been permanently locked. Please contact your administrator.',
+                'code' => 423,
+            ];
+        }
+
+        if ($user && $user->locked_until && now()->lt($user->locked_until)) {
+            $datetime = Carbon::parse($user->locked_until);
+            $currentDate = now();
+            $different  = $currentDate->diff($datetime)->i;
+
+            return [
+                'success' => false,
+                'message' => "Account temporarily locked. Please try again after $different minutes",
+                'code' => 423,
+            ];
+        }
+
+        if ($user && $user->locked_until && now()->gte($user->locked_until)) {
+            $user->locked_until = null;
+            $user->save();
+        }
+
         $authAttempt = [
             'username' => $credentials['username'],
             'password' => $credentials['password'],
         ];
 
         if (!Auth::attempt($authAttempt)) {
+            if ($user) {
+                $user->failed_login_attempts++;
+
+                if ($user->failed_login_attempts >= 5) {
+                    $user->is_permanently_locked = true;
+                    $user->locked_until = null;
+                    $user->save();
+
+                    return [
+                        'success' => false,
+                        'message' => 'Your account has been permanently locked. Please contact your administrator.',
+                        'code' => 423,
+                    ];
+                }
+
+                if ($user->failed_login_attempts == 3) {
+                    $user->locked_until = now()->addMinutes(1);
+                    $user->save();
+                    return [
+                        'success' => false,
+                        'message' => 'Account temporarily locked. Please try again after 15 minutes',
+                        'code' => 423,
+                    ];
+                }
+
+                $user->save();
+            }
+
             return [
                 'success' => false,
                 'message' => 'Invalid credentials.',
@@ -41,16 +98,21 @@ class AuthService
             ];
         }
 
+
+        $user->failed_login_attempts = 0;
+        $user->locked_until = null;
+        $user->save();
+
         $user->tokens()->delete();
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
-
         $user->load([
             'CmsUser:id,name,role_id,company_id,level,psgc_code',
             'CmsUser.company:id,name',
-            'CmsUser.role:id,name'
+            'CmsUser.role:id,name',
         ]);
+
         $cms_user = $user->CmsUser;
 
         return [
@@ -66,9 +128,9 @@ class AuthService
                     'company_id' => $cms_user->company_id,
                     'company_name' => $cms_user->company->name,
                     'level' => $cms_user->level,
-                    'psgc_code' => $cms_user->psgc_code
-                ]
-            ]
+                    'psgc_code' => $cms_user->psgc_code,
+                ],
+            ],
         ];
     }
 
