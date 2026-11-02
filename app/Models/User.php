@@ -50,6 +50,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'locked_until' => 'datetime',
+            'is_permanently_locked' => 'boolean',
+            'failed_login_attempts' => 'integer',
         ];
     }
 

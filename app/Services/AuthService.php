@@ -14,7 +14,6 @@ class AuthService
      * Authenticate user credentials, verify the registered device IMEI and apply the login lockout.
      *
      * @param array<string, mixed> $credentials
-     * @param string|null $ipAddress
      * @return array{success: bool, message?: string, code?: int, data?: array<string, mixed>}
      */
 
@@ -69,7 +68,7 @@ class AuthService
                 }
 
                 if ($user->failed_login_attempts == 3) {
-                    $user->locked_until = now()->addMinutes(1);
+                    $user->locked_until = now()->addMinutes(15);
                     $user->save();
                     return [
                         'success' => false,
