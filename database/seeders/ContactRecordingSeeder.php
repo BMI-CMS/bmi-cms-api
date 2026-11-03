@@ -39,6 +39,13 @@ class ContactRecordingSeeder extends Seeder
 
         // run(): select dpd_bucket instead of days_past_due
         $pool = Account::select('id', 'account_number', 'dpd_bucket', 'assigned_cc_id')
+            ->where('is_contacted', 1)
+            ->whereIn('assigned_cc_id', [
+                5,
+                13,
+                21,
+                25
+            ])
             ->inRandomOrder()
             ->get();
 
@@ -49,11 +56,6 @@ class ContactRecordingSeeder extends Seeder
                 $pool->count()
             ));
         }
-
-        // Remove this seeder's previous output, including soft-deleted rows.
-        ContactRecording::withTrashed()
-            ->where('remarks', 'like', self::MARKER . '%')
-            ->forceDelete();
 
         // Scenarios that need a specific account pick first so they can't be starved.
         // (usort is stable in PHP 8+, so the original order is kept otherwise.)
@@ -158,28 +160,29 @@ class ContactRecordingSeeder extends Seeder
             ['label' => 'B18', 'rows' => [['FDD/NS', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $daysAgo(3), $earlierToday, false]]],
             ['label' => 'B19', 'rows' => [['For Repossession', 'SKIPTRACE', self::SKIPTRACE, $daysAgo(3), $earlierToday, false]]],
 
+            //  [$category, $actionTaken, $plan, $contactDate, $nextActionDate, $softDeleted] = $row;
             // ===== B20 same-day rescheduling: morning visit sets a new action later today =====
             ['label' => 'B20', 'rows' => [
-                ['DPD 1-30 Days', 'FOLLOW UP PAYMENT', self::FIELD_VISIT, $yesterday, $today->copy(), false, true],
-                ['DPD 1-30 Days', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $earlierToday, $laterToday, false],
+                ['DPD 1-30 Days', 'FOLLOW UP PAYMENT', self::FIELD_VISIT, $daysAgo(5), $daysAgo(1), false, true],
+                ['DPD 1-30 Days', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $daysAgo(1), $today, false],
             ]],
 
             // ===== B21 older recording is due, but the latest one is future-dated =====
             ['label' => 'B21', 'rows' => [
-                ['Priority 1 Accounts', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $daysAgo(5), $earlierToday, false, true],
-                ['Priority 1 Accounts', 'SKIPTRACE', self::SKIPTRACE, $yesterday, $tomorrow, false],
+                ['Priority 1 Accounts', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $daysAgo(5), $daysAgo(1), false, true],
+                ['Priority 1 Accounts', 'SKIPTRACE', self::SKIPTRACE, $daysAgo(1), $today, false],
             ]],
 
             // ===== B22 latest recording is soft-deleted; the older PTP is the valid one =====
             ['label' => 'B22', 'rows' => [
-                ['DPD 1-30 Days', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $daysAgo(3), $earlierToday, false],
-                ['DPD 1-30 Days', 'SKIPTRACE', self::SKIPTRACE, $yesterday, $earlierToday, true],
+                ['DPD 1-30 Days', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $daysAgo(5), $daysAgo(1), false, true],
+                ['DPD 1-30 Days', 'SKIPTRACE', self::SKIPTRACE, $daysAgo(1), $today, true],
             ]],
 
             // ===== B23 offline sync: older visit synced later (higher id, earlier contact_date) =====
             ['label' => 'B23', 'rows' => [
-                ['NP1', 'SERVED COLLECTION NOTICE', self::NOTICE_AND_DEMAND, $earlierToday, $earlierToday, false],
-                ['NP1', 'FOLLOW UP PAYMENT', self::FIELD_VISIT, $daysAgo(2), $yesterday, false, true],
+                ['NP1', 'SERVED COLLECTION NOTICE', self::NOTICE_AND_DEMAND, $daysAgo(5), $daysAgo(1), false, true],
+                ['NP1', 'FOLLOW UP PAYMENT', self::FIELD_VISIT, $daysAgo(1), $today, false],
             ]],
 
             // ===== B24 PTP from last month never followed up =====

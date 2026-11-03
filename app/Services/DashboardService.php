@@ -50,7 +50,7 @@ class DashboardService
         foreach ($getAccounts['for_visit'] as $item) {
             $accountId = $item->id;
 
-            if (! isset($accounts[$accountId])) {
+            if (!isset($accounts[$accountId])) {
                 $accounts[$accountId] = [
                     'account_id' => $item->id,
                     'account_number' => $item->account_number,
@@ -62,6 +62,7 @@ class DashboardService
                     'last_payment_date' => $item->last_payment_date,
                     'asset' => $item->asset,
                     'payment_status' => $item->payment_status,
+                    'pre_qualified_for_restructuring' => $item->pre_qualified_for_restructuring,
                     'is_force_prioritized' => $item->is_force_prioritized,
                     'psgc_code' => $item->psgc_code,
                     'is_contacted' => $item->is_contacted,
@@ -81,6 +82,7 @@ class DashboardService
                     'email' => $item->email,
                     'social_media_account' => $item->social_media_account,
                     'due_date' => $item->due_date,
+                    'current_category' => $item->current_category,
                     'next_action_date' => $item->next_action_date,
                     'next_action_plan' => $item->next_action_plan,
                     'activity_records' => [],
@@ -102,19 +104,18 @@ class DashboardService
             }
         }
 
-        $accountAllocation = $this->settingService->classify($accounts);
+        $accountAllocation = AllocateAccountsHelper::accountsClassification($accounts);
 
         return [...$accountAllocation, 'visited' => $getAccounts['visited']];
     }
 
     public function assignedAccountsByPSGC(int $userId)
     {
-        $getAccounts = $this->dashboardRepository->getVisitPlanAccounts($userId, Carbon::now(), Constants::PERIOD_MONTHLY);
+        $getAccounts = $this->dashboardRepository->getVisitPlanAccounts($userId, Carbon::today(), Carbon::now()->endOfMonth());
 
         $accountsByPSGC = [];
         $unclassified = [];
 
-        // One row per account, with its latest contact recording.
         foreach ($getAccounts as $item) {
             $account = [
                 'account_id' => $item->id,
@@ -146,6 +147,7 @@ class DashboardService
                 'email' => $item->email,
                 'social_media_account' => $item->social_media_account,
                 'due_date' => $item->due_date,
+                'current_category' => $item->current_category,
                 'next_action_date' => $item->next_action_date,
                 'next_action_plan' => $item->next_action_plan,
                 'activity_records' => [],
@@ -165,21 +167,21 @@ class DashboardService
                 ];
             }
 
-            $account['account_classification'] = $this->settingService->classifyAccount($account);
+            $account['account_classification'] = AllocateAccountsHelper::accountsClassificationPSGC($account);
 
             if ($account['account_classification'] === null) {
                 $unclassified[] = $account['account_number'];
             }
 
-            $accountsByPSGC[$item->psgc_code . ' - ' . $item->city_municipality][] = $account;
+            $accountsByPSGC[$item->psgc_code . ' - ' . $item->barangay][] = $account;
         }
 
-        if ($unclassified !== []) {
-            Log::warning('Visit Plan accounts could not be classified: no active classification rule matches them.', [
-                'count' => count($unclassified),
-                'account_numbers' => array_slice($unclassified, 0, 50),
-            ]);
-        }
+        // if ($unclassified !== []) {
+        //     Log::warning('Visit Plan accounts could not be classified: no active classification rule matches them.', [
+        //         'count' => count($unclassified),
+        //         'account_numbers' => array_slice($unclassified, 0, 50),
+        //     ]);
+        // }
 
         return $accountsByPSGC;
     }

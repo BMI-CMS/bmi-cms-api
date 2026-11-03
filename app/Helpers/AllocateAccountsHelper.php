@@ -3,7 +3,6 @@
 namespace App\Helpers;
 
 use App\Constants\Constants;
-use App\Models\Account;
 use Carbon\Carbon;
 
 class AllocateAccountsHelper
@@ -12,6 +11,12 @@ class AllocateAccountsHelper
     {
         $allocatedAccounts = [];
         foreach ($accounts as $account) {
+            $dpdBucket = Constants::DPDBUCKET[$account["dpd_bucket"]] ?? 0;
+
+            if ($dpdBucket >= Constants::NP3) {
+                $allocatedAccounts[Constants::PRIORITIZATION][Constants::PROPERTY_FORREPOSSESSION][] = $account;
+                continue;
+            }
 
             if ($account['is_force_prioritized']) {
                 $allocatedAccounts[Constants::PRIORITIZATION][Constants::NEXT_ACTION_PLAN][Constants::PROPERTY_FORCE_PRIORITIZED][] = $account;
@@ -19,39 +24,22 @@ class AllocateAccountsHelper
             }
 
             if (!$account['next_action_date']) {
-
-                if (!$account['is_contacted'] && Carbon::parse($account['visit_date'])->isLastMonth()) {
-                    $allocatedAccounts[Constants::REGULAR][Constants::PROPERTY_CONTACT_RECORDING][] = $account;
-                    continue;
-                }
-
                 if ($account['payment_status'] === Constants::FIRSTDUEDATE || $account['payment_status'] === Constants::NONSTARTER) {
                     $allocatedAccounts[Constants::PRIORITIZATION][Constants::PROPERTY_FDD_NS][] = $account;
                     continue;
                 }
 
-                if (
-                    $account['no_of_non_payments'] >= Constants::NP3 &&
-                    $account['days_past_due'] >= Constants::DPD91
-                ) {
-                    $allocatedAccounts[Constants::PRIORITIZATION][Constants::PROPERTY_FOR_REPOSSESSION][] = $account;
-                    continue;
-                }
-
-                if ($account['no_of_non_payments'] >= Constants::NP2) {
+                if ($dpdBucket === Constants::NP2) {
                     $allocatedAccounts[Constants::PRIORITIZATION][Constants::PROPERTY_PRIORITY_1_ACCOUNTS][] = $account;
                     continue;
                 }
 
-                if (
-                    $account['days_past_due'] > 0 &&
-                    $account['days_past_due'] < 30
-                ) {
+                if ($account["dpd_bucket"] === Constants::LESSTHAN1MONTHDUE) {
                     $allocatedAccounts[Constants::REGULAR][Constants::PROPERTY_DPD_1_30_DAYS][] = $account;
                     continue;
                 }
 
-                if ($account['no_of_non_payments'] >= Constants::NP1) {
+                if ($dpdBucket === Constants::NP1) {
                     $allocatedAccounts[Constants::REGULAR][Constants::PROPERTY_NP_1][] = $account;
                     continue;
                 }
@@ -80,48 +68,49 @@ class AllocateAccountsHelper
                 continue;
             }
 
-            if ($account['next_action_plan'] === Constants::NOTICEANDDEMANDLETTER) {
+            if ($account['next_action_plan'] === Constants::NOTICEANDDEMANDLETTER1 || $account['next_action_plan'] === Constants::NOTICEANDDEMANDLETTER2) {
                 $allocatedAccounts[Constants::PRIORITIZATION][Constants::NEXT_ACTION_PLAN][Constants::PROPERTY_NOTICE_AND_DEMAND_LETTER][] = $account;
+                continue;
+            }
+
+            if ($account['current_category']) {
+                $previousCategory = Constants::PREVIOUSCLASSIFICATION[$account['current_category']];
+                if (count($previousCategory) == 2) {
+                    $allocatedAccounts[$previousCategory[0]][$previousCategory[1]][] = $account;
+                } else {
+                    $allocatedAccounts[$previousCategory[0]][$previousCategory[1]][$previousCategory[2]][] = $account;
+                }
             }
         }
-
         return $allocatedAccounts;
     }
 
-    public static function accountsClassificationPSGC(Account $account): ?string
+    public static function accountsClassificationPSGC(array $account): ?string
     {
+        $dpdBucket = Constants::DPDBUCKET[$account['dpd_bucket']] ?? 0;
+
+        if ($dpdBucket >= Constants::NP3) {
+            return Constants::CLASSIFICATION_FOR_REPO;
+        }
+
         if ($account['is_force_prioritized']) {
             return Constants::CLASSIFICATION_FORCE_PRIORITIZED;
         }
 
         if (!$account['next_action_date']) {
-            if (!$account['is_contacted'] && $account['visit_date']->isLastMonth()) {
-                return Constants::CLASSIFICATION_CONTACT_RECORDING;
-            }
-
             if ($account['payment_status'] === Constants::FIRSTDUEDATE || $account['payment_status'] === Constants::NONSTARTER) {
                 return Constants::CLASSIFICATION_FDD_NS;
             }
 
-            if (
-                $account['no_of_non_payments'] >= Constants::NP3 &&
-                $account['days_past_due'] >= Constants::DPD91
-            ) {
-                return Constants::CLASSIFICATION_FOR_REPO;
-            }
-
-            if ($account['no_of_non_payments'] >= Constants::NP2) {
+            if ($dpdBucket === Constants::NP2) {
                 return Constants::CLASSIFICATION_PRIORITY_1;
             }
 
-            if (
-                $account['days_past_due'] > 0 &&
-                $account['days_past_due'] < 30
-            ) {
+            if ($account['dpd_bucket'] === Constants::LESSTHAN1MONTHDUE) {
                 return Constants::CLASSIFICATION_DPD_1_30;
             }
 
-            if ($account['no_of_non_payments'] >= Constants::NP1) {
+            if ($dpdBucket === Constants::NP1) {
                 return Constants::CLASSIFICATION_NP_1;
             }
 
@@ -144,8 +133,12 @@ class AllocateAccountsHelper
             return Constants::CLASSIFICATION_FORCE_PRIORITIZED;
         }
 
-        if ($account['next_action_plan'] === Constants::NOTICEANDDEMANDLETTER) {
+        if ($account['next_action_plan'] === Constants::NOTICEANDDEMANDLETTER1 || $account['next_action_plan'] === Constants::NOTICEANDDEMANDLETTER2) {
             return Constants::CLASSIFICATION_NOTICE_AND_DEMAND_LETTER;
+        }
+
+        if ($account['current_category']) {
+            return $account['current_category'];
         }
 
         return '';

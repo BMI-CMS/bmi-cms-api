@@ -83,7 +83,7 @@ class DashboardRepository
         $startOfNextDay = $startOfDay->copy()->addDay();
 
         return [
-            "for_visit" => $this->getVisitPlanAccounts($userId, Carbon::now(), Constants::PERIOD_DAILY),
+            "for_visit" => $this->getVisitPlanAccounts($userId, $startOfDay, Carbon::now()),
             "visited" => $this->visitedAccount($userId, $startOfDay, $startOfNextDay),
         ];
     }
@@ -93,50 +93,32 @@ class DashboardRepository
         $endOfTheMonth = $startOfTheMonth->copy()->addMonth();
 
         return [
-            "for_visit" => $this->getVisitPlanAccounts($userId, Carbon::now(), Constants::PERIOD_MONTHLY),
+            "for_visit" => $this->getVisitPlanAccounts($userId, Carbon::today(), Carbon::now()->endOfMonth()),
             "visited" => $this->visitedAccount($userId, $startOfTheMonth, $endOfTheMonth)
         ];
     }
-    public function getVisitPlanAccounts(int $userId, CarbonInterface $now, string $period = Constants::PERIOD_DAILY)
+    public function getVisitPlanAccounts(int $userId, CarbonInterface $startDate, CarbonInterface $endDate)
     {
-        $monthly = $period === Constants::PERIOD_MONTHLY;
-
-        $today = $now->copy()->startOfDay();
-        $monthStart = $now->copy()->startOfMonth();
-
-        $dueFrom = $monthStart->toDateString();
-        $dueUntil = ($monthly ? $now->copy()->endOfMonth() : $today)->toDateString();
-
-        $nextActionFrom = $today->copy()->subDays((int) config('visit_plan.next_action_carry_over_days'))->max($monthStart);
-        $nextActionUntil = $monthly ? $monthStart->copy()->addMonth() : $now;
-        $nextActionUntilOperator = $monthly ? '<' : '<=';
+        $monthStart = $startDate->copy()->startOfMonth();
+        $nextActionFrom = $startDate->copy()->startOfDay()
+            ->subDays((int) config('visit_plan.next_action_carry_over_days'))
+            ->max($monthStart);
 
         $accounts = $this->assignedAccountsQuery($userId)
-            ->where(function ($query) use ($dueFrom, $dueUntil, $nextActionFrom, $nextActionUntil, $nextActionUntilOperator) {
-                $query->where(function ($unvisited) use ($dueFrom, $dueUntil) {
+            ->where(function ($query) use ($monthStart, $endDate, $nextActionFrom) {
+                $query->where(function ($unvisited) use ($monthStart, $endDate) {
                     $unvisited->whereNull('latest_recordings.id')
-                        ->where('accounts.due_date', '>=', $dueFrom)
-                        ->where('accounts.due_date', '<=', $dueUntil);
-                })->orWhere(function ($scheduled) use ($nextActionFrom, $nextActionUntil, $nextActionUntilOperator) {
+                        ->where('accounts.due_date', '>=', $monthStart->toDateString())
+                        ->where('accounts.due_date', '<=', $endDate->toDateString());
+                })->orWhere(function ($scheduled) use ($nextActionFrom, $endDate) {
                     $scheduled->where('latest_recordings.next_action_date', '>=', $nextActionFrom)
-                        ->where('latest_recordings.next_action_date', $nextActionUntilOperator, $nextActionUntil);
+                        ->where('latest_recordings.next_action_date', '<=', $endDate);
                 });
             })
             ->get();
 
         return $this->withContactHistory($accounts);
     }
-
-    public function getAssignedAccounts(int $userId, CarbonInterface $createdFrom, CarbonInterface $createdTo)
-    {
-        $accounts = $this->assignedAccountsQuery($userId, function ($query) use ($createdFrom, $createdTo) {
-            $query->where('accounts.created_at', '>=', $createdFrom)
-                ->where('accounts.created_at', '<', $createdTo);
-        })->get();
-
-        return $this->withContactHistory($accounts);
-    }
-
     private function assignedAccountsQuery(int $userId, ?Closure $accountScope = null): EloquentBuilder
     {
         $scopedAccountIds = Account::query()
@@ -224,14 +206,8 @@ class DashboardRepository
                 $join->on('latest_recordings.account_id', '=', 'accounts.id')
                     ->where('latest_recordings.recording_rank', '=', 1);
             })
-            ->leftJoin('collecting_addresses', function ($join) {
-                $join->on('collecting_addresses.account_id', '=', 'accounts.id')
-                    ->whereNull('collecting_addresses.deleted_at');
-            })
-            ->leftJoin('customer_details', function ($join) {
-                $join->on('customer_details.account_id', '=', 'accounts.id')
-                    ->whereNull('customer_details.deleted_at');
-            })
+            ->join('customer_details', 'accounts.id', '=', 'customer_details.account_id')
+            ->join('collecting_addresses', 'customer_details.id', '=', 'collecting_addresses.customer_details_id')
             ->where('accounts.assigned_cc_id', $userId)
             ->orderBy('accounts.id');
 
@@ -241,7 +217,6 @@ class DashboardRepository
 
         return $accounts;
     }
-
     private function withContactHistory(Collection $accounts)
     {
         $latestRecordingIds = $accounts->pluck('contact_recording_id')->filter();
@@ -265,8 +240,6 @@ class DashboardRepository
             ->orderByDesc('contact_date')
             ->orderByDesc('id')
             ->get()
-            // Excluded here, not with whereNotIn('id'): that pushes MySQL off the account_id index
-            // onto a primary-key range scan.
             ->reject(fn($recording) => $latestRecordingIds->contains($recording->id))
             ->groupBy('account_id');
 
@@ -318,28 +291,6 @@ class DashboardRepository
             ->get();
     }
 
-    // public function getVisitPlanAccountsV2()
-    // {
-    //     SELECT 
-    //         accounts.id,
-    //         contact_recordings.id
-    //     FROM accounts
-    //     LEFT JOIN contact_recordings
-    //     ON accounts.id = contact_recordings.account_id
-    //     WHERE accounts.assigned_cc_id = 1
-    //     AND (
-    //         accounts.is_contacted = FALSE
-    //         OR (
-    //             contact_recordings.next_action_date >= CURDATE()
-    //             AND contact_recordings.next_action_date < CURDATE() + INTERVAL 1 DAY
-    //             and contact_recordings.is_contacted = FALSE
-    //         )
-    //     );
-
-
-    // }
-
-    //test
     //higher up
     public function getDailyTeamAccounts(int $userId, string $psgc_code, string $period)
     {

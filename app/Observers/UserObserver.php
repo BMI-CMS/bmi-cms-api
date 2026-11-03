@@ -33,25 +33,18 @@ class UserObserver
 
         $event = 'updated';
 
-        // Check whether the account was permanently locked.
         if (
             $user->is_permanently_locked &&
             !($oldValues['is_permanently_locked'] ?? false)
         ) {
             $event = 'user_permanently_locked';
-        }
-
-        // Check whether the account was temporarily locked.
-        elseif (
+        } elseif (
             $user->locked_until &&
             !$user->is_permanently_locked &&
             empty($oldValues['locked_until'])
         ) {
             $event = 'user_temporarily_locked';
-        }
-
-        // Check whether the account was unlocked.
-        elseif (
+        } elseif (
             !$user->is_permanently_locked &&
             is_null($user->locked_until) &&
             (

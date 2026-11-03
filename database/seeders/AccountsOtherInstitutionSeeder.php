@@ -214,7 +214,7 @@ class AccountsOtherInstitutionSeeder extends Seeder
             'assigned_rm_dh_id' => $assignedRMDH,
             // 'last_payment_amount' => $monthlyAmortization,
             'is_force_prioritized' => $isForcePrioritized,
-            'is_contacted' => $isContacted,
+            'is_contacted' => $this->getIsContacted(),
             'send_date' => null,
         ];
     }
@@ -412,5 +412,12 @@ class AccountsOtherInstitutionSeeder extends Seeder
         ];
 
         return fake()->randomElement($psgc_code[$id]);
+    }
+
+    private function getIsContacted(): string
+    {
+        $contacted = [0, 1];
+
+        return fake()->randomElement($contacted);
     }
 }

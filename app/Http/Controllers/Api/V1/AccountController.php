@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ContactRecordingRequest;
 use App\Services\AccountService;
 use App\Http\Requests\ForceAssignmentRequest;
 
@@ -30,5 +31,8 @@ class AccountController extends Controller
         ]);
     }
 
-    public function contactRecording() {}
+    public function contactRecording(ContactRecordingRequest $request)
+    {
+        return '';
+    }
 }

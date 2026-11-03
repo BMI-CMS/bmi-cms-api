@@ -63,8 +63,8 @@ class CmsUserSeeder extends Seeder
             ['name' => 'EMMAN ARM', 'company' => 2, 'role_id' => 14, 'level' => 3, 'psgc_code' => '137404000'],
             ['name' => 'EMMAN DH', 'company' => 2, 'role_id' => 15, 'level' => 4, 'psgc_code' => '137404000'],
 
-            ['name' => 'JAYREN CC', 'company' => 1, 'role_id' => 3, 'level' => 3, 'psgc_code' => '137404000'],
-            ['name' => 'JAYREN CH', 'company' => 1, 'role_id' => 4, 'level' => 4, 'psgc_code' => '1234567890'],
+            ['name' => 'JAYREN RS', 'company' => 2, 'role_id' => 12, 'level' => 1, 'psgc_code' => '137404000'],
+            ['name' => 'JAYREN RO', 'company' => 2, 'role_id' => 13, 'level' => 2, 'psgc_code' => '1234567890'],
         ];
     }
 }

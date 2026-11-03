@@ -145,7 +145,6 @@ class AccountSeeder extends Seeder
                 $nonPayments,
                 $paymentStatus,
                 $isForcePrioritized,
-                str_starts_with($this->getAccountNumber($rsUserId, $index), '72'),
                 $dueDate,
                 $rsUserId,
                 $assignedRO,
@@ -164,7 +163,6 @@ class AccountSeeder extends Seeder
         string $nonPayments,
         string $paymentStatus,
         bool $isForcePrioritized,
-        bool $isContacted,
         Carbon $dueDate,
         int $assignedRS,
         int $assignedRO,
@@ -214,7 +212,7 @@ class AccountSeeder extends Seeder
             'assigned_rm_dh_id' => $assignedDH,
             // 'last_payment_amount' => $monthlyAmortization,
             'is_force_prioritized' => $isForcePrioritized,
-            'is_contacted' => $isContacted,
+            'is_contacted' => $this->getIsContacted(),
             'send_date' => null,
         ];
     }
@@ -409,8 +407,20 @@ class AccountSeeder extends Seeder
                 '1380800010',
                 '1380800011',
             ],
+            '25' => [
+                '1380801003',
+                '1380802012',
+                '1380803011',
+            ],
         ];
 
         return fake()->randomElement($psgc_code[$id]);
+    }
+
+    private function getIsContacted(): string
+    {
+        $contacted = [0, 1];
+
+        return fake()->randomElement($contacted);
     }
 }

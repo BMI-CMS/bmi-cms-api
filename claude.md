@@ -285,7 +285,7 @@ Ask focused questions when business requirements are ambiguous. Clearly distingu
 Summarize:
 
 - What was implemented.
-- Affected files, as two separate lists: **Modified files** and **New files** (paths relative to the project root). Show these lists at the end of every task, even small ones.
+- Affected files, as two separate lists: **Modified files** and **New files** (paths relative to the project root). Show these lists at the end of every task, even small ones. Always show both lists, writing "None" when a list is empty.
 - Relevant database, API, or integration changes.
 - Tests and verification actually performed.
 - Known limitations and unresolved issues.
