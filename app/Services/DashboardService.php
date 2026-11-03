@@ -46,12 +46,12 @@ class DashboardService
             $getAccounts = $this->dashboardRepository->getMonthlyAccounts($userId);
         }
 
-        $accounts = [];
+        $accountsByPSGC = [];
         foreach ($getAccounts['for_visit'] as $item) {
             $accountId = $item->id;
 
-            if (!isset($accounts[$accountId])) {
-                $accounts[$accountId] = [
+            if (!isset($accountsByPSGC[$item->psgc_code][$accountId])) {
+                $accountsByPSGC[$item->psgc_code][$accountId] = [
                     'account_id' => $item->id,
                     'account_number' => $item->account_number,
                     'customer_name' => $item->customer_name,
@@ -90,7 +90,7 @@ class DashboardService
             }
 
             if ($item->contact_recording_id) {
-                $accounts[$accountId]['activity_records'][] = [
+                $accountsByPSGC[$item->psgc_code][$accountId]['activity_records'][] = [
                     'current_category' => $item->current_category,
                     'follow_up_mode' => $item->follow_up_mode,
                     'reason_for_default' => $item->reason_for_default,
@@ -104,9 +104,14 @@ class DashboardService
             }
         }
 
-        $accountAllocation = AllocateAccountsHelper::accountsClassification($accounts);
+        $accountAllocation = [];
+        foreach ($accountsByPSGC as $psgcCode => $accounts) {
+            $accountAllocation[$psgcCode] = AllocateAccountsHelper::accountsClassification(array_values($accounts));
+        }
 
-        return [...$accountAllocation, 'visited' => $getAccounts['visited']];
+        $accountAllocation['visited'] = $getAccounts['visited'];
+
+        return $accountAllocation;
     }
 
     public function assignedAccountsByPSGC(int $userId)
@@ -175,13 +180,6 @@ class DashboardService
 
             $accountsByPSGC[$item->psgc_code . ' - ' . $item->barangay][] = $account;
         }
-
-        // if ($unclassified !== []) {
-        //     Log::warning('Visit Plan accounts could not be classified: no active classification rule matches them.', [
-        //         'count' => count($unclassified),
-        //         'account_numbers' => array_slice($unclassified, 0, 50),
-        //     ]);
-        // }
 
         return $accountsByPSGC;
     }

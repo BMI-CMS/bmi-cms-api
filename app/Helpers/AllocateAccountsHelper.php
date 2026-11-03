@@ -77,7 +77,7 @@ class AllocateAccountsHelper
                 $previousCategory = Constants::PREVIOUSCLASSIFICATION[$account['current_category']];
                 if (count($previousCategory) == 2) {
                     $allocatedAccounts[$previousCategory[0]][$previousCategory[1]][] = $account;
-                } else {
+                } else if (count($previousCategory) == 3) {
                     $allocatedAccounts[$previousCategory[0]][$previousCategory[1]][$previousCategory[2]][] = $account;
                 }
             }
