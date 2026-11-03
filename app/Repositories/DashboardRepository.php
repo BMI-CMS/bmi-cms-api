@@ -83,98 +83,42 @@ class DashboardRepository
         $startOfNextDay = $startOfDay->copy()->addDay();
 
         return [
-            "for_visit" => $this->getVisitPlanAccounts($userId, Carbon::now(), Constants::PERIOD_DAILY),
+            "for_visit" => $this->getVisitPlanAccounts($userId, $startOfDay, Carbon::now()),
             "visited" => $this->visitedAccount($userId, $startOfDay, $startOfNextDay),
         ];
     }
     public function getMonthlyAccounts(int $userId)
     {
         $startOfTheMonth = Carbon::now()->startOfMonth();
-        // From the 1st: addMonth() on the 31st overflows (31 Oct + 1 month = 1 Dec).
         $endOfTheMonth = $startOfTheMonth->copy()->addMonth();
 
         return [
-            "for_visit" => $this->getVisitPlanAccounts($userId, Carbon::now(), Constants::PERIOD_MONTHLY),
+            "for_visit" => $this->getVisitPlanAccounts($userId, Carbon::today(), Carbon::now()->endOfMonth()),
             "visited" => $this->visitedAccount($userId, $startOfTheMonth, $endOfTheMonth)
         ];
     }
-    /**
-     * Visit Plan eligibility: the accounts of the credit counselor to visit at $now
-     * (docs/general-business-rules.md, section 7.1).
-     *
-     * Unvisited (no contact recording that is not soft-deleted), by due_date within the current month:
-     *  - daily:   due_date has arrived (<= today); it keeps matching on later days until visited.
-     *  - monthly: any due_date in the month, including later days.
-     * Visited (only the latest recording counts), by next_action_date:
-     *  - daily:   from `next_action_carry_over_days` ago (never before the month start) until now.
-     *  - monthly: the same start, but up to the end of the month (future schedules included).
-     * Schedules of other months are never included; archiving is not implemented.
-     *
-     * $now is a Carbon in the application timezone (Asia/Manila), the same one the datetime
-     * columns are stored in, so it is compared as-is.
-     *
-     * Returns one row per account with its latest recording and the earlier recordings as
-     * contact_history. Classification is not done here.
-     */
-    public function getVisitPlanAccounts(int $userId, CarbonInterface $now, string $period = Constants::PERIOD_DAILY)
+    public function getVisitPlanAccounts(int $userId, CarbonInterface $startDate, CarbonInterface $endDate)
     {
-        $monthly = $period === Constants::PERIOD_MONTHLY;
-
-        $today = $now->copy()->startOfDay();
-        $monthStart = $now->copy()->startOfMonth();
-
-        $dueFrom = $monthStart->toDateString();
-        $dueUntil = ($monthly ? $now->copy()->endOfMonth() : $today)->toDateString();
-
-        $nextActionFrom = $today->copy()->subDays((int) config('visit_plan.next_action_carry_over_days'))->max($monthStart);
-        $nextActionUntil = $monthly ? $monthStart->copy()->addMonth() : $now;
-        $nextActionUntilOperator = $monthly ? '<' : '<=';
+        $monthStart = $startDate->copy()->startOfMonth();
+        $nextActionFrom = $startDate->copy()->startOfDay()
+            ->subDays((int) config('visit_plan.next_action_carry_over_days'))
+            ->max($monthStart);
 
         $accounts = $this->assignedAccountsQuery($userId)
-            ->where(function ($query) use ($dueFrom, $dueUntil, $nextActionFrom, $nextActionUntil, $nextActionUntilOperator) {
-                $query->where(function ($unvisited) use ($dueFrom, $dueUntil) {
+            ->where(function ($query) use ($monthStart, $endDate, $nextActionFrom) {
+                $query->where(function ($unvisited) use ($monthStart, $endDate) {
                     $unvisited->whereNull('latest_recordings.id')
-                        ->where('accounts.due_date', '>=', $dueFrom)
-                        ->where('accounts.due_date', '<=', $dueUntil);
-                })->orWhere(function ($scheduled) use ($nextActionFrom, $nextActionUntil, $nextActionUntilOperator) {
+                        ->where('accounts.due_date', '>=', $monthStart->toDateString())
+                        ->where('accounts.due_date', '<=', $endDate->toDateString());
+                })->orWhere(function ($scheduled) use ($nextActionFrom, $endDate) {
                     $scheduled->where('latest_recordings.next_action_date', '>=', $nextActionFrom)
-                        ->where('latest_recordings.next_action_date', $nextActionUntilOperator, $nextActionUntil);
+                        ->where('latest_recordings.next_action_date', '<=', $endDate);
                 });
             })
             ->get();
 
         return $this->withContactHistory($accounts);
     }
-
-    /**
-     * Visit Plan retrieval: the accounts assigned to the credit counselor that were created
-     * within [$createdFrom, $createdTo), one row per account, with its latest contact recording
-     * (null when it has none) and the earlier recordings as contact_history.
-     * No classification or scheduling filters here.
-     *
-     * The range is half-open on accounts.created_at (indexed) and is compared as-is, with no
-     * function on the column, so the index stays usable. The caller decides what the range
-     * means (e.g. the current month).
-     *
-     * Latest recording = latest contact_date, then highest id; soft-deleted recordings are
-     * ignored (SoftDeletes scope on ContactRecording).
-     */
-    public function getAssignedAccounts(int $userId, CarbonInterface $createdFrom, CarbonInterface $createdTo)
-    {
-        $accounts = $this->assignedAccountsQuery($userId, function ($query) use ($createdFrom, $createdTo) {
-            $query->where('accounts.created_at', '>=', $createdFrom)
-                ->where('accounts.created_at', '<', $createdTo);
-        })->get();
-
-        return $this->withContactHistory($accounts);
-    }
-
-    /**
-     * Accounts of the credit counselor, one row each, left-joined to their latest non-deleted
-     * contact recording (latest_recordings.*, null when there is none), address and contact
-     * details. $accountScope may add conditions on the accounts table; they are applied to the
-     * ranked recordings as well so MySQL ranks only the rows it needs.
-     */
     private function assignedAccountsQuery(int $userId, ?Closure $accountScope = null): EloquentBuilder
     {
         $scopedAccountIds = Account::query()
@@ -233,6 +177,7 @@ class DashboardRepository
             'accounts.assigned_am_ar_id',
             'accounts.assigned_rm_dh_id',
             'accounts.is_contacted',
+            'accounts.due_date',
             'collecting_addresses.unit_lot_block',
             'collecting_addresses.street_name',
             'collecting_addresses.subdivision_village',
@@ -261,14 +206,8 @@ class DashboardRepository
                 $join->on('latest_recordings.account_id', '=', 'accounts.id')
                     ->where('latest_recordings.recording_rank', '=', 1);
             })
-            ->leftJoin('collecting_addresses', function ($join) {
-                $join->on('collecting_addresses.account_id', '=', 'accounts.id')
-                    ->whereNull('collecting_addresses.deleted_at');
-            })
-            ->leftJoin('customer_details', function ($join) {
-                $join->on('customer_details.account_id', '=', 'accounts.id')
-                    ->whereNull('customer_details.deleted_at');
-            })
+            ->join('customer_details', 'accounts.id', '=', 'customer_details.account_id')
+            ->join('collecting_addresses', 'customer_details.id', '=', 'collecting_addresses.customer_details_id')
             ->where('accounts.assigned_cc_id', $userId)
             ->orderBy('accounts.id');
 
@@ -278,11 +217,6 @@ class DashboardRepository
 
         return $accounts;
     }
-
-    /**
-     * Sets $account->contact_history to the earlier (non-latest) recordings of each account,
-     * newest first, using one query.
-     */
     private function withContactHistory(Collection $accounts)
     {
         $latestRecordingIds = $accounts->pluck('contact_recording_id')->filter();
@@ -306,8 +240,6 @@ class DashboardRepository
             ->orderByDesc('contact_date')
             ->orderByDesc('id')
             ->get()
-            // Excluded here, not with whereNotIn('id'): that pushes MySQL off the account_id index
-            // onto a primary-key range scan.
             ->reject(fn($recording) => $latestRecordingIds->contains($recording->id))
             ->groupBy('account_id');
 
@@ -359,28 +291,6 @@ class DashboardRepository
             ->get();
     }
 
-    public function getVisitPlanAccountsV2()
-    {
-        // SELECT 
-        //     accounts.id,
-        //     contact_recordings.id
-        // FROM accounts
-        // LEFT JOIN contact_recordings
-        // ON accounts.id = contact_recordings.account_id
-        // WHERE accounts.assigned_cc_id = 1
-        // AND (
-        //     accounts.is_contacted = FALSE
-        //     OR (
-        //         contact_recordings.next_action_date >= CURDATE()
-        //         AND contact_recordings.next_action_date < CURDATE() + INTERVAL 1 DAY
-        //         and contact_recordings.is_contacted = FALSE
-        //     )
-        // );
-
-
-    }
-
-    //test
     //higher up
     public function getDailyTeamAccounts(int $userId, string $psgc_code, string $period)
     {

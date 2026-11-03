@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('restructurings', function (Blueprint $table) {
+            //add new terms column.
             $table->id();
             $table->foreignId('account_id')
                 ->constrained('accounts')
