@@ -12,6 +12,7 @@ class RepossessionRequest extends Model
         protected $table = 'repossession_requests';
 
         protected $fillable = [
+                'account_id',
                 'contact_recording_id',
                 'customer_capacity',
                 'unit_condition',

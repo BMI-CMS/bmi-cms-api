@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AttestationRequest;
 use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -17,7 +18,7 @@ class UserController extends Controller
     {
         $user = $request->user();
 
-        $result = $this->userService->attestation($request->validated(), $user);
+        $result = $this->userService->attestation($request->validated(), Auth::user()->cmsUser->id);
 
         if (!$result['is_attested']) {
             $user->currentAccessToken()->delete();

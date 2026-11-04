@@ -4,12 +4,11 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Constants\Constants;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Dashboard\UserIdRequest;
 use App\Http\Requests\Dashboard\AssignedAccountRequest;
 use App\Http\Requests\TeamAssignedAccountsRequest;
 use App\Http\Requests\TeamVisitPlanRequest;
 use App\Services\DashboardService;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
@@ -17,11 +16,9 @@ class DashboardController extends Controller
         protected DashboardService $dashboardService
     ) {}
 
-    public function accountSummary(UserIdRequest $request)
+    public function accountSummary()
     {
-        $validated = $request->validated();
-
-        $summary = $this->dashboardService->getSummary($validated['user_id']);
+        $summary = $this->dashboardService->getSummary(Auth::user()->cmsUser->id);
 
         return response()->json([
             'message' => 'Dashboard summary retrieved successfully.',
@@ -33,7 +30,7 @@ class DashboardController extends Controller
     {
         $validated = $request->validated();
 
-        $summary = $this->dashboardService->getAssignedAccounts($validated['user_id'], $validated['period']);
+        $summary = $this->dashboardService->getAssignedAccounts(Auth::user()->cmsUser->id, $validated['period']);
 
         return response()->json([
             'message' => 'Dashboard summary retrieved successfully.',
@@ -41,11 +38,9 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function assignedAccountsByPSGC(UserIdRequest $request)
+    public function assignedAccountsByPSGC()
     {
-        $validated = $request->validated();
-
-        $summary = $this->dashboardService->assignedAccountsByPSGC($validated['user_id']);
+        $summary = $this->dashboardService->assignedAccountsByPSGC(Auth::user()->cmsUser->id);
 
         return response()->json([
             'message' => 'Dashboard summary retrieved successfully.',

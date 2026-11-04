@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('event');
             $table->json('old_values')->nullable();
             $table->json('new_values')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

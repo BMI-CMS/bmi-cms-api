@@ -13,12 +13,15 @@ return new class extends Migration
     {
         Schema::create('repossession_requests', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('account_id')
+                ->constrained('accounts')
+                ->cascadeOnDelete();
             $table->foreignId('contact_recording_id')
                 ->constrained('contact_recordings')
                 ->cascadeOnDelete();
-            $table->string('customer_capacity', 100)->nullable();
-            $table->string('unit_condition', 50)->nullable();
-            $table->string('customer_character', 100)->nullable();
+            $table->string('customer_capacity', 15)->nullable();
+            $table->string('unit_condition', 30)->nullable();
+            $table->string('customer_character', 20)->nullable();
             $table->boolean('is_first_level_approved')->default(false);
             $table->string('first_level_approved_by', 10)->nullable();
             $table->dateTime('first_level_review_at')->nullable();

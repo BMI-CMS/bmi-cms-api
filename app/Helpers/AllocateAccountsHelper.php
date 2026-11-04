@@ -3,7 +3,6 @@
 namespace App\Helpers;
 
 use App\Constants\Constants;
-use Carbon\Carbon;
 
 class AllocateAccountsHelper
 {
@@ -12,6 +11,7 @@ class AllocateAccountsHelper
         $allocatedAccounts = [];
         foreach ($accounts as $account) {
             $dpdBucket = Constants::DPDBUCKET[$account["dpd_bucket"]] ?? 0;
+            $variables = 1;
 
             if ($dpdBucket >= Constants::NP3) {
                 $allocatedAccounts[Constants::PRIORITIZATION][Constants::PROPERTY_FORREPOSSESSION][] = $account;

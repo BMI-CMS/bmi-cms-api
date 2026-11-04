@@ -25,12 +25,6 @@ class AssignedAccountRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_id' => [
-                'required',
-                'integer',
-                'min:1',
-            ],
-
             'period' => [
                 'required',
                 Rule::in([Constants::PERIOD_DAILY, Constants::PERIOD_MONTHLY]),

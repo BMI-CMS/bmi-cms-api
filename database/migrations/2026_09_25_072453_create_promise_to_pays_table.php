@@ -21,7 +21,6 @@ return new class extends Migration
                 ->cascadeOnDelete();
             $table->decimal('ptp_amount', 15, 2);
             $table->date('ptp_date');
-            $table->text('remarks')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });
