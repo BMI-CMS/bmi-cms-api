@@ -90,11 +90,15 @@ class AuthService
         $user = Auth::user();
 
         if (empty($user->phone_imei) || $user->phone_imei !== $credentials['phone_imei']) {
+            $user->is_permanently_locked = true;
+            $user->locked_until = null;
+            $user->save();
+
             Auth::logout();
 
             return [
                 'success' => false,
-                'message' => 'Device not recognized. Please use your registered device.',
+                'message' => 'Device not recognized. Please contact your supervisor.',
                 'code' => 403,
             ];
         }
