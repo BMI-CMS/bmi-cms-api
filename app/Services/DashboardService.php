@@ -6,7 +6,6 @@ use App\Constants\Constants;
 use App\Helpers\AllocateAccountsHelper;
 use App\Repositories\DashboardRepository;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
 
 class DashboardService
 {

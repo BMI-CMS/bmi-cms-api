@@ -4,7 +4,8 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use App\Constants\Constants;
+use App\Constants\Period;
+use App\Constants\AllowedToPrioritize;
 use Illuminate\Validation\Rule;
 use App\Models\User;
 
@@ -21,7 +22,7 @@ class TeamAssignedAccountsRequest extends FormRequest
             return false;
         }
 
-        return in_array($user->cmsUser->level, Constants::ACCOUNT_PRIORITIZATION_ALLOWED_LEVELS, true);
+        return in_array($user->cmsUser->level, AllowedToPrioritize::LEVELS, true);
     }
 
     /**
@@ -36,7 +37,7 @@ class TeamAssignedAccountsRequest extends FormRequest
             'psgc_code' => 'required|string|max:10',
             'period' => [
                 'required',
-                Rule::in([Constants::PERIOD_DAILY, Constants::PERIOD_MONTHLY]),
+                Rule::in([Period::DAILY, Period::MONTHLY]),
             ],
 
         ];

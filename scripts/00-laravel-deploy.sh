@@ -54,4 +54,8 @@ if [ "$SYNC_NEW_ACCOUNTS" = "true" ]; then
     echo "Syncing accounts and contact information..."
     php artisan migrate:fresh --seed --force
 fi
+if [ "$UNLOCK_ACCOUNT" = "true" ]; then
+    echo "Syncing accounts and contact information..."
+    php artisan users:permanently-locked --unlock=1
+fi
 echo "=== Laravel Deploy Script Completed Successfully ==="

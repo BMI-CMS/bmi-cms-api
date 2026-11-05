@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\ContactRecordingRequest;
 use App\Services\AccountService;
+use App\Http\Requests\ContactRecordingRequest;
 use App\Http\Requests\ForceAssignmentRequest;
+use Illuminate\Support\Facades\Auth;
 
 class AccountController extends Controller
 {
@@ -26,13 +27,27 @@ class AccountController extends Controller
         }
 
         return response()->json([
-            'message' => 'Account marked as force prioritized successfully.',
+            'message' => 'Account marked as force prioritized successfully',
             'data' => $result['data'],
         ]);
     }
 
     public function contactRecording(ContactRecordingRequest $request)
     {
-        return '';
+
+        $validated = $request->validated();
+
+        $result = $this->accountService->contactRecording($validated, Auth::user()->cmsUser->id);
+
+        if (!$result['success']) {
+            return response()->json([
+                'message' => $result['message'],
+            ], $result['code']);
+        }
+
+        return response()->json([
+            'message' => 'Successfully Saved',
+            'data' => $result['data'],
+        ]);
     }
 }

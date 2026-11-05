@@ -5,11 +5,6 @@ namespace App\Constants;
 class Constants
 {
     // Account Period
-    public const PERIOD_DAILY = 'daily';
-    public const PERIOD_MONTHLY = 'monthly';
-
-    public const ACCOUNTSTATUS = ['COLLECTED', 'REPOSSESSION REQUEST'];
-    public const COLLECTED = 'COLLECTED';
     public const NP1 = 1;
     public const NP2 = 2;
     public const NP3 = 3;
@@ -82,13 +77,9 @@ class Constants
     public const CLASSIFICATION_NOTICE_AND_DEMAND_LETTER = 'Notice and Demand Letter';
 
 
-    public const ACCOUNT_PRIORITIZATION_ALLOWED_LEVELS = [2, 3, 4];
+
     public const TEAM_ACCOUNTS_PER_PAGE = 15;
     public const TEAM_ACCOUNTS_MAX_PER_PAGE = 50;
     public const FIRSTDUEDATE = 'FIRST DUE DATE';
     public const NONSTARTER = 'NON-STARTER';
-
-    public const LOGIN_ATTEMPTS_BEFORE_FREEZE = 3;
-    public const LOGIN_FREEZE_MINUTES = 15;
-    public const LOGIN_ATTEMPTS_AFTER_FREEZE = 2;
 }

@@ -10,6 +10,11 @@ class Restructuring extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'id'
+        'account_id',
+        'contact_recording_id',
+        'principal_outstanding',
+        'monthly_amortization',
+        'terms',
+        'remarks'
     ];
 }
