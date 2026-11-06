@@ -85,6 +85,7 @@ class DashboardService
                     'next_action_date' => $item->next_action_date,
                     'next_action_plan' => $item->next_action_plan,
                     'activity_records' => [],
+                    'visited' => false
                 ];
             }
 
@@ -99,6 +100,7 @@ class DashboardService
                     'geotagging' => $item->geotagging,
                     'recorded_by' => $item->recorded_by,
                     'contact_date' => $item->contact_date,
+                    'visited' => true
                 ];
             }
         }
