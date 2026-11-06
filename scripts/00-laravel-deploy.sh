@@ -16,7 +16,6 @@ echo "Caching Laravel configuration, routes, and views..."
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
-php artisan optimize:clear
 
 # Run database migrations only when RUN_MIGRATIONS environment variable is set to true
 if [ "$RUN_MIGRATIONS" = "true" ]; then
@@ -66,4 +65,8 @@ if [ "$UNLOCK_ACCOUNT" = "true" ]; then
     echo "Syncing accounts and contact information..."
     php artisan users:permanently-locked --unlock=1
 fi
+
+# Clear caches only after migrations, because cache:clear needs the database cache table to exist
+php artisan optimize:clear
+
 echo "=== Laravel Deploy Script Completed Successfully ==="
