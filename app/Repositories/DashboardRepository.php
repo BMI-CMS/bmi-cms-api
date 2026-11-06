@@ -84,7 +84,7 @@ class DashboardRepository
 
         return [
             "for_visit" => $this->getVisitPlanAccounts($userId, $startOfDay, Carbon::now()),
-            "visited" => $this->visitedAccount($userId, $startOfDay, $startOfNextDay),
+            // "visited" => $this->visitedAccount($userId, $startOfDay, $startOfNextDay),
         ];
     }
     public function getMonthlyAccounts(int $userId)

@@ -110,13 +110,20 @@ class DashboardService
             $accountAllocation[$psgcCode] = AllocateAccountsHelper::accountsClassification(array_values($accounts));
         }
 
-        $accountAllocation['visited'] = $getAccounts['visited'];
+        //$accountAllocation['visited'] = $getAccounts['visited'];
 
         return $accountAllocation;
     }
 
     public function assignedAccountsByPSGC(int $userId)
     {
+        // new shape for PSGC account data
+        //         "account_number": "7200001700",
+        // "customer_name": "Sadie Jakubowski",
+        // "monthly_amortization": "2734.22",
+        // "dpd_bucket": "DPD 91-120",
+        // "outstanding_balance": "32810.64",
+        // "account_classification": "For Repo"
         $getAccounts = $this->dashboardRepository->getVisitPlanAccounts($userId, Carbon::today(), Carbon::now()->endOfMonth());
 
         $accountsByPSGC = [];

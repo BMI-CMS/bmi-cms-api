@@ -12,7 +12,7 @@ class Restructuring extends Model
     protected $fillable = [
         'account_id',
         'contact_recording_id',
-        'principal_outstanding',
+        'outstanding_balance',
         'monthly_amortization',
         'terms',
         'remarks'
