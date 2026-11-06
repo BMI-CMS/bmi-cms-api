@@ -13,7 +13,7 @@ use App\Queries\ContactRecordingQuery;
 use App\Queries\RepossessionRequestQuery;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
-use App\Constants\Constants;
+use App\Constants\Period;
 use Closure;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Support\Collection;
@@ -494,7 +494,7 @@ class DashboardRepository
 
     private function teamEligibleQuery(int $level, int $requesterId, string $psgcCode, CarbonInterface $now, string $period): EloquentBuilder
     {
-        $monthly = $period === Constants::PERIOD_MONTHLY;
+        $monthly = $period === Period::MONTHLY;
 
         $today = $now->copy()->startOfDay();
         $monthStart = $now->copy()->startOfMonth();
