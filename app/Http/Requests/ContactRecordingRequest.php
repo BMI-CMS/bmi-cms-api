@@ -39,7 +39,6 @@ class ContactRecordingRequest extends FormRequest
             'remarks' => 'string|max:255',
             'geotagging' => 'required|string|max:255',
             'next_action_date' => 'required|date',
-
         ];
 
         foreach ($actionField as $action => $config) {

@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Constants\Constants;
+use App\Constants\Period;
 use App\Helpers\AllocateAccountsHelper;
 use App\Repositories\DashboardRepository;
 use Carbon\Carbon;
@@ -39,7 +39,7 @@ class DashboardService
 
     public function getAssignedAccounts(int $userId, string $period)
     {
-        if ($period === Constants::PERIOD_DAILY) {
+        if ($period === Period::DAILY) {
             $getAccounts = $this->dashboardRepository->getDailyAccounts($userId);
         } else {
             $getAccounts = $this->dashboardRepository->getMonthlyAccounts($userId);
@@ -184,57 +184,57 @@ class DashboardService
     }
 
     // Higher ups
-    public function teamAssignedAccounts(int $level, int $userId, string $psgc_code, string $period, int $page = 1, int $perPage = Constants::TEAM_ACCOUNTS_PER_PAGE)
-    {
-        $now = Carbon::now();
+    // public function teamAssignedAccounts(int $level, int $userId, string $psgc_code, string $period, int $page = 1, int $perPage = Constants::TEAM_ACCOUNTS_PER_PAGE)
+    // {
+    //     $now = Carbon::now();
 
-        $from = $period === Constants::PERIOD_DAILY ? $now->copy()->startOfDay() : $now->copy()->startOfMonth();
-        $until = $period === Constants::PERIOD_DAILY ? $from->copy()->addDay() : $from->copy()->addMonth();
+    //     $from = $period === Period::DAILY ? $now->copy()->startOfDay() : $now->copy()->startOfMonth();
+    //     $until = $period === Period::DAILY ? $from->copy()->addDay() : $from->copy()->addMonth();
 
-        // Pagination is by credit counselor, so each entry keeps all of its accounts and a correct total_accounts.
-        $counselorIds = $this->dashboardRepository->getTeamCounselorIds($level, $userId, $psgc_code, $now, $period, $from, $until);
-        $pageIds = array_slice($counselorIds, ($page - 1) * $perPage, $perPage);
+    //     // Pagination is by credit counselor, so each entry keeps all of its accounts and a correct total_accounts.
+    //     $counselorIds = $this->dashboardRepository->getTeamCounselorIds($level, $userId, $psgc_code, $now, $period, $from, $until);
+    //     $pageIds = array_slice($counselorIds, ($page - 1) * $perPage, $perPage);
 
-        $visitPlanRows = $this->dashboardRepository->getTeamVisitPlanAccounts($level, $userId, $psgc_code, $now, $period, $pageIds);
-        $visitedRows = $this->dashboardRepository->getTeamVisitedAccounts($level, $userId, $psgc_code, $from, $until, $pageIds);
+    //     $visitPlanRows = $this->dashboardRepository->getTeamVisitPlanAccounts($level, $userId, $psgc_code, $now, $period, $pageIds);
+    //     $visitedRows = $this->dashboardRepository->getTeamVisitedAccounts($level, $userId, $psgc_code, $from, $until, $pageIds);
 
-        $counselors = [];
-        foreach ($visitPlanRows as $item) {
-            $counselors[$item->assigned_cc_id]['name'] = $item->credit_counselor_name;
-            $counselors[$item->assigned_cc_id]['accounts'][$item->id] = $this->teamAccountEntry($item);
-        }
+    //     $counselors = [];
+    //     foreach ($visitPlanRows as $item) {
+    //         $counselors[$item->assigned_cc_id]['name'] = $item->credit_counselor_name;
+    //         $counselors[$item->assigned_cc_id]['accounts'][$item->id] = $this->teamAccountEntry($item);
+    //     }
 
-        $visited = [];
-        foreach ($visitedRows as $item) {
-            $counselors[$item->assigned_cc_id]['name'] ??= $item->credit_counselor_name;
-            $visited[$item->assigned_cc_id][] = $item;
-        }
+    //     $visited = [];
+    //     foreach ($visitedRows as $item) {
+    //         $counselors[$item->assigned_cc_id]['name'] ??= $item->credit_counselor_name;
+    //         $visited[$item->assigned_cc_id][] = $item;
+    //     }
 
-        $allocatedAccounts = [];
-        foreach ($pageIds as $counselorId) {
-            $counselor = $counselors[$counselorId];
-            $classified = $this->settingService->classify($counselor['accounts'] ?? []);
+    //     $allocatedAccounts = [];
+    //     foreach ($pageIds as $counselorId) {
+    //         $counselor = $counselors[$counselorId];
+    //         $classified = $this->settingService->classify($counselor['accounts'] ?? []);
 
-            $allocatedAccounts[] = [
-                'credit_counselor_name' => $counselor['name'],
-                'total_accounts' => $this->countClassified($classified),
-                'accounts' => [...$classified, 'visited' => $visited[$counselorId] ?? []],
-            ];
-        }
+    //         $allocatedAccounts[] = [
+    //             'credit_counselor_name' => $counselor['name'],
+    //             'total_accounts' => $this->countClassified($classified),
+    //             'accounts' => [...$classified, 'visited' => $visited[$counselorId] ?? []],
+    //         ];
+    //     }
 
-        return [
-            'repossession_request' => 5,
-            'visit_plan' => $allocatedAccounts,
-            'fec_approval' => 3,
-            'collections' => 5,
-            'pagination' => [
-                'current_page' => $page,
-                'per_page' => $perPage,
-                'total' => count($counselorIds),
-                'last_page' => max(1, (int) ceil(count($counselorIds) / $perPage)),
-            ],
-        ];
-    }
+    //     return [
+    //         'repossession_request' => 5,
+    //         'visit_plan' => $allocatedAccounts,
+    //         'fec_approval' => 3,
+    //         'collections' => 5,
+    //         'pagination' => [
+    //             'current_page' => $page,
+    //             'per_page' => $perPage,
+    //             'total' => count($counselorIds),
+    //             'last_page' => max(1, (int) ceil(count($counselorIds) / $perPage)),
+    //         ],
+    //     ];
+    // }
 
     private function teamAccountEntry($item): array
     {
@@ -300,7 +300,7 @@ class DashboardService
 
     public function teamAssignedAccountsPSGC(int $userId, string $psgc_code, string $period)
     {
-        if ($period === Constants::PERIOD_DAILY) {
+        if ($period === Period::DAILY) {
             $getTeamAccounts = $this->dashboardRepository->getDailyTeamAccounts($userId, $psgc_code, $period);
         } else {
             $getTeamAccounts = $this->dashboardRepository->getMonthlyTeamAccounts($userId, $psgc_code, $period);

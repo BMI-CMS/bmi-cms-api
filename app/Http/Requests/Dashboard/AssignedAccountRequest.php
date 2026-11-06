@@ -5,7 +5,7 @@ namespace App\Http\Requests\Dashboard;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use App\Constants\Constants;
+use App\Constants\Period;
 
 class AssignedAccountRequest extends FormRequest
 {
@@ -27,7 +27,7 @@ class AssignedAccountRequest extends FormRequest
         return [
             'period' => [
                 'required',
-                Rule::in([Constants::PERIOD_DAILY, Constants::PERIOD_MONTHLY]),
+                Rule::in([Period::DAILY, Period::MONTHLY]),
             ],
         ];
     }
