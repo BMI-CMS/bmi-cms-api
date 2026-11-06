@@ -50,6 +50,12 @@ if [ "$RUN_ACCOUNT_SYNC" = "true" ]; then
     #php artisan db:seed --class=SyncAccountsSeeder --force
 fi
 
+if [ "$FORCE_MIGRATE" = "true" ]; then
+    echo "Syncing accounts and contact information..."
+    php artisan make:session-table
+    php artisan migrate --force    
+fi
+
 if [ "$SYNC_NEW_ACCOUNTS" = "true" ]; then
     echo "Syncing accounts and contact information..."
     php artisan migrate:fresh --seed --force
