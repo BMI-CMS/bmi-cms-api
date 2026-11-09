@@ -10,7 +10,7 @@ class RestructuringQuery
     {
         return Restructuring::select([
             'account_id',
-            'new_monthly_amortization',
+            'monthly_amortization',
         ])
             ->where('created_at', '>=', $startDate)
             ->where('created_at', '<', $endDate);

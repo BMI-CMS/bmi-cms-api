@@ -30,7 +30,7 @@ class DashboardController extends Controller
     {
         $validated = $request->validated();
 
-        $summary = $this->dashboardService->getAssignedAccounts(Auth::user()->cmsUser->id, $validated['period']);
+        $summary = $this->dashboardService->getAssignedAccounts(Auth::user()->cmsUser, $validated['period']);
 
         return response()->json([
             'message' => 'Dashboard summary retrieved successfully.',
