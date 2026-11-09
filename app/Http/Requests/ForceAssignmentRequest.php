@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use App\Constants\Constants;
+use App\Constants\AllowedToPrioritize;
 use App\Models\User;
 
 class ForceAssignmentRequest extends FormRequest
@@ -20,7 +20,7 @@ class ForceAssignmentRequest extends FormRequest
             return false;
         }
 
-        return in_array($user->cmsUser->level, Constants::ACCOUNT_PRIORITIZATION_ALLOWED_LEVELS, true);
+        return in_array($user->cmsUser->level, AllowedToPrioritize::LEVELS, true);
     }
 
     /**
