@@ -36,6 +36,12 @@ class Account extends Model
         'send_date',
     ];
 
+    protected $casts = [
+        'outstanding_balance' => 'float',
+        'past_due_balance' => 'float',
+        'monthly_amortization' => 'float'
+    ];
+
     public const DEFAULT_FIELDS = [
         'account_number',
         'customer_id',

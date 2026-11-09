@@ -105,32 +105,32 @@ class AccountSeeder extends Seeder
         $dhIds = $this->usersByRole(15)->pluck('id');
 
         $noContactRecording = $this->getNoContactRecording($dueToday);
-        $verlappingConditions = $this->getOverlappingConditions($dueToday);
-        $notCoveredByAnyRule = $this->getNotCoveredByAnyRule($dueToday);
-        $scheduledByDueDate = $this->getScheduledByDueDate(
-            $dueEarlierThisMonth,
-            $dueLaterThisMonth,
-            $dueNextMonth,
-            $dueLastMonth
-        );
-        $noPaymentsBeyondNP3 = $this->getNoPaymentsBeyondNP3($dueToday);
-        $withContactRecording = $this->getWithContactRecording($dueEarlierThisMonth);
-        $currentCategory = $this->getCurrentCategory($dueEarlierThisMonth);
-        $precendenceWithDueNextActionPlan = $this->getPrecendenceWithDueNextActionPlan($dueEarlierThisMonth);
-        $multipleRecordings = $this->getMultipleRecordings($dueEarlierThisMonth, $dueLastMonth);
-        $outOfScope = $this->getOutOfScope($dueEarlierThisMonth);
+        // $verlappingConditions = $this->getOverlappingConditions($dueToday);
+        // $notCoveredByAnyRule = $this->getNotCoveredByAnyRule($dueToday);
+        // $scheduledByDueDate = $this->getScheduledByDueDate(
+        //     $dueEarlierThisMonth,
+        //     $dueLaterThisMonth,
+        //     $dueNextMonth,
+        //     $dueLastMonth
+        // );
+        // $noPaymentsBeyondNP3 = $this->getNoPaymentsBeyondNP3($dueToday);
+        // $withContactRecording = $this->getWithContactRecording($dueEarlierThisMonth);
+        // $currentCategory = $this->getCurrentCategory($dueEarlierThisMonth);
+        // $precendenceWithDueNextActionPlan = $this->getPrecendenceWithDueNextActionPlan($dueEarlierThisMonth);
+        // $multipleRecordings = $this->getMultipleRecordings($dueEarlierThisMonth, $dueLastMonth);
+        // $outOfScope = $this->getOutOfScope($dueEarlierThisMonth);
 
         $accounts = [
             ...$noContactRecording,
-            ...$verlappingConditions,
-            ...$notCoveredByAnyRule,
-            ...$scheduledByDueDate,
-            ...$noPaymentsBeyondNP3,
-            ...$withContactRecording,
-            ...$currentCategory,
-            ...$precendenceWithDueNextActionPlan,
-            ...$multipleRecordings,
-            ...$outOfScope,
+            // ...$verlappingConditions,
+            // ...$notCoveredByAnyRule,
+            // ...$scheduledByDueDate,
+            // ...$noPaymentsBeyondNP3,
+            // ...$withContactRecording,
+            // ...$currentCategory,
+            // ...$precendenceWithDueNextActionPlan,
+            // ...$multipleRecordings,
+            // ...$outOfScope,
         ];
 
         $assignedRO = $this->pick($roIds);

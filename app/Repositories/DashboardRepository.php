@@ -79,39 +79,39 @@ class DashboardRepository
     }
     public function getDailyAccounts(int $userId)
     {
-        $startOfDay = Carbon::today()->startOfDay();
-        $startOfNextDay = $startOfDay->copy()->addDay();
+        $startOfDay = Carbon::now()->startOfDay()->format('Y-m-d H:i:s');
+        $endOfDay = Carbon::now()->endOfDay()->format('Y-m-d H:i:s');
 
         return [
-            "for_visit" => $this->getVisitPlanAccounts($userId, $startOfDay, Carbon::now()),
+            "for_visit" => $this->getVisitPlanAccounts($userId, $startOfDay, $endOfDay),
             // "visited" => $this->visitedAccount($userId, $startOfDay, $startOfNextDay),
         ];
     }
     public function getMonthlyAccounts(int $userId)
     {
-        $startOfTheMonth = Carbon::now()->startOfMonth();
-        $endOfTheMonth = $startOfTheMonth->copy()->addMonth();
+        $startOfTheMonth = Carbon::now()->startOfDay()->format('Y-m-d H:i:s');
+        $endOfTheMonth = Carbon::now()->endOfMonth()->format('Y-m-d H:i:s');
 
         return [
-            "for_visit" => $this->getVisitPlanAccounts($userId, Carbon::today(), Carbon::now()->endOfMonth()),
+            "for_visit" => $this->getVisitPlanAccounts($userId, $startOfTheMonth, $endOfTheMonth),
             "visited" => $this->visitedAccount($userId, $startOfTheMonth, $endOfTheMonth)
         ];
     }
-    public function getVisitPlanAccounts(int $userId, CarbonInterface $startDate, CarbonInterface $endDate)
+    public function getVisitPlanAccounts(int $userId, string $startDate, string $endDate)
     {
-        $monthStart = $startDate->copy()->startOfMonth();
-        $nextActionFrom = $startDate->copy()->startOfDay()
-            ->subDays((int) config('visit_plan.next_action_carry_over_days'))
-            ->max($monthStart);
-
+        // $monthStart = $startDate->copy()->startOfMonth();
+        // $nextActionFrom = $startDate->copy()->startOfDay()
+        //     ->subDays((int) config('visit_plan.next_action_carry_over_days'))
+        //     ->max($monthStart);
+        // return [$startDate, $endDate];
         $accounts = $this->assignedAccountsQuery($userId)
-            ->where(function ($query) use ($monthStart, $endDate, $nextActionFrom) {
-                $query->where(function ($unvisited) use ($monthStart, $endDate) {
+            ->where(function ($query) use ($startDate, $endDate) {
+                $query->where(function ($unvisited) use ($startDate, $endDate) {
                     $unvisited->whereNull('latest_recordings.id')
-                        ->where('accounts.due_date', '>=', $monthStart->toDateString())
-                        ->where('accounts.due_date', '<=', $endDate->toDateString());
-                })->orWhere(function ($scheduled) use ($nextActionFrom, $endDate) {
-                    $scheduled->where('latest_recordings.next_action_date', '>=', $nextActionFrom)
+                        ->where('accounts.due_date', '>=', $startDate)
+                        ->where('accounts.due_date', '<=', $endDate);
+                })->orWhere(function ($scheduled) use ($startDate, $endDate) {
+                    $scheduled->where('latest_recordings.next_action_date', '>=', $startDate)
                         ->where('latest_recordings.next_action_date', '<=', $endDate);
                 });
             })
@@ -124,32 +124,32 @@ class DashboardRepository
         $scopedAccountIds = Account::query()
             ->select('accounts.id')
             ->where('accounts.assigned_cc_id', $userId);
-
+        //add query to exclude finish plan
         if ($accountScope) {
             $accountScope($scopedAccountIds);
         }
 
         $latestContactRecordings = ContactRecording::query()
             ->select([
-                'contact_recordings.id',
-                'contact_recordings.account_id',
-                'contact_recordings.current_category',
-                'contact_recordings.follow_up_mode',
-                'contact_recordings.reason_for_default',
-                'contact_recordings.action_taken',
-                'contact_recordings.next_action_plan',
-                'contact_recordings.next_action_date',
-                'contact_recordings.remarks',
-                'contact_recordings.geotagging',
-                'contact_recordings.recorded_by',
-                'contact_recordings.contact_date',
-                'contact_recordings.is_contacted',
+                'id',
+                'account_id',
+                'current_category',
+                'follow_up_mode',
+                'reason_for_default',
+                'action_taken',
+                'next_action_plan',
+                'next_action_date',
+                'remarks',
+                'geotagging',
+                'recorded_by',
+                'contact_date',
+                'is_contacted'
             ])
             ->selectRaw('ROW_NUMBER() OVER (
-                PARTITION BY contact_recordings.account_id
-                ORDER BY contact_recordings.contact_date DESC, contact_recordings.id DESC
+                PARTITION BY account_id
+                ORDER BY contact_date DESC, id DESC
             ) AS recording_rank')
-            ->whereIn('contact_recordings.account_id', $scopedAccountIds);
+            ->whereIn('account_id', $scopedAccountIds);
 
         $accounts = Account::select([
             'accounts.id',
@@ -201,6 +201,7 @@ class DashboardRepository
             'latest_recordings.recorded_by',
             'latest_recordings.contact_date',
             'latest_recordings.is_contacted as contact_recording_is_contacted',
+
         ])
             ->leftJoinSub($latestContactRecordings, 'latest_recordings', function ($join) {
                 $join->on('latest_recordings.account_id', '=', 'accounts.id')

@@ -114,7 +114,7 @@ class ContactRecordingRequest extends FormRequest
                 'rules' => [
                     'for_support_cc.new_assigned_id' => 'required|integer|min:1'
                 ],
-            ],
+            ]
         ];
     }
 }

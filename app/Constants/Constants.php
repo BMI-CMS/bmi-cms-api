@@ -27,18 +27,17 @@ class Constants
     ];
 
     public const PREVIOUSCLASSIFICATION = [
-        'DPD 1-30 Days' => ['regular', 'dpd_1_30_days'],
+        'DPD 1-30 DAYS' => ['regular', 'dpd_1_30_days'],
         'NP0' => ['regular', 'np_0'],
         'NP1' => ['regular', 'np_1'],
-
-        'Priority 1 Accounts' => ['prioritization', 'priority_1_accounts'],
+        'PRIORITY 1 ACCCOUNTS' => ['prioritization', 'priority_1_accounts'],
         'FDD/NS' => ['prioritization', 'fdd_ns'],
-        'For Repossession' => ['prioritization', 'for_repossession'],
-        'Promise To Pay' => ['prioritization', 'promise_to_pay'],
+        'FOR REPOSSESSION' => ['prioritization', 'for_repossession'],
+        'PROMISE TO PAY' => ['prioritization', 'promise_to_pay'],
 
-        'For Skiptrace' => ['prioritization', 'next_action_plan', 'for_skiptrace'],
-        'forced prioritized' => ['prioritization', 'next_action_plan', 'force_prioritized'],
-        'Notice and Demand Letter' => ['prioritization', 'next_action_plan', 'notice_and_demand_letter'],
+        'FOR SKIPTRACE' => ['prioritization', 'next_action_plan', 'for_skiptrace'],
+        'FORCED PRIORITIZED' => ['prioritization', 'next_action_plan', 'force_prioritized'],
+        'NOTICE AND DEMAND LETTER' => ['prioritization', 'next_action_plan', 'notice_and_demand_letter'],
     ];
 
     public const PROMISETOPAY = 'PROMISE TO PAY';

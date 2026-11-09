@@ -132,50 +132,50 @@ class ContactRecordingOtherInstitutionSeeder extends Seeder
 
         return [
             // ===== Due next action plans =====
-            ['label' => 'B01', 'rows' => [['DPD 1-30 Days', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $daysAgo(3), $earlierToday, false]]],
-            ['label' => 'B02', 'rows' => [['DPD 1-30 Days', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $daysAgo(3), $laterToday, false]]],
-            ['label' => 'B03', 'rows' => [['DPD 1-30 Days', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $daysAgo(3), $tomorrow, false]]],
-            ['label' => 'B04', 'rows' => [['DPD 1-30 Days', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $daysAgo(3), $yesterday, false]]],
-            ['label' => 'B05', 'rows' => [['Priority 1 Accounts', 'SKIPTRACE', self::SKIPTRACE, $daysAgo(3), $earlierToday, false]]],
+            ['label' => 'B01', 'rows' => [['DPD 1-30 DAYS', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $daysAgo(3), $earlierToday, false]]],
+            ['label' => 'B02', 'rows' => [['DPD 1-30 DAYS', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $daysAgo(3), $laterToday, false]]],
+            ['label' => 'B03', 'rows' => [['DPD 1-30 DAYS', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $daysAgo(3), $tomorrow, false]]],
+            ['label' => 'B04', 'rows' => [['DPD 1-30 DAYS', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $daysAgo(3), $yesterday, false]]],
+            ['label' => 'B05', 'rows' => [['PRIORITY 1 ACCCOUNTS', 'SKIPTRACE', self::SKIPTRACE, $daysAgo(3), $earlierToday, false]]],
             ['label' => 'B06', 'rows' => [['NP1', 'SERVED COLLECTION NOTICE', self::NOTICE_AND_DEMAND, $daysAgo(3), $earlierToday, false]]],
             // No repossession_requests approval row exists for this recording.
-            ['label' => 'B07', 'rows' => [['Priority 1 Accounts', 'FOLLOW UP PAYMENT', self::FOR_REPO, $daysAgo(3), $earlierToday, false]]],
+            ['label' => 'B07', 'rows' => [['PRIORITY 1 ACCCOUNTS', 'FOLLOW UP PAYMENT', self::FOR_REPO, $daysAgo(3), $earlierToday, false]]],
 
             // ===== Fallback to current_category =====
-            ['label' => 'B08', 'rows' => [['DPD 1-30 Days', 'FOLLOW UP PAYMENT', self::FIELD_VISIT, $daysAgo(3), $earlierToday, false]]],
+            ['label' => 'B08', 'rows' => [['DPD 1-30 DAYS', 'FOLLOW UP PAYMENT', self::FIELD_VISIT, $daysAgo(3), $earlierToday, false]]],
             ['label' => 'B09', 'rows' => [['NP1', 'FILED BRGY BLOTTER/COMPLAIN', 'FOR FILING BRGY BLOTTER/COMPLAIN', $daysAgo(3), $earlierToday, false]]],
-            ['label' => 'B10', 'rows' => [['DPD 1-30 Days', 'ATTEND BRGY HEARING', 'TO ATTEND BARANGAY HEARING', $daysAgo(3), $earlierToday, false]]],
+            ['label' => 'B10', 'rows' => [['DPD 1-30 DAYS', 'ATTEND BRGY HEARING', 'TO ATTEND BARANGAY HEARING', $daysAgo(3), $earlierToday, false]]],
             ['label' => 'B11', 'rows' => [['NP0', 'PROCESS DISCREPANCY ADJUSTMENT', 'FOR DISCREPANCY ADJUSTMENT', $daysAgo(3), $earlierToday, false]]],
-            ['label' => 'B12', 'rows' => [['Priority 1 Accounts', 'FOLLOW UP PAYMENT', 'FOR ASSUMPTION OF UNIT', $daysAgo(3), $earlierToday, false]]],
+            ['label' => 'B12', 'rows' => [['PRIORITY 1 ACCCOUNTS', 'FOLLOW UP PAYMENT', 'FOR ASSUMPTION OF UNIT', $daysAgo(3), $earlierToday, false]]],
             // Spelling from the rules document; the master list seeder has no space before "(".
             ['label' => 'B13', 'rows' => [['FDD/NS', 'FOR WRITE OFF(MINIMAL BALANCE)', 'FOR WRITE OFF (MINIMAL BALANCE)', $daysAgo(3), $earlierToday, false]]],
             ['label' => 'B14', 'rows' => [[null, 'FOLLOW UP PAYMENT', self::FIELD_VISIT, $daysAgo(3), $earlierToday, false]]],
             // Category recorded at visit time differs from the account's current attributes (now DPD 1-30).
-            ['label' => 'B15', 'bucket' => 'DPD 1-30', 'rows' => [['Priority 1 Accounts', 'FOLLOW UP PAYMENT', self::FIELD_VISIT, $daysAgo(3), $earlierToday, false]]],
+            ['label' => 'B15', 'bucket' => 'DPD 1-30', 'rows' => [['PRIORITY 1 ACCCOUNTS', 'FOLLOW UP PAYMENT', self::FIELD_VISIT, $daysAgo(3), $earlierToday, false]]],
 
             // ===== Precedence with a due next action plan =====
-            ['label' => 'B16', 'rows' => [['DPD 1-30 Days', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $daysAgo(3), $earlierToday, false]]],
-            ['label' => 'B17', 'rows' => [['For Repossession', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $daysAgo(3), $earlierToday, false]]],
+            ['label' => 'B16', 'rows' => [['DPD 1-30 DAYS', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $daysAgo(3), $earlierToday, false]]],
+            ['label' => 'B17', 'rows' => [['FOR REPOSSESSION', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $daysAgo(3), $earlierToday, false]]],
             ['label' => 'B18', 'rows' => [['FDD/NS', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $daysAgo(3), $earlierToday, false]]],
-            ['label' => 'B19', 'rows' => [['For Repossession', 'SKIPTRACE', self::SKIPTRACE, $daysAgo(3), $earlierToday, false]]],
+            ['label' => 'B19', 'rows' => [['FOR REPOSSESSION', 'SKIPTRACE', self::SKIPTRACE, $daysAgo(3), $earlierToday, false]]],
 
             //  [$category, $actionTaken, $plan, $contactDate, $nextActionDate, $softDeleted] = $row;
             // ===== B20 same-day rescheduling: morning visit sets a new action later today =====
             ['label' => 'B20', 'rows' => [
-                ['DPD 1-30 Days', 'FOLLOW UP PAYMENT', self::FIELD_VISIT, $daysAgo(5), $daysAgo(1), false, true],
-                ['DPD 1-30 Days', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $daysAgo(1), $today, false],
+                ['DPD 1-30 DAYS', 'FOLLOW UP PAYMENT', self::FIELD_VISIT, $daysAgo(5), $daysAgo(1), false, true],
+                ['DPD 1-30 DAYS', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $daysAgo(1), $today, false],
             ]],
 
             // ===== B21 older recording is due, but the latest one is future-dated =====
             ['label' => 'B21', 'rows' => [
-                ['Priority 1 Accounts', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $daysAgo(5), $daysAgo(1), false, true],
-                ['Priority 1 Accounts', 'SKIPTRACE', self::SKIPTRACE, $daysAgo(1), $today, false],
+                ['PRIORITY 1 ACCCOUNTS', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $daysAgo(5), $daysAgo(1), false, true],
+                ['PRIORITY 1 ACCCOUNTS', 'SKIPTRACE', self::SKIPTRACE, $daysAgo(1), $today, false],
             ]],
 
             // ===== B22 latest recording is soft-deleted; the older PTP is the valid one =====
             ['label' => 'B22', 'rows' => [
-                ['DPD 1-30 Days', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $daysAgo(5), $daysAgo(1), false, true],
-                ['DPD 1-30 Days', 'SKIPTRACE', self::SKIPTRACE, $daysAgo(1), $today, true],
+                ['DPD 1-30 DAYS', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $daysAgo(5), $daysAgo(1), false, true],
+                ['DPD 1-30 DAYS', 'SKIPTRACE', self::SKIPTRACE, $daysAgo(1), $today, true],
             ]],
 
             // ===== B23 offline sync: older visit synced later (higher id, earlier contact_date) =====
@@ -185,18 +185,18 @@ class ContactRecordingOtherInstitutionSeeder extends Seeder
             ]],
 
             // ===== B24 PTP from last month never followed up =====
-            ['label' => 'B24', 'rows' => [['DPD 1-30 Days', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $lastMonth, $lastMonth->copy()->addDays(2), false]]],
+            ['label' => 'B24', 'rows' => [['DPD 1-30 DAYS', 'FOLLOW UP PAYMENT', self::PROMISE_TO_PAY, $lastMonth, $lastMonth->copy()->addDays(2), false]]],
 
             // ===== Out-of-scope next action plans (future workflows) =====
-            ['label' => 'B25', 'rows' => [['Priority 1 Accounts', 'PROCESS INSURANCE CLAIM', 'FOR INSURANCE CLAIM', $daysAgo(3), $earlierToday, false]]],
+            ['label' => 'B25', 'rows' => [['PRIORITY 1 ACCCOUNTS', 'PROCESS INSURANCE CLAIM', 'FOR INSURANCE CLAIM', $daysAgo(3), $earlierToday, false]]],
             // DPD 121-150 / 151-180 have no base classification yet, so no category is assumed.
             ['label' => 'B26', 'rows' => [[null, 'ENDORSED TO RCD', 'FOR ENDORSEMENT TO RCD', $daysAgo(3), $earlierToday, false]]],
             ['label' => 'B27', 'rows' => [['NP1', 'OFFER RESTRUCTURING', 'FOR RESTRUCTURING', $daysAgo(3), $earlierToday, false]]],
             ['label' => 'B28', 'rows' => [[null, 'ENDORSED TO LEGAL', 'FOR LEGAL/SMALL CLAIMS', $daysAgo(3), $earlierToday, false]]],
-            ['label' => 'B29', 'rows' => [['DPD 1-30 Days', 'COLLECTED', null, $earlierToday, null, false]]],
+            ['label' => 'B29', 'rows' => [['DPD 1-30 DAYS', 'COLLECTED', null, $earlierToday, null, false]]],
 
             // ===== Next action plans not listed in the rules document =====
-            ['label' => 'B30', 'rows' => [['DPD 1-30 Days', 'FOLLOW UP PAYMENT', 'FOR REVISIT/CALL', $daysAgo(3), $earlierToday, false]]],
+            ['label' => 'B30', 'rows' => [['DPD 1-30 DAYS', 'FOLLOW UP PAYMENT', 'FOR REVISIT/CALL', $daysAgo(3), $earlierToday, false]]],
             ['label' => 'B31', 'rows' => [['NP1', 'FOLLOW UP PAYMENT', 'FOR COLLECTION', $daysAgo(3), $earlierToday, false]]],
         ];
     }

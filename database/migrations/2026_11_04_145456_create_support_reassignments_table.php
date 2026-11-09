@@ -23,6 +23,7 @@ return new class extends Migration
                 ->constrained('cms_users')
                 ->cascadeOnDelete();
             $table->dateTime('next_action_date')->index();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

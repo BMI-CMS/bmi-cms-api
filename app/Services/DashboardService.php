@@ -113,7 +113,7 @@ class DashboardService
             $accountAllocation[] =  [
                 'profile' => [
                     "id" =>  $count,
-                    "psgc_code" => $psgcCode,
+                    "psgc_code" => "$psgcCode",
                     "username" => $user["name"] . " $count"
                 ],
                 'visit_plan' => AllocateAccountsHelper::accountsClassification(array_values($accounts))
