@@ -29,6 +29,9 @@ class ContactRecordingRequest extends FormRequest
         $nextActionField = $this->nextActionFieldMap();
 
         $rules = [
+            'customer_name' => 'required|string|max:255',
+            'account_number' => 'required|string|max:15',
+            'outstanding_balance' => 'required|numeric|min:0',
             'account_id' => 'required|integer|min:1',
             'current_category' => 'required|string|max:70',
             'follow_up_mode' => 'required|string|max:30',
@@ -72,7 +75,6 @@ class ContactRecordingRequest extends FormRequest
             'OFFER RESTRUCTURING' => [
                 'field' => 'for_restructuring',
                 'rules' => [
-                    'for_restructuring.principal_outstanding' => 'required|numeric|min:0',
                     'for_restructuring.monthly_amortization' => 'required|numeric|min:0',
                     'for_restructuring.terms' => 'required|string|max:50',
                 ],

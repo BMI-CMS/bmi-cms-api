@@ -229,7 +229,8 @@ class AccountSeeder extends Seeder
 
     private function pick(Collection $ids): ?int
     {
-        return $ids->isNotEmpty() ? $ids->random() : null;
+        return fake()->randomElement($ids);
+        // return $ids->isNotEmpty() ? $ids->random() : null;
     }
 
     private function getAccountNumber(int $assignedCC, int $index)

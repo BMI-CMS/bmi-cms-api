@@ -70,7 +70,7 @@ class DashboardRepository
             SUM(accounts.past_due_balance) AS total_past_due_amount,
             SUM(receipt_encodings.amount) AS total_receipt_encode_amount,
             SUM(for_repossessions.amount) AS total_repossessed_amount,
-            SUM(restructurings.new_monthly_amortization) AS total_restructured_amount
+            SUM(restructurings.monthly_amortization) AS total_restructured_amount
             ')
             ->where('accounts.assigned_cc_id', $userId)
             ->where('accounts.created_at', '>=', $startDate)
@@ -84,7 +84,7 @@ class DashboardRepository
 
         return [
             "for_visit" => $this->getVisitPlanAccounts($userId, $startOfDay, Carbon::now()),
-            "visited" => $this->visitedAccount($userId, $startOfDay, $startOfNextDay),
+            // "visited" => $this->visitedAccount($userId, $startOfDay, $startOfNextDay),
         ];
     }
     public function getMonthlyAccounts(int $userId)

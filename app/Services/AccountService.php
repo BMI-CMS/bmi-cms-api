@@ -13,6 +13,7 @@ use App\Models\PromiseToPay;
 use App\Models\RepossessionRequest;
 use App\Models\SupportReassignment;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 
 class AccountService
@@ -44,11 +45,13 @@ class AccountService
             ],
         ];
     }
-    public function contactRecording(array $data, int $userId)
+    public function contactRecording(array $data, int $userId, string $userName)
     {
-        // DB::beginTransaction();
+        DB::beginTransaction();
+
         try {
-           
+            $datetime = Carbon::now('Asia/Manila')->format('Y-m-d H:i:s');
+
             $contactRecording = ContactRecording::create([
                 'account_id' => $data["account_id"],
                 'current_category' => $data["current_category"],
@@ -59,76 +62,126 @@ class AccountService
                 'remarks' =>  $data["remarks"],
                 'geotagging' => $data["geotagging"],
                 'recorded_by' => $userId,
-                'contact_date' => now(),
+                'contact_date' =>  $datetime,
                 'next_action_date' => $data["next_action_date"]
             ]);
 
             if ($data["action_taken"] === ActionTaken::OFFERRESTRUCTURING) {
                 Restructuring::create([
+                    'account_id' => $data["account_id"],
+                    'contact_recording_id' => $contactRecording->id,
+                    'outstanding_balance' => $data["outstanding_balance"],
                     ...$data["for_restructuring"],
+                ]);
+
+                $response = Http::post('http://127.0.0.1:8000/api/v1/integrations/for-restructuring-account', [
+                    'customer_name' => $data["customer_name"],
+                    'account_number' => $data["account_number"],
+                    'outstanding_balance' => $data["outstanding_balance"],
+                    'conducted_by' => $userName,
+                    'requested_date' => $contactRecording->contact_date,
+                    ...$data["for_restructuring"],
+                ]);
+
+                if ($response->failed()) {
+                    DB::rollBack();
+
+                    return [
+                        'success' => false,
+                        'message' => $response->json('message')
+                            ?? 'Webhook request failed.',
+                        'code' => $response->status(),
+                    ];
+                }
+            } else if ($data["action_taken"] === ActionTaken::COLLECTED) {
+                ReceiptEncoding::create([
+                    ...$data["collected"],
                     'account_id' => $data["account_id"],
                     'contact_recording_id' => $contactRecording->id,
                 ]);
-
-                 $response = Http::post('http://127.0.0.1:8000/api/test', [
-                    'account_number' => '123456789',
-                    'customer_name' => 'Juan Dela Cruz',
-                    'balance' => 15000,
+            } else if (in_array($data["action_taken"], ActionTaken::EARLYENDORSED)) {
+                EarlyEndorsed::create([
+                    'account_id' => $data["account_id"],
+                    'contact_recording_id' => $contactRecording->id,
+                    'reason_of_endorsement' => $data["action_taken"],
+                    'remarks' => $data["remarks"],
                 ]);
-            } else if ($data["action_taken"] === ActionTaken::COLLECTED) {
-            //     ReceiptEncoding::create([
-            //         ...$data["collected"],
-            //         'account_id' => $data["account_id"],
-            //         'contact_recording_id' => $contactRecording->id,
-            //     ]);
-            // } else if (in_array($data["action_taken"], ActionTaken::EARLYENDORSED)) {
-            //     EarlyEndorsed::create([
-            //         'account_id' => $data["account_id"],
-            //         'contact_recording_id' => $contactRecording->id,
-            //         'reason_of_endorsement' => $data["action_taken"],
-            //         'remarks' => $data["remarks"],
-            //     ]);
-            // }
 
-            // if ($data["next_action_plan"] === NextActionPlan::PROMISETOPAY) {
-            //     PromiseToPay::create([
-            //         ...$data["promise_to_pay"],
-            //         'account_id' => $data["account_id"],
-            //         'contact_recording_id' => $contactRecording->id,
-            //     ]);
-            // } else if ($data["next_action_plan"] === NextActionPlan::FORREPO) {
-            //     RepossessionRequest::create([
-            //         ...$data["for_repo"],
-            //         'account_id' => $data["account_id"],
-            //         'contact_recording_id' => $contactRecording->id,
-            //     ]);
-            // } else if ($data["next_action_plan"] === NextActionPlan::FORSUPPORTCC) {
-            //     SupportReassignment::create([
-            //         ...$data["for_support_cc"],
-            //         'account_id' => $data["account_id"],
-            //         'contact_recording_id' => $contactRecording->id,
-            //         'next_action_date' => $data["next_action_date"]
-            //     ]);
-            // } else if (in_array($data["next_action_plan"], NextActionPlan::FORNOTICEANDDEMAND)) {
-            //     // SupportReassignment::create([
-            //     //     ...$data["for_support_cc"],
-            //     //     'account_id' => $data["account_id"],
-            //     //     'contact_recording_id' => $contactRecording->id,
-            //     //     'next_action_date' => $data["next_action_date"]
-            //     // ]);
-            // }
+                $response = Http::post('http://127.0.0.1:8000/api/v1/integrations/early-endorsed-account', [
+                    'customer_name' => $data["customer_name"],
+                    'account_number' =>  $data["account_number"],
+                    'outstanding_balance' => $data["outstanding_balance"],
+                    'reason_for_early_endorsement' => $data["action_taken"],
+                    'requested_date' => $contactRecording->contact_date,
+                    'conducted_by' => $userName,
+                    'remarks' => $data["remarks"],
+                ]);
 
-            // DB::commit();
+                if ($response->failed()) {
+                    DB::rollBack();
 
-            // return [
-            //     'success' => true,
-            //     'data' => [
-            //         'id' => $data["account_id"],
-            //         'data' => $data,
-            //     ],
-            // ];
+                    return [
+                        'success' => false,
+                        'message' => $response->json('message')
+                            ?? 'Webhook request failed.',
+                        'code' => $response->status(),
+                    ];
+                }
+            }
+
+            if ($data["next_action_plan"] === NextActionPlan::PROMISETOPAY) {
+                PromiseToPay::create([
+                    ...$data["promise_to_pay"],
+                    'account_id' => $data["account_id"],
+                    'contact_recording_id' => $contactRecording->id,
+                ]);
+            } else if ($data["next_action_plan"] === NextActionPlan::FORREPO) {
+                RepossessionRequest::create([
+                    ...$data["for_repo"],
+                    'account_id' => $data["account_id"],
+                    'contact_recording_id' => $contactRecording->id,
+                ]);
+            } else if ($data["next_action_plan"] === NextActionPlan::FORSUPPORTCC) {
+                SupportReassignment::create([
+                    ...$data["for_support_cc"],
+                    'account_id' => $data["account_id"],
+                    'contact_recording_id' => $contactRecording->id,
+                    'next_action_date' => $data["next_action_date"]
+                ]);
+            } else if (in_array($data["next_action_plan"], NextActionPlan::FORNOTICEANDDEMAND)) {
+                $response = Http::post('http://127.0.0.1:8000/api/v1/integrations/notice-and-demand-account', [
+                    'customer_name' => $data["customer_name"],
+                    'account_number' => $data["account_number"],
+                    'outstanding_balance' => $data["outstanding_balance"],
+                    'demand_letter_type' => $data["next_action_plan"],
+                    'requested_date' => $contactRecording->contact_date,
+                    'remarks' => $data["remarks"],
+                    'conducted_by' => $userName
+                ]);
+
+                if ($response->failed()) {
+                    DB::rollBack();
+
+                    return [
+                        'success' => false,
+                        'message' => $response->json('message')
+                            ?? 'Webhook request failed.',
+                        'code' => $response->status(),
+                    ];
+                }
+            }
+
+            DB::commit();
+
+            return [
+                'success' => true,
+                'data' => [
+                    'id' => $data["account_id"],
+                    'data' => $data,
+                ],
+            ];
         } catch (\Exception $e) {
-            //   DB::rollBack();
+            DB::rollBack();
             return [
                 'success' => false,
                 'message' => $e,
