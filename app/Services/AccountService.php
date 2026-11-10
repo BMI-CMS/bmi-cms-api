@@ -11,7 +11,7 @@ use App\Models\ReceiptEncoding;
 use App\Models\EarlyEndorsed;
 use App\Models\PromiseToPay;
 use App\Models\RepossessionRequest;
-use App\Models\SupportReassignment;
+use App\Models\ReassignmentHistory;
 use App\Models\CHValidation;
 use App\Helpers\GetDateHelper;
 use Illuminate\Support\Facades\DB;
@@ -151,25 +151,15 @@ class AccountService
                 ]);
             } else if ($data["next_action_plan"] === NextActionPlan::FORSUPPORTCC) {
                 $account = Account::findOrFail($data["account_id"]);
-
-                $result = $account->replicate([
-                    'assigned_cc_id',
+                $account->update([
+                    'assigned_cc_id' => $data["for_support_cc"]["new_assigned_id"]
                 ]);
 
-                $result->assigned_cc_id = $data["for_support_cc"]["new_assigned_id"];
-                $result->save();
-
-                $contactRecording = ContactRecording::create([
-                    'account_id' => $result->id,
-                    'current_category' => $data["current_category"],
-                    'follow_up_mode' => $data["follow_up_mode"],
-                    'action_taken' => $data["action_taken"],
-                    'reason_for_default' => $data["reason_for_default"],
-                    'next_action_plan' =>  $data["next_action_plan"],
-                    'remarks' =>  $data["remarks"],
-                    'geotagging' => $data["geotagging"],
-                    'recorded_by' => $userId,
-                    'next_action_date' => $datetime
+                ReassignmentHistory::create([
+                    'account_id' => $data["account_id"],
+                    'previous_assigned_id' => $userId,
+                    'new_assigned_id' => $data["for_support_cc"]["new_assigned_id"],
+                    'assigned_by' => $userId
                 ]);
             } else if (in_array($data["next_action_plan"], NextActionPlan::FORNOTICEANDDEMAND)) {
                 $response = Http::post('http://127.0.0.1:8000/api/v1/integrations/notice-and-demand-account', [

@@ -32,9 +32,6 @@ return new class extends Migration
             $table->string('psgc_code', 10);
             $table->boolean('is_force_prioritized')->default(false);
             $table->boolean('is_contacted')->default(false)->index();
-            // $table->foreignId('customer_details_id')
-            //     ->constrained('customer_details')
-            //     ->cascadeOnDelete();
             $table->foreignId('assigned_cc_id')
                 ->constrained('cms_users')
                 ->cascadeOnDelete();

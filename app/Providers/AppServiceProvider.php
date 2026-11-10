@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Models\UserAttestation;
 use App\Observers\UserObserver;
 use App\Observers\UserAttestationObserver;
+use App\Models\Account;
+use App\Observers\AccountObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,6 +28,7 @@ class AppServiceProvider extends ServiceProvider
     {
         User::observe(UserObserver::class);
         UserAttestation::observe(UserAttestationObserver::class);
+        Account::observe(AccountObserver::class);
 
         if ($this->app->environment('production')) {
             URL::forceScheme('https');

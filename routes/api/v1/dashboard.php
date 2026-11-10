@@ -10,5 +10,7 @@ Route::prefix('dashboard')->group(function () {
         Route::get('/assigned-accounts-psgc', [DashboardController::class, 'assignedAccountsByPSGC']);
         Route::get('/team-assigned-accounts', [DashboardController::class, 'teamAssignedAccounts']);
         Route::get('/team-assigned-accounts-psgc', [DashboardController::class, 'teamAssignedAccountsPSGC']);
+        Route::get('/team-assigned-accounts-psgc', [DashboardController::class, 'teamAssignedAccountsPSGC']);
+        Route::get('/support-credit-counselors', [DashboardController::class, 'supportCCList']);
     });
 });

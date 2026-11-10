@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('customer_details', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('account_id')
+                ->constrained('accounts')
+                ->cascadeOnDelete();
             $table->string('contact_number', 30);
             $table->string('email');
             $table->string('social_media_account');

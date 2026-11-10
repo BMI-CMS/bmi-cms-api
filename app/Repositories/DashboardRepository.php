@@ -125,6 +125,7 @@ class DashboardRepository
             ->select('accounts.id')
             ->where('accounts.assigned_cc_id', $userId);
         //add query to exclude finish plan
+
         if ($accountScope) {
             $accountScope($scopedAccountIds);
         }
@@ -223,19 +224,19 @@ class DashboardRepository
         $latestRecordingIds = $accounts->pluck('contact_recording_id')->filter();
 
         $contactHistory = ContactRecording::select([
-            'contact_recordings.id',
-            'contact_recordings.current_category',
-            'contact_recordings.account_id',
-            'contact_recordings.follow_up_mode',
-            'contact_recordings.reason_for_default',
-            'contact_recordings.action_taken',
-            'contact_recordings.next_action_plan',
-            'contact_recordings.next_action_date',
-            'contact_recordings.remarks',
-            'contact_recordings.geotagging',
-            'contact_recordings.recorded_by',
-            'contact_recordings.contact_date',
-            'contact_recordings.is_contacted',
+            'id',
+            'current_category',
+            'account_id',
+            'follow_up_mode',
+            'reason_for_default',
+            'action_taken',
+            'next_action_plan',
+            'next_action_date',
+            'remarks',
+            'geotagging',
+            'recorded_by',
+            'contact_date',
+            'is_contacted',
         ])
             ->whereIn('account_id', $accounts->pluck('id'))
             ->orderByDesc('contact_date')

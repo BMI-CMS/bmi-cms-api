@@ -19,6 +19,7 @@ return new class extends Migration
                 ->nullOnDelete();
             $table->string('device_id')->nullable();
             $table->string('ip_address', 45)->nullable();
+            $table->string('account_number', 15)->index();
             $table->string('subject_type');
             $table->unsignedBigInteger('row_id');
             $table->string('event');

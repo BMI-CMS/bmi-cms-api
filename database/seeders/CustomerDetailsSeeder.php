@@ -11,9 +11,6 @@ class CustomerDetailsSeeder extends Seeder
 {
     public function run(): void
     {
-        $count = 8;
-        for ($i = 0; $i < $count; $i++) {
-        }
         foreach (Account::all() as $account) {
             $faker = fake('en_PH');
             $faker->seed((int) $account->account_number);

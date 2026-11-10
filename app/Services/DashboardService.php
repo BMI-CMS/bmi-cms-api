@@ -6,6 +6,7 @@ use App\Constants\Period;
 use App\Helpers\AllocateAccountsHelper;
 use App\Repositories\DashboardRepository;
 use Carbon\Carbon;
+use App\Models\Account;
 use App\Models\CmsUser;
 
 class DashboardService
@@ -126,7 +127,7 @@ class DashboardService
     public function assignedAccountsByPSGC(int $userId)
     {
         // new shape for PSGC account data
-        //         "account_number": "7200001700",
+        //  "account_number": "7200001700",
         // "customer_name": "Sadie Jakubowski",
         // "monthly_amortization": "2734.22",
         // "dpd_bucket": "DPD 91-120",
@@ -143,35 +144,15 @@ class DashboardService
                 'account_number' => $item->account_number,
                 'customer_name' => $item->customer_name,
                 'monthly_amortization' => $item->monthly_amortization,
-                'past_due_balance' => $item->past_due_balance,
                 'dpd_bucket' => $item->dpd_bucket,
                 'outstanding_balance' => $item->outstanding_balance,
-                'last_payment_date' => $item->last_payment_date,
-                'asset' => $item->asset,
+                'past_due_balance' => $item->past_due_balance,
                 'payment_status' => $item->payment_status,
                 'is_force_prioritized' => $item->is_force_prioritized,
-                'psgc_code' => $item->psgc_code,
                 'is_contacted' => $item->is_contacted,
-                'assigned_cc_id' => $item->assigned_cc_id,
-                'assigned_ch_id' => $item->assigned_ch_id,
-                'assigned_am_ar_id' => $item->assigned_am_ar_id,
-                'assigned_rm_dh_id' => $item->assigned_rm_dh_id,
-                'unit_lot_block' => $item->unit_lot_block,
-                'street_name' => $item->street_name,
-                'subdivision_village' => $item->subdivision_village,
-                'province' => $item->province,
-                'postal_code' => $item->postal_code,
-                'barangay' => $item->barangay,
-                'city_municipality' => $item->city_municipality,
-                'region' => $item->region,
-                'contact_number' => $item->contact_number,
-                'email' => $item->email,
-                'social_media_account' => $item->social_media_account,
-                'due_date' => $item->due_date,
                 'current_category' => $item->current_category,
                 'next_action_date' => $item->next_action_date,
                 'next_action_plan' => $item->next_action_plan,
-                'activity_records' => [],
             ];
 
             if ($item->contact_recording_id) {
@@ -198,6 +179,28 @@ class DashboardService
         }
 
         return $accountsByPSGC;
+    }
+
+    public function accountDetails(int $accountId)
+    {
+        return $accountId;
+    }
+
+    public function getListOfSupportCCbyItCH(int $userId, int $chId)
+    {
+        $supportList = Account::query()
+            ->select(['cms_users.id', 'cms_users.name'])
+            ->join('cms_users', 'accounts.assigned_cc_id', '=', 'cms_users.id')
+            ->where('accounts.assigned_ch_id', $chId)
+            ->where('accounts.assigned_cc_id', '!=', $userId);
+
+        $chList = CmsUser::query()
+            ->select(['cms_users.id', 'cms_users.name'])
+            ->where('cms_users.id', $chId);
+
+        return $supportList
+            ->union($chList)
+            ->get();
     }
 
     // Higher ups

@@ -73,20 +73,24 @@ class AccountSeeder extends Seeder
         $today = Carbon::today();
 
         $dueToday = $today->copy();
-        $dueEarlierThisMonth = $today->copy()->startOfMonth();
-        $dueLaterThisMonth = $today->copy()->endOfMonth()->startOfDay();
-        $dueLastMonth = $today->copy()->subMonthNoOverflow()->startOfMonth()->addDays(9);
-        $dueNextMonth = $today->copy()->addMonthNoOverflow()->startOfMonth()->addDays(4);
+        $dueTommorrow = $today->copy()->addDays(1);
+        $dueNextWeek = $today->copy()->addDays(7);
+        // $dueEarlierThisMonth = $today->copy()->startOfMonth();
+        // $dueLaterThisMonth = $today->copy()->endOfMonth()->startOfDay();
+        // $dueLastMonth = $today->copy()->subMonthNoOverflow()->startOfMonth()->addDays(9);
+        // $dueNextMonth = $today->copy()->addMonthNoOverflow()->startOfMonth()->addDays(4);
 
         foreach ($rsUsers as $rsUser) {
             $this->buildCCVisitPlan(
                 $rsUser->id,
                 $today,
                 $dueToday,
-                $dueEarlierThisMonth,
-                $dueLaterThisMonth,
-                $dueLastMonth,
-                $dueNextMonth,
+                $dueTommorrow,
+                $dueNextWeek
+                // $dueEarlierThisMonth,
+                // $dueLaterThisMonth,
+                // $dueLastMonth,
+                // $dueNextMonth,
             );
         }
     }
@@ -95,16 +99,18 @@ class AccountSeeder extends Seeder
         int $rsUserId,
         Carbon $today,
         Carbon $dueToday,
-        Carbon $dueEarlierThisMonth,
-        Carbon $dueLaterThisMonth,
-        Carbon $dueLastMonth,
-        Carbon $dueNextMonth,
+        Carbon $dueTommorrow,
+        Carbon $dueNextWeek
+        // Carbon $dueEarlierThisMonth,
+        // Carbon $dueLaterThisMonth,
+        // Carbon $dueLastMonth,
+        // Carbon $dueNextMonth,
     ) {
         $roIds = $this->usersByRole(13)->pluck('id');  // placeholder role ids
         $armIds = $this->usersByRole(14)->pluck('id');
         $dhIds = $this->usersByRole(15)->pluck('id');
 
-        $noContactRecording = $this->getNoContactRecording($dueToday);
+        $noContactRecording = $this->getNoContactRecording($dueToday, $dueTommorrow, $dueNextWeek);
         // $verlappingConditions = $this->getOverlappingConditions($dueToday);
         // $notCoveredByAnyRule = $this->getNotCoveredByAnyRule($dueToday);
         // $scheduledByDueDate = $this->getScheduledByDueDate(
@@ -219,6 +225,11 @@ class AccountSeeder extends Seeder
 
     private function usersByRole(int $roleId): Collection
     {
+        if ($roleId === 13) {
+            return User::whereHas('CmsUser', function ($query) use ($roleId) {
+                $query->where('id', 14);
+            })->get();
+        }
         return User::whereHas('CmsUser', function ($query) use ($roleId) {
             $query->where('role_id', $roleId)
                 ->whereHas('company', function ($query) {
@@ -266,17 +277,90 @@ class AccountSeeder extends Seeder
         return preg_match('/LAST PAID (\d+) MONTHS? AGO/', $nonPayments, $matches) ? (int) $matches[1] : 0;
     }
 
-    private function getNoContactRecording(Carbon $dueToday)
+    private function getNoContactRecording(Carbon $dueToday1, Carbon $dueToday2, Carbon $dueToday3)
     {
         return [
-            ['DPD 91-120', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueToday],
-            ['DPD 61-90', 'LAST PAID 2 MONTH AGO', 'WITH PAYMENT', false, $dueToday],
-            ['DPD 61-90', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueToday],
-            ['DPD 1-30', 'UPDATED', 'FIRST DUE DATE', false, $dueToday],
-            ['DPD 31-60', 'LAST PAID 1 MONTH AGO', 'NON-STARTER', false, $dueToday],
-            ['DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueToday],
-            ['DPD 0', 'UPDATED', 'WITH PAYMENT', false, $dueToday],
-            ['DPD 31-60', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueToday],
+            ['DPD 91-120', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueToday1],
+            ['DPD 61-90', 'LAST PAID 2 MONTH AGO', 'WITH PAYMENT', false, $dueToday1],
+            ['DPD 61-90', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueToday1],
+            ['DPD 1-30', 'UPDATED', 'FIRST DUE DATE', false, $dueToday1],
+            ['DPD 31-60', 'LAST PAID 1 MONTH AGO', 'NON-STARTER', false, $dueToday1],
+            ['DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueToday1],
+            ['DPD 0', 'UPDATED', 'WITH PAYMENT', false, $dueToday1],
+            ['DPD 31-60', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueToday1],
+
+
+            ['DPD 91-120', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueToday1],
+            ['DPD 61-90', 'LAST PAID 2 MONTH AGO', 'WITH PAYMENT', false, $dueToday1],
+            ['DPD 61-90', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueToday1],
+            ['DPD 1-30', 'UPDATED', 'FIRST DUE DATE', false, $dueToday1],
+            ['DPD 31-60', 'LAST PAID 1 MONTH AGO', 'NON-STARTER', false, $dueToday1],
+            ['DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueToday1],
+            ['DPD 0', 'UPDATED', 'WITH PAYMENT', false, $dueToday1],
+            ['DPD 31-60', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueToday1],
+
+            ['DPD 91-120', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueToday1],
+            ['DPD 61-90', 'LAST PAID 2 MONTH AGO', 'WITH PAYMENT', false, $dueToday1],
+            ['DPD 61-90', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueToday1],
+            ['DPD 1-30', 'UPDATED', 'FIRST DUE DATE', false, $dueToday1],
+            ['DPD 31-60', 'LAST PAID 1 MONTH AGO', 'NON-STARTER', false, $dueToday1],
+            ['DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueToday1],
+            ['DPD 0', 'UPDATED', 'WITH PAYMENT', false, $dueToday1],
+            ['DPD 31-60', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueToday1],
+
+            ['DPD 91-120', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueToday2],
+            ['DPD 61-90', 'LAST PAID 2 MONTH AGO', 'WITH PAYMENT', false, $dueToday2],
+            ['DPD 61-90', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueToday2],
+            ['DPD 1-30', 'UPDATED', 'FIRST DUE DATE', false, $dueToday2],
+            ['DPD 31-60', 'LAST PAID 1 MONTH AGO', 'NON-STARTER', false, $dueToday2],
+            ['DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueToday2],
+            ['DPD 0', 'UPDATED', 'WITH PAYMENT', false, $dueToday2],
+            ['DPD 31-60', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueToday2],
+
+            ['DPD 91-120', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueToday2],
+            ['DPD 61-90', 'LAST PAID 2 MONTH AGO', 'WITH PAYMENT', false, $dueToday2],
+            ['DPD 61-90', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueToday2],
+            ['DPD 1-30', 'UPDATED', 'FIRST DUE DATE', false, $dueToday2],
+            ['DPD 31-60', 'LAST PAID 1 MONTH AGO', 'NON-STARTER', false, $dueToday2],
+            ['DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueToday2],
+            ['DPD 0', 'UPDATED', 'WITH PAYMENT', false, $dueToday2],
+            ['DPD 31-60', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueToday2],
+
+            ['DPD 91-120', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueToday2],
+            ['DPD 61-90', 'LAST PAID 2 MONTH AGO', 'WITH PAYMENT', false, $dueToday2],
+            ['DPD 61-90', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueToday2],
+            ['DPD 1-30', 'UPDATED', 'FIRST DUE DATE', false, $dueToday2],
+            ['DPD 31-60', 'LAST PAID 1 MONTH AGO', 'NON-STARTER', false, $dueToday2],
+            ['DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueToday2],
+            ['DPD 0', 'UPDATED', 'WITH PAYMENT', false, $dueToday2],
+            ['DPD 31-60', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueToday2],
+
+            ['DPD 91-120', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueToday3],
+            ['DPD 61-90', 'LAST PAID 2 MONTH AGO', 'WITH PAYMENT', false, $dueToday3],
+            ['DPD 61-90', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueToday3],
+            ['DPD 1-30', 'UPDATED', 'FIRST DUE DATE', false, $dueToday3],
+            ['DPD 31-60', 'LAST PAID 1 MONTH AGO', 'NON-STARTER', false, $dueToday3],
+            ['DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueToday3],
+            ['DPD 0', 'UPDATED', 'WITH PAYMENT', false, $dueToday3],
+            ['DPD 31-60', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueToday3],
+
+            ['DPD 91-120', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueToday3],
+            ['DPD 61-90', 'LAST PAID 2 MONTH AGO', 'WITH PAYMENT', false, $dueToday3],
+            ['DPD 61-90', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueToday3],
+            ['DPD 1-30', 'UPDATED', 'FIRST DUE DATE', false, $dueToday3],
+            ['DPD 31-60', 'LAST PAID 1 MONTH AGO', 'NON-STARTER', false, $dueToday3],
+            ['DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueToday3],
+            ['DPD 0', 'UPDATED', 'WITH PAYMENT', false, $dueToday3],
+            ['DPD 31-60', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueToday3],
+
+            ['DPD 91-120', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueToday3],
+            ['DPD 61-90', 'LAST PAID 2 MONTH AGO', 'WITH PAYMENT', false, $dueToday3],
+            ['DPD 61-90', 'LAST PAID 3 MONTHS AGO', 'WITH PAYMENT', false, $dueToday3],
+            ['DPD 1-30', 'UPDATED', 'FIRST DUE DATE', false, $dueToday3],
+            ['DPD 31-60', 'LAST PAID 1 MONTH AGO', 'NON-STARTER', false, $dueToday3],
+            ['DPD 1-30', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueToday3],
+            ['DPD 0', 'UPDATED', 'WITH PAYMENT', false, $dueToday3],
+            ['DPD 31-60', 'LAST PAID 1 MONTH AGO', 'WITH PAYMENT', false, $dueToday3],
         ];
     }
 

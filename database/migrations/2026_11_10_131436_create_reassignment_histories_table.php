@@ -11,19 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('support_reassignments', function (Blueprint $table) {
+        Schema::create('reassignment_histories', function (Blueprint $table) {
             $table->id();
             $table->foreignId('account_id')
                 ->constrained('accounts')
                 ->cascadeOnDelete();
-            $table->foreignId('contact_recording_id')
-                ->constrained('contact_recordings')
-                ->cascadeOnDelete();
-            $table->foreignId('new_assigned_id')
+            $table->foreignId('previous_assigned_id');
+            $table->foreignId('new_assigned_id');
+            $table->foreignId('assigned_by')
                 ->constrained('cms_users')
                 ->cascadeOnDelete();
-            $table->dateTime('next_action_date')->index();
-            $table->softDeletes();
             $table->timestamps();
         });
     }
@@ -33,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('support_reassignments');
+        Schema::dropIfExists('reassignement_history');
     }
 };
