@@ -16,7 +16,7 @@ class CollectionController extends Controller
 
     public function index(): JsonResponse
     {
-        $collectionList = $this->collectionService->getCollections(Auth::user()->cmsUser);
+        $collectionList = $this->collectionService->getCollections(Auth::user()->cmsUser->id);
 
         return response()->json([
             'message' => 'Collection accounts retrieved successfully.',

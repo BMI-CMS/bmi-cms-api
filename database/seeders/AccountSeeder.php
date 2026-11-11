@@ -194,8 +194,8 @@ class AccountSeeder extends Seeder
 
         return [
             'account_number' => $accountNumber,
-            'customer_id' => 130000000 + $index,
-            'cust_code' => 130000000 + $index + 2,
+            // 'customer_id' => 130000000 + $index,
+            // 'cust_code' => 130000000 + $index + 2,
             'customer_name' => $this->fakeCustomerName($accountNumber),
             'monthly_amortization' => $monthlyAmortization,
             'last_payment_date' => $today->copy()->subMonthsNoOverflow($monthsUnpaid)->subDays(5)->toDateString(),

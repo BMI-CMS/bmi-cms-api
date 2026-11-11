@@ -13,11 +13,10 @@ return new class extends Migration
     {
         Schema::create('collections', function (Blueprint $table) {
             $table->id();
-            $table->decimal('total_amount', 15, 2)->default(0.00);
-            $table->integer('total_account');
+            $table->decimal('total_amount', 15, 2);
+            // $table->integer('total_account');
             $table->softDeletes();
-            $table->timestamp('created_at')->index();
-            $table->timestamp('updated_at');
+            $table->timestamps();
         });
     }
 

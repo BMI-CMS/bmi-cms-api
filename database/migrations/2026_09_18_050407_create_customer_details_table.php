@@ -16,9 +16,9 @@ return new class extends Migration
             $table->foreignId('account_id')
                 ->constrained('accounts')
                 ->cascadeOnDelete();
-            $table->string('contact_number', 30);
             $table->string('email');
             $table->string('social_media_account');
+            $table->string('contact_number', 30);
             $table->softDeletes();
             $table->timestamps();
         });

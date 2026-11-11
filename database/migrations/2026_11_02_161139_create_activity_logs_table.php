@@ -13,16 +13,16 @@ return new class extends Migration
     {
         Schema::create('activity_logs', function (Blueprint $table) {
             $table->id();
+            $table->string('device_id')->nullable();
+            $table->string('ip_address', 45)->nullable();
             $table->foreignId('user_id')
                 ->nullable()
                 ->constrained()
                 ->nullOnDelete();
-            $table->string('device_id')->nullable();
-            $table->string('ip_address', 45)->nullable();
-            $table->string('account_number', 15)->index();
-            $table->string('subject_type');
-            $table->unsignedBigInteger('row_id');
             $table->string('event');
+            $table->string('table');
+            $table->string('account_number', 15)->index();
+            $table->unsignedBigInteger('row_id');
             $table->json('old_values')->nullable();
             $table->json('new_values')->nullable();
             $table->softDeletes();

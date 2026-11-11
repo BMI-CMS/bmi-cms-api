@@ -20,4 +20,8 @@ class ReceiptEncoding extends Model
         'amount',
         'receipt_image_path',
     ];
+
+    protected $casts = [
+        'amount' => 'decimal:2',
+    ];
 }
