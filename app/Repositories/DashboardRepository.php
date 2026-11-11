@@ -155,8 +155,8 @@ class DashboardRepository
         $accounts = Account::select([
             'accounts.id',
             'accounts.account_number',
-            'accounts.customer_id',
-            'accounts.cust_code',
+            // 'accounts.customer_id',
+            // 'accounts.cust_code',
             'accounts.customer_name',
             'accounts.monthly_amortization',
             'accounts.last_payment_date',
