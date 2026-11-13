@@ -103,7 +103,7 @@ class AccountService
                 }
             } else if ($data["action_taken"] === ActionTaken::COLLECTED) {
                 ReceiptEncoding::create([
-                    ...$data["collected"],
+                    ...$data["receipt_encoding"],
                     'account_id' => $data["account_id"],
                     'contact_recording_id' => $contactRecording->id,
                 ]);

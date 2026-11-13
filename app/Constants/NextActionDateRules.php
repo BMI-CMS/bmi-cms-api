@@ -11,6 +11,6 @@ class NextActionDateRules
 
     public const EXCLUDED_NEXT_ACTION = [
         'FOR CH VALIDATION' => true,
-        'For Repo' => true
+        'FOR REPO' => true
     ];
 }

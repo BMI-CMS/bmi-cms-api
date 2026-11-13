@@ -81,7 +81,7 @@ class ContactRecordingRequest extends FormRequest
                 ],
             ],
             'COLLECTED' => [
-                'field' => 'collected',
+                'field' => 'receipt_encoding',
                 'rules' => [
                     'collected.payment_type' => 'required|string|max:50',
                     'collected.ar_number' => 'required|string|max:50',
