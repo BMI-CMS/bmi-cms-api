@@ -111,7 +111,7 @@ class DashboardService
         $count = 0;
         foreach ($accountsByPSGC as $psgcCode => $accounts) {
             $count++;
-            $accountAllocation['for_visit'][] =  [
+            $accountAllocation[] =  [
                 'profile' => [
                     "id" =>  $count,
                     "psgc_code" => "$psgcCode",
@@ -121,7 +121,6 @@ class DashboardService
             ];
         }
 
-        $accountAllocation['visited'] = $getAccounts['visited'];
         return $accountAllocation;
     }
 
