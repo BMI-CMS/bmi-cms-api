@@ -126,13 +126,6 @@ class DashboardService
 
     public function assignedAccountsByPSGC(int $userId)
     {
-        // new shape for PSGC account data
-        //  "account_number": "7200001700",
-        // "customer_name": "Sadie Jakubowski",
-        // "monthly_amortization": "2734.22",
-        // "dpd_bucket": "DPD 91-120",
-        // "outstanding_balance": "32810.64",
-        // "account_classification": "For Repo"
         $getAccounts = $this->dashboardRepository->getMonthlyAccounts($userId);
 
         $accountsByPSGC = [];
@@ -175,10 +168,9 @@ class DashboardService
                 $unclassified[] = $account['account_number'];
             }
 
-            $accountsByPSGC['for_visit'][$item->psgc_code . ' - ' . $item->barangay][] = $account;
+            $accountsByPSGC[$item->psgc_code . ' - ' . $item->barangay][] = $account;
         }
 
-        $accountsByPSGC['visited'] =  $getAccounts['visited'];
 
         return $accountsByPSGC;
     }
