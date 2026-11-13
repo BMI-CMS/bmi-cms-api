@@ -15,6 +15,7 @@ class PromiseToPay extends Model
         'account_id',
         'contact_recording_id',
         'ptp_amount',
+        'payment_channel',
         'ptp_date',
         'remarks'
     ];
