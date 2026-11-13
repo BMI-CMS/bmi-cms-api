@@ -82,25 +82,25 @@ class AccountService
                     ...$data["for_restructuring"],
                 ]);
 
-                $response = Http::post('http://127.0.0.1:8000/api/v1/integrations/for-restructuring-account', [
-                    'customer_name' => $data["customer_name"],
-                    'account_number' => $data["account_number"],
-                    'outstanding_balance' => $data["outstanding_balance"],
-                    'conducted_by' => $userName,
-                    'requested_date' => $contactRecording->contact_date,
-                    ...$data["for_restructuring"],
-                ]);
+                // $response = Http::post('http://127.0.0.1:8000/api/v1/integrations/for-restructuring-account', [
+                //     'customer_name' => $data["customer_name"],
+                //     'account_number' => $data["account_number"],
+                //     'outstanding_balance' => $data["outstanding_balance"],
+                //     'conducted_by' => $userName,
+                //     'requested_date' => $contactRecording->contact_date,
+                //     ...$data["for_restructuring"],
+                // ]);
 
-                if ($response->failed()) {
-                    DB::rollBack();
+                // if ($response->failed()) {
+                //     DB::rollBack();
 
-                    return [
-                        'success' => false,
-                        'message' => $response->json('message')
-                            ?? 'Webhook request failed.',
-                        'code' => $response->status(),
-                    ];
-                }
+                //     return [
+                //         'success' => false,
+                //         'message' => $response->json('message')
+                //             ?? 'Webhook request failed.',
+                //         'code' => $response->status(),
+                //     ];
+                // }
             } else if ($data["action_taken"] === ActionTaken::COLLECTED) {
                 ReceiptEncoding::create([
                     ...$data["receipt_encoding"],
@@ -115,26 +115,26 @@ class AccountService
                     'remarks' => $data["remarks"],
                 ]);
 
-                $response = Http::post('http://127.0.0.1:8000/api/v1/integrations/early-endorsed-account', [
-                    'customer_name' => $data["customer_name"],
-                    'account_number' =>  $data["account_number"],
-                    'outstanding_balance' => $data["outstanding_balance"],
-                    'reason_for_early_endorsement' => $data["action_taken"],
-                    'requested_date' => $contactRecording->contact_date,
-                    'conducted_by' => $userName,
-                    'remarks' => $data["remarks"],
-                ]);
+                // $response = Http::post('http://127.0.0.1:8000/api/v1/integrations/early-endorsed-account', [
+                //     'customer_name' => $data["customer_name"],
+                //     'account_number' =>  $data["account_number"],
+                //     'outstanding_balance' => $data["outstanding_balance"],
+                //     'reason_for_early_endorsement' => $data["action_taken"],
+                //     'requested_date' => $contactRecording->contact_date,
+                //     'conducted_by' => $userName,
+                //     'remarks' => $data["remarks"],
+                // ]);
 
-                if ($response->failed()) {
-                    DB::rollBack();
+                // if ($response->failed()) {
+                //     DB::rollBack();
 
-                    return [
-                        'success' => false,
-                        'message' => $response->json('message')
-                            ?? 'Webhook request failed.',
-                        'code' => $response->status(),
-                    ];
-                }
+                //     return [
+                //         'success' => false,
+                //         'message' => $response->json('message')
+                //             ?? 'Webhook request failed.',
+                //         'code' => $response->status(),
+                //     ];
+                // }
             }
 
             if ($data["next_action_plan"] === NextActionPlan::PROMISETOPAY) {
@@ -162,26 +162,26 @@ class AccountService
                     'assigned_by' => $userId
                 ]);
             } else if (in_array($data["next_action_plan"], NextActionPlan::FORNOTICEANDDEMAND)) {
-                $response = Http::post('http://127.0.0.1:8000/api/v1/integrations/notice-and-demand-account', [
-                    'customer_name' => $data["customer_name"],
-                    'account_number' => $data["account_number"],
-                    'outstanding_balance' => $data["outstanding_balance"],
-                    'demand_letter_type' => $data["next_action_plan"],
-                    'requested_date' => $contactRecording->contact_date,
-                    'remarks' => $data["remarks"],
-                    'conducted_by' => $userName
-                ]);
+                // $response = Http::post('http://127.0.0.1:8000/api/v1/integrations/notice-and-demand-account', [
+                //     'customer_name' => $data["customer_name"],
+                //     'account_number' => $data["account_number"],
+                //     'outstanding_balance' => $data["outstanding_balance"],
+                //     'demand_letter_type' => $data["next_action_plan"],
+                //     'requested_date' => $contactRecording->contact_date,
+                //     'remarks' => $data["remarks"],
+                //     'conducted_by' => $userName
+                // ]);
 
-                if ($response->failed()) {
-                    DB::rollBack();
+                // if ($response->failed()) {
+                //     DB::rollBack();
 
-                    return [
-                        'success' => false,
-                        'message' => $response->json('message')
-                            ?? 'Webhook request failed.',
-                        'code' => $response->status(),
-                    ];
-                }
+                //     return [
+                //         'success' => false,
+                //         'message' => $response->json('message')
+                //             ?? 'Webhook request failed.',
+                //         'code' => $response->status(),
+                //     ];
+                // }
             } else if ($data["next_action_plan"] === NextActionPlan::FORCHVALIDATION) {
                 CHValidation::create([
                     'account_id' => $data["account_id"],
