@@ -111,7 +111,7 @@ class DashboardService
         $count = 0;
         foreach ($accountsByPSGC as $psgcCode => $accounts) {
             $count++;
-            $accountAllocation[] =  [
+            $accountAllocation['for_visit'][] =  [
                 'profile' => [
                     "id" =>  $count,
                     "psgc_code" => "$psgcCode",
@@ -121,6 +121,7 @@ class DashboardService
             ];
         }
 
+        $accountAllocation['visited'] = $getAccounts['visited'];
         return $accountAllocation;
     }
 
@@ -133,12 +134,12 @@ class DashboardService
         // "dpd_bucket": "DPD 91-120",
         // "outstanding_balance": "32810.64",
         // "account_classification": "For Repo"
-        $getAccounts = $this->dashboardRepository->getVisitPlanAccounts($userId, Carbon::today(), Carbon::now()->endOfMonth());
+        $getAccounts = $this->dashboardRepository->getMonthlyAccounts($userId);
 
         $accountsByPSGC = [];
         $unclassified = [];
 
-        foreach ($getAccounts as $item) {
+        foreach ($getAccounts['for_visit'] as $item) {
             $account = [
                 'account_id' => $item->id,
                 'account_number' => $item->account_number,
@@ -175,8 +176,10 @@ class DashboardService
                 $unclassified[] = $account['account_number'];
             }
 
-            $accountsByPSGC[$item->psgc_code . ' - ' . $item->barangay][] = $account;
+            $accountsByPSGC['for_visit'][$item->psgc_code . ' - ' . $item->barangay][] = $account;
         }
+
+        $accountsByPSGC['visited'] =  $getAccounts['visited'];
 
         return $accountsByPSGC;
     }

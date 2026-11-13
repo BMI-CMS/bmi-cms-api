@@ -22,7 +22,6 @@ return new class extends Migration
             $table->decimal('outstanding_balance', 15, 2);
             $table->decimal('monthly_amortization', 15, 2);
             $table->decimal('interest_rate', 15, 2);
-            $table->decimal('monthly_amortization', 15, 2);
             $table->string('terms', 30);
             $table->decimal('new_monthly_amortization', 15, 2)->nullable();
             $table->decimal('new_interest_rate', 15, 2)->nullable();

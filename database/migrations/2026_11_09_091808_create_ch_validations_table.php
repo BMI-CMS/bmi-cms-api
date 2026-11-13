@@ -20,7 +20,7 @@ return new class extends Migration
                 ->constrained('contact_recordings')
                 ->cascadeOnDelete();
             $table->string('next_action_plan', 60)->nullable();
-            $table->string('status', 30)->nullable();
+            $table->string('status', 60)->nullable();
             $table->string('remark')->nullable();
             $table->dateTime('next_action_date')->nullable()->index();
             $table->softDeletes();

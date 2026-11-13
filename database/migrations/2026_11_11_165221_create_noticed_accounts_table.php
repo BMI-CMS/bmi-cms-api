@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('notice_demand_accounts', function (Blueprint $table) {
+        Schema::create('noticed_accounts', function (Blueprint $table) {
             $table->id();
             $table->foreignId('account_id')
                 ->constrained('accounts')
@@ -22,7 +22,6 @@ return new class extends Migration
             $table->string('letter_type', 30)->nullable();
             $table->string('deliver_status')->nullable();
             $table->string('recipient_name', 255)->nullable();
-            $table->string('recipient_relationship', 255)->nullable();
             $table->string('document', 255)->nullable();
             $table->date('served_at')->nullable();
             $table->string('remarks', 255)->nullable();
@@ -36,6 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('notice_demand_accounts');
+        Schema::dropIfExists('noticed_accounts');
     }
 };

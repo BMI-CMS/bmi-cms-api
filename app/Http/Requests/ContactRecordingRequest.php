@@ -29,16 +29,17 @@ class ContactRecordingRequest extends FormRequest
         $nextActionField = $this->nextActionFieldMap();
 
         $rules = [
+            'account_id' => 'required|integer|min:1',
             'customer_name' => 'required|string|max:255',
             'account_number' => 'required|string|max:15',
             'outstanding_balance' => 'required|numeric|min:0',
-            'account_id' => 'required|integer|min:1',
-            'current_category' => 'required|string|max:70',
+            'current_category' => 'string|max:70',
             'follow_up_mode' => 'required|string|max:30',
             'reason_for_default' => 'required|string|max:50',
+            'sub_reason_for_default' => 'string|max:30',
             'action_taken' => 'required|string|max:30',
+            'sub_action_taken' => 'string|max:30',
             'next_action_plan' => 'required|string|max:60',
-            'assigned_support_cc' => 'string|max:10',
             'remarks' => 'string|max:255',
             'geotagging' => 'required|string|max:255',
             'next_action_date' => 'required|date',
@@ -97,8 +98,9 @@ class ContactRecordingRequest extends FormRequest
             'Promise to Pay' => [
                 'field' => 'promise_to_pay',
                 'rules' => [
-                    'promise_to_pay.ptp_amount' => 'required|numeric|min:0',
-                    'promise_to_pay.ptp_date' => 'required|date'
+                    'promise_to_pay.ptp_amount' => 'required|string|max:50',
+                    'promise_to_pay.ptp_date' => 'required|date',
+                    'promise_to_pay.payment_channel' => 'required|string|max:20'
                 ],
             ],
             'For Repo' => [

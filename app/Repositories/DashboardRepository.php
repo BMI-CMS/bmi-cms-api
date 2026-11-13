@@ -84,7 +84,7 @@ class DashboardRepository
 
         return [
             "for_visit" => $this->getVisitPlanAccounts($userId, $startOfDay, $endOfDay),
-            // "visited" => $this->visitedAccount($userId, $startOfDay, $startOfNextDay),
+            "visited" => $this->visitedAccount($userId, $startOfDay, $endOfDay),
         ];
     }
     public function getMonthlyAccounts(int $userId)
@@ -94,7 +94,7 @@ class DashboardRepository
 
         return [
             "for_visit" => $this->getVisitPlanAccounts($userId, $startOfTheMonth, $endOfTheMonth),
-            "visited" => $this->visitedAccount($userId, $startOfTheMonth, $endOfTheMonth)
+            "visited" => $this->visitedAccount($userId, $startOfTheMonth, $endOfTheMonth),
         ];
     }
     public function getVisitPlanAccounts(int $userId, string $startDate, string $endDate)
@@ -155,8 +155,8 @@ class DashboardRepository
         $accounts = Account::select([
             'accounts.id',
             'accounts.account_number',
-            'accounts.customer_id',
-            'accounts.cust_code',
+            // 'accounts.customer_id',
+            // 'accounts.cust_code',
             'accounts.customer_name',
             'accounts.monthly_amortization',
             'accounts.last_payment_date',
