@@ -138,31 +138,31 @@ class DashboardService
                 'customer_name' => $item->customer_name,
                 'monthly_amortization' => $item->monthly_amortization,
                 'dpd_bucket' => $item->dpd_bucket,
-                'outstanding_balance' => $item->outstanding_balance,
-                'past_due_balance' => $item->past_due_balance,
-                'payment_status' => $item->payment_status,
-                'is_force_prioritized' => $item->is_force_prioritized,
-                'is_contacted' => $item->is_contacted,
-                'current_category' => $item->current_category,
-                'next_action_date' => $item->next_action_date,
-                'next_action_plan' => $item->next_action_plan,
+                'account_classification' => AllocateAccountsHelper::accountsClassificationPSGC([
+                    'dpd_bucket' =>  $item->dpd_bucket,
+                    'is_force_prioritized' => $item->is_force_prioritized,
+                    'next_action_date' => $item->next_action_date,
+                    'payment_status' => $item->payment_status,
+                    'next_action_plan' => $item->next_action_plan,
+                    'current_category' => $item->current_category,
+                ])
             ];
 
-            if ($item->contact_recording_id) {
-                $account['activity_records'][] = [
-                    'current_category' => $item->current_category,
-                    'follow_up_mode' => $item->follow_up_mode,
-                    'reason_for_default' => $item->reason_for_default,
-                    'action_taken' => $item->action_taken,
-                    'next_action_plan' => $item->next_action_plan,
-                    'remarks' => $item->remarks,
-                    'geotagging' => $item->geotagging,
-                    'recorded_by' => $item->recorded_by,
-                    'contact_date' => $item->contact_date,
-                ];
-            }
+            // if ($item->contact_recording_id) {
+            //     $account['activity_records'][] = [
+            //         'current_category' => $item->current_category,
+            //         'follow_up_mode' => $item->follow_up_mode,
+            //         'reason_for_default' => $item->reason_for_default,
+            //         'action_taken' => $item->action_taken,
+            //         'next_action_plan' => $item->next_action_plan,
+            //         'remarks' => $item->remarks,
+            //         'geotagging' => $item->geotagging,
+            //         'recorded_by' => $item->recorded_by,
+            //         'contact_date' => $item->contact_date,
+            //     ];
+            // }
 
-            $account['account_classification'] = AllocateAccountsHelper::accountsClassificationPSGC($account);
+            // $account['account_classification'] = AllocateAccountsHelper::accountsClassificationPSGC($account);
 
             if ($account['account_classification'] === null) {
                 $unclassified[] = $account['account_number'];
