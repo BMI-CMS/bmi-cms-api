@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('grgi_documents', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('for_repossessions_id')
-                ->constrained('for_repossessions')
+            $table->foreignId('repossession_id')
+                ->constrained('repossessions')
                 ->cascadeOnDelete();
             $table->string('document');
             $table->timestamps();

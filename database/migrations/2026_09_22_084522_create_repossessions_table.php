@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('for_repossessions', function (Blueprint $table) {
+        Schema::create('repossessions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('account_id')
                 ->constrained('accounts')

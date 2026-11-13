@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ForRepossession extends Model
+class Repossession extends Model
 {
         use SoftDeletes;
 
-        protected $table = 'for_repossessions';
+        //  protected $table = 'repossessions';
 
         protected $fillable = [
                 'account_id',

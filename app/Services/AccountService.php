@@ -52,21 +52,23 @@ class AccountService
         DB::beginTransaction();
 
         try {
+
             $datetime = Carbon::now('Asia/Manila')->format('Y-m-d H:i:s');
 
             $contactRecording = ContactRecording::create([
                 'account_id' => $data["account_id"],
-                'current_category' => $data["current_category"],
+                'current_category' => $data["current_category"] ?? null,
                 'follow_up_mode' => $data["follow_up_mode"],
                 'action_taken' => $data["action_taken"],
                 'reason_for_default' => $data["reason_for_default"],
-                'next_action_plan' =>  $data["next_action_plan"],
-                'remarks' =>  $data["remarks"],
+                'next_action_plan' => $data["next_action_plan"],
+                'remarks' =>  $data["remarks"] ?? null,
                 'geotagging' => $data["geotagging"],
                 'recorded_by' => $userId,
                 'contact_date' =>  $datetime,
                 'next_action_date' => GetDateHelper::nextActionDate($data["action_taken"], $data["next_action_plan"], $data["next_action_date"])
             ]);
+
 
             Account::where('id', $data["account_id"])
                 ->where('is_contacted', false)
@@ -202,7 +204,7 @@ class AccountService
             DB::rollBack();
             return [
                 'success' => false,
-                'message' => $e,
+                'message' => $e->getMessage(),
                 'code' => 404,
             ];
         }

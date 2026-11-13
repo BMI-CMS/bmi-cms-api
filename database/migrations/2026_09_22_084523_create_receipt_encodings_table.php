@@ -20,9 +20,9 @@ return new class extends Migration
                 ->nullable()
                 ->constrained('contact_recordings')
                 ->cascadeOnDelete();
-            $table->foreignId('for_repossession_id')
+            $table->foreignId('repossession_id')
                 ->nullable()
-                ->constrained('for_repossessions')
+                ->constrained('repossessions')
                 ->cascadeOnDelete();
             $table->foreignId('collection_id')
                 ->nullable()
