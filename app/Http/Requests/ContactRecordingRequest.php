@@ -95,7 +95,7 @@ class ContactRecordingRequest extends FormRequest
     protected function nextActionFieldMap(): array
     {
         return [
-            'Promise to Pay' => [
+            'PROMISE TO PAY' => [
                 'field' => 'promise_to_pay',
                 'rules' => [
                     'promise_to_pay.ptp_amount' => 'required|string|max:50',
@@ -103,7 +103,7 @@ class ContactRecordingRequest extends FormRequest
                     'promise_to_pay.payment_channel' => 'required|string|max:20'
                 ],
             ],
-            'For Repo' => [
+            'FOR REPO' => [
                 'field' => 'for_repo',
                 'rules' => [
                     'for_repo.customer_capacity' => 'required|string|max:15',
@@ -111,7 +111,7 @@ class ContactRecordingRequest extends FormRequest
                     'for_repo.customer_character' => 'required|string|max:20'
                 ],
             ],
-            'For Support CC' => [
+            'FOR SUPPORT CC VISIT' => [
                 'field' => 'for_support_cc',
                 'rules' => [
                     'for_support_cc.new_assigned_id' => 'required|integer|min:1'
