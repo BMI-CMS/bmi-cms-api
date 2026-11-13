@@ -56,20 +56,20 @@ class DashboardRepository
             )
             ->leftJoinSub(
                 $forRepossessions,
-                'for_repossessions',
+                'repossessions',
                 'accounts.id',
                 '=',
-                'for_repossessions.account_id'
+                'repossessions.account_id'
             )
             ->selectRaw('
             COUNT(accounts.id) AS total_accounts,
             COUNT(receipt_encodings.account_id) AS total_paid_accounts,
-            COUNT(for_repossessions.account_id) AS total_repossessed_accounts,
+            COUNT(repossessions.account_id) AS total_repossessed_accounts,
             COUNT(restructurings.account_id) AS total_restructured_accounts,
 
             SUM(accounts.past_due_balance) AS total_past_due_amount,
             SUM(receipt_encodings.amount) AS total_receipt_encode_amount,
-            SUM(for_repossessions.amount) AS total_repossessed_amount,
+            SUM(repossessions.amount) AS total_repossessed_amount,
             SUM(restructurings.monthly_amortization) AS total_restructured_amount
             ')
             ->where('accounts.assigned_cc_id', $userId)

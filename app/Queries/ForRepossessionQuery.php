@@ -2,23 +2,23 @@
 
 namespace App\Queries;
 
-use App\Models\ForRepossession;
+use App\Models\Repossession;
 
 class ForRepossessionQuery
 {
     public static function forRepossessed(string  $startDate, string  $endDate)
     {
-        return ForRepossession::leftJoin(
+        return Repossession::leftJoin(
             'receipt_encodings',
-            'for_repossessions.id',
+            'repossessions.id',
             '=',
-            'receipt_encodings.for_repossession_id'
+            'receipt_encodings.repossession_id'
         )
             ->select([
-                'for_repossessions.account_id',
+                'repossessions.account_id',
                 'receipt_encodings.amount',
             ])
-            ->where('for_repossessions.status', 1)
+            ->where('repossessions.status', 1)
             ->where('receipt_encodings.created_at', '>=', $startDate)
             ->where('receipt_encodings.created_at', '<', $endDate);
     }
