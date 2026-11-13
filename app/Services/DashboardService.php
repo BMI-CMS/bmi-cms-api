@@ -164,9 +164,9 @@ class DashboardService
 
             // $account['account_classification'] = AllocateAccountsHelper::accountsClassificationPSGC($account);
 
-            if ($account['account_classification'] === null) {
-                $unclassified[] = $account['account_number'];
-            }
+            // if ($account['account_classification'] === null) {
+            //     $unclassified[] = $account['account_number'];
+            // }
 
             $accountsByPSGC[$item->psgc_code . ' - ' . $item->barangay][] = $account;
         }
