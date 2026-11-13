@@ -145,7 +145,8 @@ class DashboardService
                     'payment_status' => $item->payment_status,
                     'next_action_plan' => $item->next_action_plan,
                     'current_category' => $item->current_category,
-                ])
+                ]),
+                'visited' => false
             ];
 
             // if ($item->contact_recording_id) {
