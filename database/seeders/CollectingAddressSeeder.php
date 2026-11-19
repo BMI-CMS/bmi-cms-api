@@ -23,7 +23,7 @@ class CollectingAddressSeeder extends Seeder
                     'street_name'  => $faker->streetName,
                     'subdivision_village'  =>  $this->randomSubdivision(),
                     'barangay'  => $this->randomBarangay(),
-                    'city_municipality'  => 'Muntilupa',
+                    'city_municipality'  => 'Muntinlupa',
                     'province'  => '',
                     'region'  => 'NCR',
                     'postal_code' => '1770'
