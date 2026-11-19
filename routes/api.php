@@ -11,4 +11,5 @@ Route::prefix('v1')->middleware('api.key')->group(function () {
     require __DIR__ . '/api/v1/customer.php';
     require __DIR__ . '/api/v1/first-encounter.php';
     require __DIR__ . '/api/v1/user.php';
+    require __DIR__ . '/api/v1/health.php';
 });
