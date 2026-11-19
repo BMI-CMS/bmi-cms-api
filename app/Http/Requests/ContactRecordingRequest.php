@@ -83,11 +83,11 @@ class ContactRecordingRequest extends FormRequest
             'COLLECTED' => [
                 'field' => 'receipt_encoding',
                 'rules' => [
-                    'collected.payment_type' => 'required|string|max:50',
-                    'collected.ar_number' => 'required|string|max:50',
-                    'collected.ar_date' => 'required|date',
-                    'collected.amount' => 'required|numeric|min:0',
-                    'collected.receipt_image_path' => 'required|string|max:255'
+                    'receipt_encoding.payment_type' => 'required|string|max:50',
+                    'receipt_encoding.ar_number' => 'required|string|max:50',
+                    'receipt_encoding.ar_date' => 'required|date',
+                    'receipt_encoding.amount' => 'required|numeric|min:0',
+                    'receipt_encoding.receipt_image_path' => 'required|string|max:255'
                 ],
             ]
         ];
