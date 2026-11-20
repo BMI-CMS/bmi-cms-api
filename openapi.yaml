@@ -9,24 +9,12 @@ info:
     This file documents the **current implemented behavior** (derived from routes, form requests and
     service code). It does not define or approve business rules.
 
-    ## Authentication
-    * Every endpoint requires the `BMI_CMS_KEY` header (`ApiKey`). Missing/invalid -> `401 {"message":"Invalid API key."}`.
-    * Endpoints marked with a lock also require a Sanctum bearer token obtained from `POST /login`
-      (`BearerAuth`).
+    All routes require the `x-api-key` header. Secured routes also require a Sanctum bearer
+    token obtained from `POST /login`.
 
-    ## Implementation notes (observations, not changes)
-    * **Demo data:** `Collections`, `Customers` and `First Encounter` endpoints currently return hard-coded
-      demo data from their services. They are protected by the API key only (no `auth:sanctum`),
-      and their POST/PUT bodies are not validated by Form Requests.
-    * `RepossessionController` exists but has **no registered routes**, so it is not documented as an endpoint.
-    * Plural/singular route aliases (`/collections` & `/collection`, `/customers` & `/customer`) are identical;
-      only the plural form is documented.
-    * Dashboard endpoints take `user_id` from the client; only the `team-*` endpoints and
-      `PATCH /account/force-prioritized` check the caller's level (2, 3, 4).
-    * `team-assigned-accounts-psgc` returns hard-coded counts for `repossession_request` (5),
-      `fec_approval` (3) and `collections` (5).
-    * Classification output depends on the `account_classifications` / rules tables. If they are
-      missing or invalid, dashboard visit-plan endpoints return `500` with a fixed message.
+    Customers and First Encounter use demo data and require the API key. The team PSGC
+    dashboard currently returns fixed counts for `repossession_request` (5), `fec_approval`
+    (3) and `collections` (5).
 servers:
   - url: http://localhost:8000/api/v1
     description: Local development
@@ -44,7 +32,6 @@ tags:
   - name: Account
   - name: Dashboard
   - name: Collections
-    description: Demo data - not backed by the database yet.
   - name: Customers
     description: Demo data - not backed by the database yet.
   - name: First Encounter
@@ -58,7 +45,7 @@ paths:
       summary: Log in and obtain a Sanctum token
       description: |
         Validates credentials and that `phone_imei` matches the user's registered device.
-        All previously issued tokens of the user are revoked.
+        A successful login revokes all previously issued tokens. An unrecognized device permanently locks the account.
       security:
         - ApiKey: []
       requestBody:
@@ -87,7 +74,12 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Message' }
-              example: { message: Device not recognized. Please use your registered device. }
+              example: { message: Device not recognized. Please contact your supervisor. }
+        '423':
+          description: The account is temporarily or permanently locked.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Message' }
         '422': { $ref: '#/components/responses/ValidationError' }
   /logout:
     post:
@@ -102,7 +94,7 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Message' }
-              example: { message: Logged out successfully }
+              example: { message: Logged out successfully. }
         '401': { $ref: '#/components/responses/Unauthorized' }
   /me:
     get:
@@ -117,9 +109,34 @@ paths:
           description: CMS user record.
           content:
             application/json:
+              schema: { $ref: '#/components/schemas/CmsUserProfile' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /verify-token:
+    post:
+      tags: [Auth]
+      summary: Verify the current Sanctum token
+      security:
+        - ApiKey: []
+          BearerAuth: []
+      responses:
+        '200':
+          description: Token is valid.
+          content:
+            application/json:
               schema:
                 type: object
-                additionalProperties: true
+                properties:
+                  message: { type: string, example: Token successfully validated }
+                  data:
+                    type: object
+                    properties:
+                      valid: { type: boolean, enum: [true] }
+                      id: { type: integer, description: Authentication user ID. }
+                      username: { type: string }
+                      name: { type: string }
+                      role_id: { type: integer }
+                      company_name: { type: string }
+                      psgc_code: { type: string, nullable: true }
         '401': { $ref: '#/components/responses/Unauthorized' }
   /user/attestation:
     post:
@@ -179,7 +196,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  message: { type: string, example: Account marked as force prioritized successfully. }
+                  message: { type: string, example: Account marked as force prioritized successfully }
                   data:
                     type: object
                     properties:
@@ -195,15 +212,54 @@ paths:
               schema: { $ref: '#/components/schemas/Message' }
               example: { message: Account not found. }
         '422': { $ref: '#/components/responses/ValidationError' }
-  /dashboard:
-    get:
-      tags: [Dashboard]
-      summary: Account performance and collection target summary
+  /account/contact-recording:
+    post:
+      tags: [Account]
+      summary: Record an account contact
+      description: |
+        Saves a contact recording, marks the account as contacted and processes any related action.
+        Include the detail object that matches `action_taken` or `next_action_plan`.
+        Laravel validation treats `sub_action_taken` and `sub_reason_for_default` as optional,
+        but the save logic reads both, so supply them with every request.
       security:
         - ApiKey: []
           BearerAuth: []
-      parameters:
-        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ContactRecordingRequest' }
+      responses:
+        '200':
+          description: Contact recording saved.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: Successfully Saved }
+                  data:
+                    type: object
+                    properties:
+                      id: { type: integer, description: ID of the account. }
+                      data: { $ref: '#/components/schemas/ContactRecordingRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: |
+            The service could not save the contact recording. On databases with the new required
+            sub-action and sub-reason columns, inserts can fail because the model omits those fields
+            when creating the record.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Message' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /dashboard:
+    get:
+      tags: [Dashboard]
+      summary: Account performance and collection targets for the signed-in user
+      security:
+        - ApiKey: []
+          BearerAuth: []
       responses:
         '200':
           description: Dashboard summary.
@@ -226,57 +282,58 @@ paths:
                       collection_target:
                         type: object
                         properties:
-                          target_due: { type: number }
-                          paid: { type: number }
-                          repossessed: { type: number }
-                          restructured: { type: number }
+                          target_due: { $ref: '#/components/schemas/DatabaseAmount' }
+                          paid: { $ref: '#/components/schemas/DatabaseAmount' }
+                          repossessed: { $ref: '#/components/schemas/DatabaseAmount' }
+                          restructured: { $ref: '#/components/schemas/DatabaseAmount' }
                       accounts: { type: integer }
                       fec_accounts: { type: integer }
                       collections: { type: integer }
         '401': { $ref: '#/components/responses/Unauthorized' }
-        '422': { $ref: '#/components/responses/ValidationError' }
   /dashboard/assigned-accounts:
     get:
       tags: [Dashboard]
-      summary: Visit Plan of a user, classified by the rules table
-      description: |
-        Accounts are grouped by classification. The grouping keys come from each classification's
-        `response_path` (e.g. `prioritization.*`, `regular.np_1`), so the exact tree depends on configured
-        rules. `visited` lists accounts already visited in the period.
+      summary: Classified visit plan for the signed-in user
+      description: Returns one entry per PSGC code, with accounts grouped into visit-plan categories.
       security:
         - ApiKey: []
           BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/UserId'
         - $ref: '#/components/parameters/Period'
       responses:
         '200':
-          description: Classified Visit Plan.
+          description: Classified visit plan.
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   message: { type: string, example: Dashboard summary retrieved successfully. }
-                  data: { $ref: '#/components/schemas/ClassifiedAccounts' }
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        profile:
+                          type: object
+                          properties:
+                            id: { type: integer, description: Sequential group number within the response. }
+                            psgc_code: { type: string }
+                            username: { type: string, description: CMS user name followed by the group number. }
+                        visit_plan: { $ref: '#/components/schemas/AssignedVisitPlan' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '422': { $ref: '#/components/responses/ValidationError' }
-        '500': { $ref: '#/components/responses/ClassificationRulesError' }
   /dashboard/assigned-accounts-psgc:
     get:
       tags: [Dashboard]
-      summary: Monthly Visit Plan of a user grouped by PSGC / city
-      description: |
-        Keys are `"<psgc_code> - <city_municipality>"`. Each account carries `account_classification`
-        (label, or `null` when no rule matches - the account is kept, not dropped).
+      summary: Monthly visit plan for the signed-in user grouped by PSGC and barangay
+      description: Group keys use the format `<psgc_code> - <barangay>`. With no results, `data` is an empty array.
       security:
         - ApiKey: []
           BearerAuth: []
-      parameters:
-        - $ref: '#/components/parameters/UserId'
       responses:
         '200':
-          description: Accounts grouped by PSGC.
+          description: Accounts grouped by PSGC and barangay.
           content:
             application/json:
               schema:
@@ -284,73 +341,37 @@ paths:
                 properties:
                   message: { type: string, example: Dashboard summary retrieved successfully. }
                   data:
-                    type: object
-                    additionalProperties:
-                      type: array
-                      items: { $ref: '#/components/schemas/ClassifiedAccount' }
+                    oneOf:
+                      - type: object
+                        additionalProperties:
+                          type: array
+                          items: { $ref: '#/components/schemas/PsgcVisitAccount' }
+                      - type: array
+                        maxItems: 0
+                        items: {}
         '401': { $ref: '#/components/responses/Unauthorized' }
-        '422': { $ref: '#/components/responses/ValidationError' }
-        '500': { $ref: '#/components/responses/ClassificationRulesError' }
   /dashboard/team-assigned-accounts:
     get:
       tags: [Dashboard]
-      summary: Team Visit Plan (paginated by credit counselor)
-      description: |
-        Restricted to users with level 2, 3 or 4. Pagination is per credit counselor, so each entry
-        carries all of its accounts. `repossession_request`, `fec_approval` and `collections` are
-        currently hard-coded values.
+      summary: Team visit plan (currently unavailable)
+      description: The route is registered, but its controller action is currently disabled.
       security:
         - ApiKey: []
           BearerAuth: []
-      parameters:
-        - $ref: '#/components/parameters/UserId'
-        - $ref: '#/components/parameters/PsgcCode'
-        - $ref: '#/components/parameters/Period'
-        - name: page
-          in: query
-          schema: { type: integer, minimum: 1, default: 1 }
-        - name: per_page
-          in: query
-          schema: { type: integer, minimum: 1, maximum: 50, default: 15 }
       responses:
-        '200':
-          description: Team Visit Plan.
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '500':
+          description: Controller action is unavailable.
           content:
             application/json:
-              schema:
-                type: object
-                properties:
-                  message: { type: string, example: Dashboard summary retrieved successfully. }
-                  data:
-                    type: object
-                    properties:
-                      repossession_request: { type: integer, example: 5 }
-                      visit_plan:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            credit_counselor_name: { type: string }
-                            total_accounts: { type: integer }
-                            accounts: { $ref: '#/components/schemas/ClassifiedAccounts' }
-                      fec_approval: { type: integer, example: 3 }
-                      collections: { type: integer, example: 5 }
-                      pagination:
-                        type: object
-                        properties:
-                          current_page: { type: integer }
-                          per_page: { type: integer }
-                          total: { type: integer }
-                          last_page: { type: integer }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '422': { $ref: '#/components/responses/ValidationError' }
-        '500': { $ref: '#/components/responses/ClassificationRulesError' }
+              schema: { $ref: '#/components/schemas/Message' }
   /dashboard/team-assigned-accounts-psgc:
     get:
       tags: [Dashboard]
-      summary: Team accounts grouped by PSGC / city and credit counselor
-      description: Restricted to users with level 2, 3 or 4. Counselors with no classified accounts are omitted.
+      summary: Team visit plan grouped by PSGC, city or municipality, and credit counselor
+      description: |
+        Restricted to users with level 2, 3 or 4. The supplied `user_id` is the assigned cluster head ID.
+        Counselors with no classified accounts are omitted.
       security:
         - ApiKey: []
           BearerAuth: []
@@ -360,7 +381,7 @@ paths:
         - $ref: '#/components/parameters/Period'
       responses:
         '200':
-          description: Team accounts by PSGC.
+          description: Team visit plan by PSGC.
           content:
             application/json:
               schema:
@@ -372,43 +393,70 @@ paths:
                     properties:
                       repossession_request: { type: integer, example: 5 }
                       visit_plan:
-                        type: object
-                        description: Keyed by `"<psgc_code> - <city_municipality>"`.
-                        additionalProperties:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              credit_counselor_name: { type: string }
-                              total_accounts: { type: integer }
-                              accounts:
-                                type: array
-                                items: { $ref: '#/components/schemas/ClassifiedAccount' }
+                        description: Group keys use the format `<psgc_code> - <city_municipality>`. Empty results are returned as an empty array.
+                        oneOf:
+                          - type: object
+                            additionalProperties:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  credit_counselor_name: { type: string }
+                                  total_accounts:
+                                    type: integer
+                                    description: Number of top-level classification groups for the counselor.
+                                  accounts: { $ref: '#/components/schemas/TeamVisitPlan' }
+                          - type: array
+                            maxItems: 0
+                            items: {}
                       fec_approval: { type: integer, example: 3 }
                       collections: { type: integer, example: 5 }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /dashboard/support-credit-counselors:
+    get:
+      tags: [Dashboard]
+      summary: List support credit counselors for a cluster head
+      description: Returns the cluster head and counselors with accounts assigned under that head. The counselor results exclude the signed-in user.
+      security:
+        - ApiKey: []
+          BearerAuth: []
+      parameters:
+        - name: ch_id
+          in: query
+          description: Cluster head CMS user ID.
+          required: true
+          schema: { type: integer, minimum: 1 }
+      responses:
+        '200':
+          description: Support users.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: Support list retrieved successfully. }
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: integer }
+                        name: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '422': { $ref: '#/components/responses/ValidationError' }
   /collections:
     get:
       tags: [Collections]
-      summary: List collection accounts (demo data)
-      parameters:
-        - name: status
-          in: query
-          description: Case-insensitive match on `collection_status`.
-          schema: { type: string, example: Pending Visit }
-        - name: dpd_bucket
-          in: query
-          description: Case-insensitive match on `dpd_bucket`.
-          schema: { type: string, example: 30-59 days }
-        - name: search
-          in: query
-          description: Matches customer name, account number or asset.
-          schema: { type: string }
+      summary: List accounts with undeposited payments
+      description: Returns receipts without a collection ID for accounts assigned to the signed-in credit counselor.
+      security:
+        - ApiKey: []
+          BearerAuth: []
       responses:
         '200':
-          description: Collection list.
+          description: Undeposited payments grouped by account number.
           content:
             application/json:
               schema:
@@ -418,126 +466,11 @@ paths:
                   data:
                     type: object
                     properties:
-                      total_count: { type: integer }
-                      summary:
-                        type: object
-                        properties:
-                          total_past_due: { type: number }
-                          total_outstanding: { type: number }
-                          pending_visits: { type: integer }
-                          critical_accounts: { type: integer }
-                      items:
+                      total_amount: { type: string, example: '3850.00' }
+                      collection_list:
                         type: array
                         items: { $ref: '#/components/schemas/CollectionItem' }
-        '401': { $ref: '#/components/responses/ApiKeyInvalid' }
-  /collections/{id}:
-    get:
-      tags: [Collections]
-      summary: Collection case details (demo data)
-      parameters:
-        - $ref: '#/components/parameters/Id'
-      responses:
-        '200':
-          description: Collection detail. Shape is the demo payload (asset_details, address, loan_summary, collection_info, recent_history).
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message: { type: string, example: Collection account details retrieved successfully. }
-                  data: { type: object, additionalProperties: true }
-        '401': { $ref: '#/components/responses/ApiKeyInvalid' }
-  /collections/{id}/action:
-    post:
-      tags: [Collections]
-      summary: Record a collection action / field visit (demo)
-      description: Body is not validated; the listed fields are echoed back with defaults when omitted.
-      parameters:
-        - $ref: '#/components/parameters/Id'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                action_type: { type: string }
-                follow_up_mode: { type: string }
-                reason_for_default: { type: string }
-                next_action_plan: { type: string }
-                remarks: { type: string }
-                latitude: { type: number }
-                longitude: { type: number }
-      responses:
-        '201':
-          description: Action recorded.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message: { type: string, example: Collection action recorded successfully. }
-                  data:
-                    type: object
-                    properties:
-                      action_id: { type: integer }
-                      collection_id: { type: integer }
-                      account_number: { type: string }
-                      action_taken_type: { type: string }
-                      follow_up_mode: { type: string }
-                      reason_for_default: { type: string }
-                      next_action_plan: { type: string }
-                      remarks: { type: string }
-                      geo_location:
-                        type: object
-                        properties:
-                          latitude: { type: number }
-                          longitude: { type: number }
-                          captured_at: { type: string, format: date-time }
-                      recorded_by: { type: string }
-                      recorded_at: { type: string, format: date-time }
-                      sync_status: { type: string, example: Synced }
-        '401': { $ref: '#/components/responses/ApiKeyInvalid' }
-  /collections/{id}/receipt:
-    post:
-      tags: [Collections]
-      summary: Record a field payment receipt (demo)
-      description: Body is not validated. Recording only; no payment posting.
-      parameters:
-        - $ref: '#/components/parameters/Id'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                amount_paid: { type: number, example: 3850.00 }
-                or_number: { type: string }
-                payment_method: { type: string, example: Cash }
-                payment_date: { type: string, format: date }
-      responses:
-        '201':
-          description: Receipt recorded.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message: { type: string, example: Payment receipt recorded successfully. }
-                  data:
-                    type: object
-                    properties:
-                      receipt_id: { type: integer }
-                      collection_id: { type: integer }
-                      account_number: { type: string }
-                      or_number: { type: string }
-                      amount_paid: { type: number }
-                      payment_method: { type: string }
-                      payment_date: { type: string, format: date }
-                      acknowledgement_code: { type: string }
-                      issued_by: { type: string }
-                      status: { type: string, example: Verified }
-                      created_at: { type: string, format: date-time }
-        '401': { $ref: '#/components/responses/ApiKeyInvalid' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
   /customers/{id}:
     get:
       tags: [Customers]
@@ -810,7 +743,7 @@ components:
     ApiKey:
       type: apiKey
       in: header
-      name: BMI_CMS_KEY
+      name: x-api-key
       description: Static API key checked by `ApiKeyMiddleware` on all `/api/v1` routes.
     BearerAuth:
       type: http
@@ -825,6 +758,7 @@ components:
     UserId:
       name: user_id
       in: query
+      description: CMS user ID of the cluster head.
       required: true
       schema: { type: integer, minimum: 1 }
     PsgcCode:
@@ -839,7 +773,7 @@ components:
       schema: { type: string, enum: [daily, monthly] }
   responses:
     ApiKeyInvalid:
-      description: Missing or invalid `BMI_CMS_KEY`.
+      description: Missing or invalid `x-api-key`.
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Message' }
@@ -874,12 +808,6 @@ components:
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Message' }
-    ClassificationRulesError:
-      description: Classification rules are missing or invalid.
-      content:
-        application/json:
-          schema: { $ref: '#/components/schemas/Message' }
-          example: { message: Account classification rules are not configured correctly. }
   schemas:
     Message:
       type: object
@@ -889,128 +817,329 @@ components:
       type: object
       required: [username, password, phone_imei]
       properties:
-        username: { type: string }
-        password: { type: string, format: password }
+        username: { type: string, minLength: 1 }
+        password: { type: string, format: password, minLength: 1 }
         phone_imei:
           type: string
-          pattern: '^[0-9]{15}$'
-          description: Exactly 15 digits; must match the registered device.
+          minLength: 1
+          description: Must match the registered device identifier.
     LoginData:
       type: object
       properties:
         token: { type: string, description: Sanctum plain-text token. }
-        id: { type: integer }
+        user:
+          type: object
+          properties:
+            id: { type: integer, description: Authentication user ID. }
+            name: { type: string }
+            username: { type: string }
+            role_id: { type: integer }
+            role: { type: string }
+            company_id: { type: integer }
+            company_name: { type: string }
+            level: { type: integer }
+            psgc_code: { type: string, nullable: true }
+    CmsUserProfile:
+      type: object
+      properties:
+        id: { type: integer, description: CMS user ID. }
         name: { type: string }
         role_id: { type: integer }
-        role: { type: string }
         company_id: { type: integer }
-        company_name: { type: string }
         level: { type: integer }
-        psgc_code: { type: string }
+        psgc_code: { type: string, nullable: true }
+    ContactRecordingRequest:
+      type: object
+      required:
+        - account_id
+        - customer_name
+        - account_number
+        - outstanding_balance
+        - follow_up_mode
+        - reason_for_default
+        - sub_reason_for_default
+        - action_taken
+        - sub_action_taken
+        - next_action_plan
+        - geotagging
+        - next_action_date
+      properties:
+        account_id: { type: integer, minimum: 1 }
+        customer_name: { type: string, minLength: 1, maxLength: 255 }
+        account_number: { type: string, minLength: 1, maxLength: 15 }
+        outstanding_balance: { $ref: '#/components/schemas/NonnegativeAmountInput' }
+        current_category: { type: string, maxLength: 70 }
+        follow_up_mode: { type: string, minLength: 1, maxLength: 30 }
+        reason_for_default: { type: string, minLength: 1, maxLength: 50 }
+        sub_reason_for_default: { type: string, minLength: 1, maxLength: 30 }
+        action_taken: { type: string, minLength: 1, maxLength: 30 }
+        sub_action_taken: { type: string, minLength: 1, maxLength: 30 }
+        next_action_plan: { type: string, minLength: 1, maxLength: 60 }
+        remarks:
+          type: string
+          maxLength: 255
+          description: Supply this field for ENDORSED TO RCD, ENDORSED TO LEGAL or ENDORSED TO EXTERNAL AGENCY.
+        geotagging: { type: string, minLength: 1, maxLength: 255 }
+        next_action_date:
+          type: string
+          description: Date accepted by Laravel's date validator. The service can store null for certain actions.
+          example: '2026-11-25'
+        for_restructuring:
+          type: object
+          description: Required for OFFER RESTRUCTURING. Omit for other actions.
+          required: [monthly_amortization, terms]
+          properties:
+            monthly_amortization: { $ref: '#/components/schemas/NonnegativeAmountInput' }
+            terms: { type: string, minLength: 1, maxLength: 50 }
+        receipt_encoding:
+          description: Required for COLLECTED and used for persistence. Omit for other actions.
+          allOf:
+            - $ref: '#/components/schemas/ReceiptInput'
+        collected:
+          description: Required for COLLECTED because the validator checks the receipt fields under this key.
+          allOf:
+            - $ref: '#/components/schemas/ReceiptInput'
+        promise_to_pay:
+          type: object
+          description: Required for PROMISE TO PAY. Omit for other plans.
+          required: [ptp_amount, ptp_date, payment_channel]
+          properties:
+            ptp_amount: { type: string, minLength: 1, maxLength: 50 }
+            ptp_date: { type: string, example: '2026-11-25' }
+            payment_channel: { type: string, minLength: 1, maxLength: 20 }
+        for_repo:
+          type: object
+          description: Required for FOR REPO. Omit for other plans.
+          required: [customer_capacity, unit_condition, customer_character]
+          properties:
+            customer_capacity: { type: string, minLength: 1, maxLength: 15 }
+            unit_condition: { type: string, minLength: 1, maxLength: 30 }
+            customer_character: { type: string, minLength: 1, maxLength: 20 }
+        for_support_cc:
+          type: object
+          description: Required for FOR SUPPORT CC VISIT. Omit for other plans.
+          required: [new_assigned_id]
+          properties:
+            new_assigned_id: { type: integer, minimum: 1 }
+    ReceiptInput:
+      type: object
+      required: [payment_type, ar_number, ar_date, amount, receipt_image_path]
+      properties:
+        payment_type: { type: string, minLength: 1, maxLength: 50 }
+        ar_number: { type: string, minLength: 1, maxLength: 50 }
+        ar_date: { type: string, example: '2026-11-19' }
+        amount: { $ref: '#/components/schemas/NonnegativeAmountInput' }
+        receipt_image_path: { type: string, minLength: 1, maxLength: 255 }
+    NonnegativeAmountInput:
+      oneOf:
+        - type: number
+          minimum: 0
+        - type: string
+          description: String representation of a nonnegative number.
+          example: '3850.00'
+    DatabaseAmount:
+      description: Decimal amount serialized by the database driver.
+      oneOf:
+        - type: number
+        - type: string
+          example: '3850.00'
+    DatabaseFlag:
+      oneOf:
+        - type: boolean
+        - type: integer
+          enum: [0, 1]
     ActivityRecord:
       type: object
       properties:
-        current_category: { type: string, nullable: true }
         follow_up_mode: { type: string, nullable: true }
         reason_for_default: { type: string, nullable: true }
         action_taken: { type: string, nullable: true }
         next_action_plan: { type: string, nullable: true }
         remarks: { type: string, nullable: true }
         geotagging: { type: string, nullable: true }
-        recorded_by: { type: string, nullable: true }
+        recorded_by: { type: integer, nullable: true }
         contact_date: { type: string, nullable: true }
-    Account:
+    VisitAccountSummary:
       type: object
       properties:
-        accounts_id: { type: integer }
-        account_number: { type: string }
-        customer_name: { type: string }
-        monthly_amortization: { type: number }
-        past_due_balance: { type: number }
-        days_past_due: { type: integer }
-        dpd_bucket: { type: string }
-        no_of_non_payments: { type: string, example: LAST PAID 1 MONTH AGO }
-        outstanding_balance: { type: number }
-        last_payment_date: { type: string, nullable: true }
-        asset: { type: string }
-        payment_status: { type: string }
-        is_force_prioritized: { type: boolean }
-        psgc_code: { type: string }
-        is_contacted: { type: boolean }
-        visit_date: { type: string, nullable: true }
-        assigned_cc_id: { type: integer, nullable: true }
-        assigned_ch_id: { type: integer, nullable: true }
-        assigned_am_id: { type: integer, nullable: true }
-        assigned_dh_id: { type: integer, nullable: true }
-        unit_lot_block: { type: string, nullable: true }
-        street_name: { type: string, nullable: true }
-        subdivision_village: { type: string, nullable: true }
-        province: { type: string, nullable: true }
-        postal_code: { type: string, nullable: true }
-        barangay: { type: string, nullable: true }
-        city_municipality: { type: string, nullable: true }
-        region: { type: string, nullable: true }
-        contact_number: { type: string, nullable: true }
-        email: { type: string, nullable: true }
-        social_media_account: { type: string, nullable: true }
-        next_action_date: { type: string, nullable: true }
-        next_action_plan: { type: string, nullable: true }
-        activity_records:
-          type: array
-          items: { $ref: '#/components/schemas/ActivityRecord' }
-    ClassifiedAccount:
-      allOf:
-        - $ref: '#/components/schemas/Account'
-        - type: object
-          properties:
-            account_classification:
-              type: string
-              nullable: true
-              description: Classification label from the rules table, or null when no rule matches.
-              example: Priority 1 Accounts
-    ClassifiedAccounts:
-      type: object
-      description: |
-        Nested tree of account arrays. Branches come from each classification's `response_path`
-        (e.g. `prioritization.force_prioritized`, `regular.np_1`); leaves are arrays of accounts.
-        `visited` is always present.
-      additionalProperties: true
-      properties:
-        visited:
-          type: array
-          items:
-            type: object
-            additionalProperties: true
-    CollectionItem:
-      type: object
-      properties:
-        id: { type: integer }
         account_id: { type: integer }
         account_number: { type: string }
         customer_name: { type: string }
-        contact_number: { type: string }
-        asset: { type: string }
-        plate_number: { type: string }
-        address:
+        monthly_amortization: { type: number }
+        dpd_bucket: { type: string }
+    PsgcVisitAccount:
+      allOf:
+        - $ref: '#/components/schemas/VisitAccountSummary'
+        - type: object
+          properties:
+            account_classification: { type: string, description: Classification label or an empty string. }
+            visited: { type: boolean, enum: [false] }
+    VisitAccount:
+      allOf:
+        - $ref: '#/components/schemas/VisitAccountSummary'
+        - type: object
+          properties:
+            past_due_balance: { type: number }
+            outstanding_balance: { type: number }
+            last_payment_date: { type: string, format: date }
+            asset: { type: string }
+            payment_status: { type: string }
+            is_force_prioritized: { $ref: '#/components/schemas/DatabaseFlag' }
+            psgc_code: { type: string }
+            is_contacted: { $ref: '#/components/schemas/DatabaseFlag' }
+            assigned_cc_id: { type: integer }
+            assigned_ch_id: { type: integer }
+            assigned_am_ar_id: { type: integer }
+            assigned_rm_dh_id: { type: integer }
+            unit_lot_block: { type: string, nullable: true }
+            street_name: { type: string, nullable: true }
+            subdivision_village: { type: string, nullable: true }
+            province: { type: string, nullable: true }
+            postal_code: { type: string, nullable: true }
+            barangay: { type: string, nullable: true }
+            city_municipality: { type: string, nullable: true }
+            region: { type: string, nullable: true }
+            contact_number: { type: string, nullable: true }
+            email: { type: string, nullable: true }
+            social_media_account: { type: string, nullable: true }
+            due_date: { type: string, format: date }
+            next_action_date: { type: string, nullable: true }
+            next_action_plan: { type: string, nullable: true }
+    AssignedVisitAccount:
+      allOf:
+        - $ref: '#/components/schemas/VisitAccount'
+        - type: object
+          properties:
+            pre_qualified_for_restructuring: { $ref: '#/components/schemas/DatabaseFlag' }
+            current_category: { type: string, nullable: true }
+            visited: { type: boolean, enum: [false] }
+            activity_records:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/ActivityRecord'
+                  - type: object
+                    properties:
+                      current_category: { type: string, nullable: true }
+                      visited: { type: boolean, enum: [true] }
+    TeamVisitAccount:
+      allOf:
+        - $ref: '#/components/schemas/VisitAccount'
+        - $ref: '#/components/schemas/ActivityRecord'
+        - type: object
+          properties:
+            user_id: { type: integer, description: Credit counselor CMS user ID. }
+            credit_counselor_name: { type: string }
+            contact_recording_id: { type: integer, nullable: true }
+            created_at: { type: string, format: date-time }
+            activity_records:
+              type: array
+              items: { $ref: '#/components/schemas/ActivityRecord' }
+    AssignedVisitPlan:
+      description: Only populated categories are included. A group without classified accounts has an empty array.
+      oneOf:
+        - type: array
+          maxItems: 0
+          items: {}
+        - type: object
+          properties:
+            prioritization:
+              type: object
+              properties:
+                for_repossession:
+                  type: array
+                  items: { $ref: '#/components/schemas/AssignedVisitAccount' }
+                fdd_ns:
+                  type: array
+                  items: { $ref: '#/components/schemas/AssignedVisitAccount' }
+                priority_1_accounts:
+                  type: array
+                  items: { $ref: '#/components/schemas/AssignedVisitAccount' }
+                promise_to_pay:
+                  type: array
+                  items: { $ref: '#/components/schemas/AssignedVisitAccount' }
+                next_action_plan:
+                  type: object
+                  properties:
+                    for_skiptrace:
+                      type: array
+                      items: { $ref: '#/components/schemas/AssignedVisitAccount' }
+                    force_prioritized:
+                      type: array
+                      items: { $ref: '#/components/schemas/AssignedVisitAccount' }
+                    notice_and_demand_letter:
+                      type: array
+                      items: { $ref: '#/components/schemas/AssignedVisitAccount' }
+            regular:
+              type: object
+              properties:
+                dpd_1_30_days:
+                  type: array
+                  items: { $ref: '#/components/schemas/AssignedVisitAccount' }
+                np_1:
+                  type: array
+                  items: { $ref: '#/components/schemas/AssignedVisitAccount' }
+                np_0:
+                  type: array
+                  items: { $ref: '#/components/schemas/AssignedVisitAccount' }
+    TeamVisitPlan:
+      type: object
+      description: Only populated categories are included.
+      properties:
+        prioritization:
           type: object
           properties:
-            street: { type: string }
-            barangay: { type: string }
-            city: { type: string }
-            province: { type: string }
-            psgc_code: { type: string }
-            latitude: { type: number }
-            longitude: { type: number }
+            for_repossession:
+              type: array
+              items: { $ref: '#/components/schemas/TeamVisitAccount' }
+            fdd_ns:
+              type: array
+              items: { $ref: '#/components/schemas/TeamVisitAccount' }
+            priority_1_accounts:
+              type: array
+              items: { $ref: '#/components/schemas/TeamVisitAccount' }
+            promise_to_pay:
+              type: array
+              items: { $ref: '#/components/schemas/TeamVisitAccount' }
+            next_action_plan:
+              type: object
+              properties:
+                for_skiptrace:
+                  type: array
+                  items: { $ref: '#/components/schemas/TeamVisitAccount' }
+                force_prioritized:
+                  type: array
+                  items: { $ref: '#/components/schemas/TeamVisitAccount' }
+                notice_and_demand_letter:
+                  type: array
+                  items: { $ref: '#/components/schemas/TeamVisitAccount' }
+        regular:
+          type: object
+          properties:
+            dpd_1_30_days:
+              type: array
+              items: { $ref: '#/components/schemas/TeamVisitAccount' }
+            np_1:
+              type: array
+              items: { $ref: '#/components/schemas/TeamVisitAccount' }
+            np_0:
+              type: array
+              items: { $ref: '#/components/schemas/TeamVisitAccount' }
+    CollectionItem:
+      type: object
+      properties:
+        account_number: { type: string }
+        customer_name: { type: string }
         monthly_amortization: { type: number }
-        past_due_balance: { type: number }
         outstanding_balance: { type: number }
-        days_past_due: { type: integer }
-        dpd_bucket: { type: string }
-        no_of_non_payments: { type: integer }
-        last_payment_date: { type: string, format: date }
-        due_date: { type: string, format: date }
-        payment_status: { type: string }
-        collection_status: { type: string }
-        priority: { type: string }
-        is_force_prioritized: { type: boolean }
-        assigned_collector: { type: string }
+        past_due_balance: { type: number }
+        payment_history:
+          type: array
+          items:
+            type: object
+            properties:
+              payment_type: { type: string }
+              ar_number: { type: string }
+              ar_date: { type: string, example: '2026-11-19 10:00:00' }
+              amount: { $ref: '#/components/schemas/DatabaseAmount' }
+              receipt_image_path: { type: string, nullable: true }
