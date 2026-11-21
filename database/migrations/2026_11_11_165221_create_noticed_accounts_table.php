@@ -20,10 +20,9 @@ return new class extends Migration
                 ->constrained('contact_recordings')
                 ->cascadeOnDelete();
             $table->string('letter_type', 30)->nullable();
-            $table->string('deliver_status')->nullable();
-            $table->string('recipient_name', 255)->nullable();
+            $table->string('reason_for_notice', 50);
+            $table->string('status', 10)->default('Unserved');
             $table->string('document', 255)->nullable();
-            $table->date('served_at')->nullable();
             $table->string('remarks', 255)->nullable();
             $table->timestamps();
             $table->softDeletes();

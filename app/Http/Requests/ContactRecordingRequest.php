@@ -30,8 +30,8 @@ class ContactRecordingRequest extends FormRequest
 
         $rules = [
             'account_id' => 'required|integer|min:1',
-            'customer_name' => 'required|string|max:255',
-            'account_number' => 'required|string|max:15',
+            // 'customer_name' => 'required|string|max:255',
+            // 'account_number' => 'required|string|max:15',
             'outstanding_balance' => 'required|numeric|min:0',
             'current_category' => 'string|max:70',
             'follow_up_mode' => 'required|string|max:30',

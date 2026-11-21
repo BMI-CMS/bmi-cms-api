@@ -10,9 +10,9 @@ class NoticedAccount extends Model
         'account_id',
         'contact_recording_id',
         'letter_type',
-        'deliver_status',
-        'recipient_name',
-        'document',
+        'reason_for_notice',
+        'status',
+        //'document',
         'remarks'
     ];
 }

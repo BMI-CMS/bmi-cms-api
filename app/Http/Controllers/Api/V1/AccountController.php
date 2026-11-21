@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Services\AccountService;
+use App\Services\AccountServiceV2;
 use App\Http\Requests\ContactRecordingRequest;
 use App\Http\Requests\ForceAssignmentRequest;
 use Illuminate\Support\Facades\Auth;
@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 class AccountController extends Controller
 {
     public function __construct(
-        protected AccountService $accountService
+        protected AccountServiceV2 $accountService
     ) {}
 
     public function markAsForcePrioritized(ForceAssignmentRequest $request)
@@ -37,7 +37,7 @@ class AccountController extends Controller
 
         $validated = $request->validated();
         $result = $this->accountService->contactRecording($validated, Auth::user()->cmsUser->id, Auth::user()->cmsUser->name);
-        return $result;
+
         if (!$result['success']) {
             return response()->json([
                 'message' => $result['message'],

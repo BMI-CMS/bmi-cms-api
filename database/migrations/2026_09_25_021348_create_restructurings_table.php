@@ -23,9 +23,9 @@ return new class extends Migration
             $table->decimal('monthly_amortization', 15, 2);
             $table->string('terms', 30);
             $table->decimal('new_monthly_amortization', 15, 2)->nullable();
-            $table->string('status')->nullable();
             $table->string('restructuring_form')->nullable();
             $table->string('remarks', 255)->nullable();
+            $table->string('status')->default('pending');
             $table->softDeletes();
             $table->timestamps();
         });
