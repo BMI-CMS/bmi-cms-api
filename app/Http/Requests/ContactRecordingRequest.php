@@ -37,7 +37,7 @@ class ContactRecordingRequest extends FormRequest
             'follow_up_mode' => 'required|string|max:30',
             'reason_for_default' => 'required|string|max:50',
             'sub_reason_for_default' => 'string|max:30',
-            'action_taken' => 'required|string|max:30',
+            'action_taken' => 'required|string|max:50',
             'sub_action_taken' => 'string|max:30',
             'next_action_plan' => 'required|string|max:60',
             'remarks' => 'string|max:255',

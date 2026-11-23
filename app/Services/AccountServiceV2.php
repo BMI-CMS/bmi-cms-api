@@ -97,7 +97,7 @@ class AccountServiceV2
                     'account_id' => $data["account_id"],
                     'contact_recording_id' => $contactRecording->id,
                     'reason_of_endorsement' => $data["action_taken"],
-                    'remarks' => $data["remarks"],
+                    'remarks' => $data["remarks"] ?? null,
                 ]);
             }
 
@@ -132,7 +132,7 @@ class AccountServiceV2
                     'contact_recording_id' => $contactRecording->id,
                     'letter_type' => $contactRecording->id,
                     'reason_for_notice' => $data["next_action_plan"],
-                    'remarks' => $data["remarks"],
+                    'remarks' => $data["remarks"] ?? null,
                 ]);
             } else if ($data["next_action_plan"] === NextActionPlan::FORCHVALIDATION) {
                 CHValidation::create([

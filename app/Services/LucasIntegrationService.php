@@ -6,6 +6,7 @@ use App\Models\Collection;
 use App\Models\Restructuring;
 use App\Models\EarlyEndorsed;
 use App\Models\NoticedAccount;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 // use Illuminate\Support\Facades\Http;
 // use Illuminate\Support\Str;
 
@@ -73,10 +74,30 @@ class LucasIntegrationService
     //     return $response;
     // }
 
-    public function forRestructuring()
+    public function forRestructuring(array $filters = []): LengthAwarePaginator
     {
+        $sortColumns = [
+            'account_no' => 'accounts.account_number',
+            'customer_name' => 'accounts.customer_name',
+            'principal_outstanding' => 'restructurings.outstanding_balance',
+            'old_amortization' => 'restructurings.monthly_amortization',
+            'restructuring_term' => 'restructurings.terms',
+            'restructuring_date' => 'restructurings.created_at',
+            'conducted_by' => 'cms_users.name',
+            'restructiring_status' => 'restructurings.status',
+        ];
+
+        $search = $filters['search'] ?? null;
+        $sort = $filters['sort'] ?? 'restructuring_date';
+        $direction = $filters['direction'] ?? 'desc';
+        $page = (int) ($filters['page'] ?? 1);
+        $perPage = (int) ($filters['per_page'] ?? 10);
+
+        $sortColumn = $sortColumns[$sort] ?? 'restructurings.created_at';
+
         return Restructuring::query()
             ->select([
+                'restructurings.id',
                 'accounts.account_number',
                 'accounts.customer_name',
                 'restructurings.outstanding_balance',
@@ -108,18 +129,62 @@ class LucasIntegrationService
                 'contact_recordings.recorded_by'
             )
             ->where('restructurings.status', 'pending')
-            ->get();
+            ->when($search !== null && $search !== '', function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where(
+                        'accounts.customer_name',
+                        'like',
+                        "%{$search}%"
+                    )->orWhere(
+                        'accounts.account_number',
+                        'like',
+                        "%{$search}%"
+                    );
+                });
+            })
+            ->orderBy(
+                $sortColumn,
+                in_array($direction, ['asc', 'desc'], true)
+                    ? $direction
+                    : 'desc'
+            )
+            ->orderBy('restructurings.id', 'desc')
+            ->paginate(
+                min(max($perPage, 1), 100),
+                ['*'],
+                'page',
+                max($page, 1)
+            );
     }
 
-    public function earlyEndorsed()
+    public function earlyEndorsed(array $filters = []): LengthAwarePaginator
     {
+        $sortColumns = [
+            'account_no' => 'accounts.account_number',
+            'customer_name' => 'accounts.customer_name',
+            'outstanding_balance' => 'accounts.outstanding_balance',
+            'approval_status' => 'early_endorseds.status',
+            'requested_date' => 'early_endorseds.created_at',
+        ];
+
+        $search = $filters['search'] ?? null;
+        $sort = $filters['sort'] ?? 'requested_date';
+        $direction = $filters['direction'] ?? 'desc';
+        $page = (int) ($filters['page'] ?? 1);
+        $perPage = (int) ($filters['per_page'] ?? 10);
+
+        $sortColumn = $sortColumns[$sort] ?? 'early_endorseds.created_at';
+
         return EarlyEndorsed::query()
             ->select([
+                'early_endorseds.id',
                 'accounts.account_number',
                 'accounts.customer_name',
+                'accounts.outstanding_balance',
                 'early_endorseds.reason_of_endorsement',
                 'cms_users.name as recorded_by_name',
                 'early_endorseds.created_at',
+                'early_endorseds.status',
             ])
             ->join(
                 'contact_recordings',
@@ -140,15 +205,60 @@ class LucasIntegrationService
                 'contact_recordings.recorded_by'
             )
             ->where('early_endorseds.status', 'PENDING')
-            ->get();
+            ->when($search !== null && $search !== '', function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where(
+                        'accounts.customer_name',
+                        'like',
+                        "%{$search}%"
+                    )->orWhere(
+                        'accounts.account_number',
+                        'like',
+                        "%{$search}%"
+                    );
+                });
+            })
+            ->orderBy(
+                $sortColumn,
+                in_array($direction, ['asc', 'desc'], true)
+                    ? $direction
+                    : 'desc'
+            )
+            ->orderBy('early_endorseds.id', 'desc')
+            ->paginate(
+                min(max($perPage, 1), 100),
+                ['*'],
+                'page',
+                max($page, 1)
+            );
     }
 
-    public function noticeAndDemand()
+    public function noticeAndDemand(array $filters = []): LengthAwarePaginator
     {
+        $sortColumns = [
+            'account_no' => 'accounts.account_number',
+            'customer_name' => 'accounts.customer_name',
+            'outstanding_balance' => 'accounts.outstanding_balance',
+            'demand_letter_type' => 'noticed_accounts.letter_type',
+            'reason_for_notice' => 'noticed_accounts.reason_for_notice',
+            'status' => 'noticed_accounts.status',
+            'requested_date' => 'noticed_accounts.created_at',
+        ];
+
+        $search = $filters['search'] ?? null;
+        $sort = $filters['sort'] ?? 'requested_date';
+        $direction = $filters['direction'] ?? 'desc';
+        $page = (int) ($filters['page'] ?? 1);
+        $perPage = (int) ($filters['per_page'] ?? 10);
+
+        $sortColumn = $sortColumns[$sort] ?? 'noticed_accounts.created_at';
+
         return NoticedAccount::query()
             ->select([
+                'noticed_accounts.id',
                 'accounts.account_number',
                 'accounts.customer_name',
+                'accounts.outstanding_balance',
                 'noticed_accounts.letter_type',
                 'noticed_accounts.reason_for_notice',
                 'cms_users.name as recorded_by_name',
@@ -173,6 +283,31 @@ class LucasIntegrationService
                 'contact_recordings.recorded_by'
             )
             ->where('noticed_accounts.status', 'Unserved')
-            ->get();
+            ->when($search !== null && $search !== '', function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where(
+                        'accounts.customer_name',
+                        'like',
+                        "%{$search}%"
+                    )->orWhere(
+                        'accounts.account_number',
+                        'like',
+                        "%{$search}%"
+                    );
+                });
+            })
+            ->orderBy(
+                $sortColumn,
+                in_array($direction, ['asc', 'desc'], true)
+                    ? $direction
+                    : 'desc'
+            )
+            ->orderBy('noticed_accounts.id', 'desc')
+            ->paginate(
+                min(max($perPage, 1), 100),
+                ['*'],
+                'page',
+                max($page, 1)
+            );
     }
 }

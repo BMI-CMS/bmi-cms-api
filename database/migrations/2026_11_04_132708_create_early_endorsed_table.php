@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignId('contact_recording_id')
                 ->constrained('contact_recordings')
                 ->cascadeOnDelete();
-            $table->string('reason_of_endorsement', 30);
+            $table->string('reason_of_endorsement', 50);
             $table->string('status', 15)->default('PENDING');
             $table->string('remarks', 255)->nullable();
             $table->softDeletes();

@@ -6,6 +6,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Session\Middleware\StartSession;
+use App\Http\Middleware\VerifyHmacSignature;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'api.key' => \App\Http\Middleware\ApiKeyMiddleware::class,
+            'hmac.signature' => VerifyHmacSignature::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

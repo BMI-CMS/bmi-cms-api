@@ -23,7 +23,6 @@ class HmacVerifier
         $requestTime = $this->requiredHeader($request, 'X-Request-Time', '/^[0-9]+$/D');
         $nonce = $this->requiredHeader($request, 'X-Nonce', '/^[A-Za-z0-9-]{16,64}$/D');
         $signature = $this->requiredHeader($request, 'X-Signature', '/^[0-9a-f]{64}$/D');
-
         $configuredClientId = $this->keyring->clientId($client);
 
         if ($configuredClientId === null || !hash_equals($configuredClientId, $clientId)) {
