@@ -6,74 +6,14 @@ use App\Models\Collection;
 use App\Models\Restructuring;
 use App\Models\EarlyEndorsed;
 use App\Models\NoticedAccount;
+use App\Models\ContactRecording;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-// use Illuminate\Support\Facades\Http;
-// use Illuminate\Support\Str;
+use App\Helpers\GetDateHelper;
 
 
 class LucasIntegrationService
 {
-    // private string $clientId;
-    // private string $keyId;
-    // private string $secret;
-    // private string $url;
-
-    // public function __construct()
-    // {
-    //     $this->clientId = config('hmac.outbound.lucas.client_id');
-    //     $this->keyId = config('hmac.outbound.lucas.key');
-    //     $this->secret = config('hmac.outbound.lucas.secret');
-    //     $this->url = config('hmac.outbound.lucas.url');
-    // }
-
-    // public function outbound(string $endpoint, array $data)
-    // {
-    //     $url = "$this->url/$endpoint";
-
-    //     $requestTime = (string) now()->timestamp;
-    //     $nonce = (string) Str::uuid();
-
-    //     $body = json_encode($data, JSON_THROW_ON_ERROR);
-
-    //     $bodyHash = hash('sha256', $body);
-
-
-    //     $path = parse_url($url, PHP_URL_PATH);
-
-    //     $canonicalQuery = '';
-
-    //     $stringToSign = implode("\n", [
-    //         'POST',
-    //         $path,
-    //         $canonicalQuery,
-    //         $this->clientId,
-    //         $this->keyId ?? '',
-    //         $requestTime,
-    //         $nonce,
-    //         $bodyHash,
-    //     ]);
-
-    //     $signature = hash_hmac('sha256', $stringToSign, $this->secret);
-
-    //     $headers = [
-    //         'X-Client-Id' => $this->clientId,
-    //         'X-Request-Time' => $requestTime,
-    //         'X-Nonce' => $nonce,
-    //         'X-Signature' => $signature,
-    //         'Accept' => 'application/json',
-    //     ];
-
-    //     if ($this->keyId !== null && $this->keyId !== '') {
-    //         $headers['X-Key-Id'] = $this->keyId;
-    //     }
-
-    //     $response = Http::withHeaders($headers)
-    //         ->withBody($body, 'application/json')
-    //         ->post($url);
-
-    //     return $response;
-    // }
-
     public function forRestructuring(array $filters = []): LengthAwarePaginator
     {
         $sortColumns = [
@@ -178,6 +118,7 @@ class LucasIntegrationService
         return EarlyEndorsed::query()
             ->select([
                 'early_endorseds.id',
+                'early_endorseds.contact_recording_id',
                 'accounts.account_number',
                 'accounts.customer_name',
                 'accounts.outstanding_balance',
@@ -231,6 +172,44 @@ class LucasIntegrationService
                 'page',
                 max($page, 1)
             );
+    }
+
+    public function updateEarlyEndorsedApprovalStatus(array $data): void
+    {
+        DB::transaction(function () use ($data) {
+
+            $earlyEndorsed = EarlyEndorsed::findOrFail($data['id']);
+
+            if ($data['status'] === 'DISAPPROVED') {
+
+                $previousData = ContactRecording::findOrFail(
+                    $data['contact_recording_id']
+                );
+
+                ContactRecording::create([
+                    'account_id' => $previousData->account_id,
+                    'current_category' => $previousData->current_category,
+                    'follow_up_mode' => $previousData->follow_up_mode,
+                    'action_taken' => $previousData->action_taken,
+                    'sub_action_taken' => $previousData->sub_action_taken,
+                    'reason_for_default' => $previousData->reason_for_default,
+                    'sub_reason_for_default' => $previousData->sub_reason_for_default,
+                    'next_action_plan' => $data['next_action_plan'],
+                    'remarks' => $previousData->remarks,
+                    'geotagging' => $previousData->geotagging,
+                    'recorded_by' => $data['employee_id'],
+                    'next_action_date' => GetDateHelper::nextActionDate(
+                        $previousData->action_taken,
+                        $data['next_action_plan'],
+                        $data['next_action_date'] ?? null
+                    ),
+                ]);
+            }
+
+            $earlyEndorsed->update([
+                'status' => $data['status'],
+            ]);
+        });
     }
 
     public function noticeAndDemand(array $filters = []): LengthAwarePaginator

@@ -9,6 +9,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 use Throwable;
 use App\Services\LucasIntegrationService;
+use App\Http\Requests\EarlyEndorsedRequest;
 
 
 class LucasIntegrationController extends Controller
@@ -136,6 +137,19 @@ class LucasIntegrationController extends Controller
                 'data' => null,
             ], 500);
         }
+    }
+
+    public function updateEarlyEndorsedApprovalStatus(EarlyEndorsedRequest $request)
+    {
+        $validated = $request->validated();
+
+        $this->lucasIntegrationService
+            ->updateEarlyEndorsedApprovalStatus($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Early endorsed account approval status updated successfully.',
+        ], 200);
     }
 
     public function noticeAndDemand(Request $request): JsonResponse

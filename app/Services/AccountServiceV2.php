@@ -49,7 +49,7 @@ class AccountServiceV2
             ],
         ];
     }
-    public function contactRecording(array $data, int $userId, string $userName)
+    public function contactRecording(array $data, int $userId)
     {
         DB::beginTransaction();
 

@@ -36,7 +36,7 @@ class AccountController extends Controller
     {
 
         $validated = $request->validated();
-        $result = $this->accountService->contactRecording($validated, Auth::user()->cmsUser->id, Auth::user()->cmsUser->name);
+        $result = $this->accountService->contactRecording($validated, Auth::user()->cmsUser->id);
 
         if (!$result['success']) {
             return response()->json([

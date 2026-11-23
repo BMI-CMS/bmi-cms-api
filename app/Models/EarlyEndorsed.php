@@ -10,6 +10,7 @@ class EarlyEndorsed extends Model
         'account_id',
         'contact_recording_id',
         'reason_of_endorsement',
+        'status',
         'remarks',
     ];
 }
