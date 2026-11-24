@@ -11,5 +11,6 @@ class Collection extends Model
 
     protected $fillable = [
         'total_amount',
+        'total_accounts'
     ];
 }

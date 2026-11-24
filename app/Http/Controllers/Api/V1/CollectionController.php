@@ -5,8 +5,9 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Services\CollectionService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Http\Requests\DepositRequest;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\CollectectionRequest;
 
 class CollectionController extends Controller
 {
@@ -22,5 +23,42 @@ class CollectionController extends Controller
             'message' => 'Collection accounts retrieved successfully.',
             'data' => $collectionList
         ]);
+    }
+
+    public function processCutoff(CollectectionRequest $request)
+    {
+        $validated = $request->validated();
+
+        $result = $this->collectionService->processCutoff($validated);
+
+        if (!$result['success']) {
+            return response()->json([
+                'message' => $result['message'],
+            ], $result['code']);
+        }
+
+        return response()->json([
+            'message' => 'Successfully Saved',
+            'data' => $result['data'],
+        ]);
+    }
+
+    public function cutoffHistory()
+    {
+        $cutoffHistory = $this->collectionService->cutoffHistory();
+
+        return response()->json([
+            'message' => 'Cut off history retrieved successfully.',
+            'data' =>  $cutoffHistory
+        ]);
+    }
+
+    public function deposit(DepositRequest $request)
+    {
+        $validated = $request->validated();
+
+        $result = $this->collectionService->deposit($validated);
+
+        return $result;
     }
 }

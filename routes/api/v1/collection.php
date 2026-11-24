@@ -6,5 +6,8 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('collections')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [CollectionController::class, 'index']);
+        Route::post('/process-cutoff', [CollectionController::class, 'processCutoff']);
+        Route::get('/cutoff-history', [CollectionController::class, 'cutoffHistory']);
+        Route::post('/deposit', [CollectionController::class, 'deposit']);
     });
 });

@@ -17,7 +17,7 @@ return new class extends Migration
                 ->constrained('collections')
                 ->cascadeOnDelete();
             $table->string('payment_channel', 50);
-            $table->string('depository_account', 50);
+            $table->string('depository_account', 50)->nullable();
             $table->string('transaction_reference_number', 100);
             $table->date('deposit_date');
             $table->decimal('total_deposit_amount', 15, 2);

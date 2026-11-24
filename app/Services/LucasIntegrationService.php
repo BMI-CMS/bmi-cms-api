@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Collection;
+use Carbon\Carbon;
 use App\Models\Restructuring;
 use App\Models\EarlyEndorsed;
 use App\Models\NoticedAccount;
@@ -99,6 +99,10 @@ class LucasIntegrationService
 
     public function earlyEndorsed(array $filters = []): LengthAwarePaginator
     {
+
+        $startOfTheMonth = Carbon::now()->startOfMonth()->format('Y-m-d H:i:s');
+        $endOfTheMonth = Carbon::now()->endOfMonth()->format('Y-m-d H:i:s');
+
         $sortColumns = [
             'account_no' => 'accounts.account_number',
             'customer_name' => 'accounts.customer_name',
@@ -145,7 +149,8 @@ class LucasIntegrationService
                 '=',
                 'contact_recordings.recorded_by'
             )
-            ->where('early_endorseds.status', 'PENDING')
+            ->where('early_endorseds.created_at', '>=', $startOfTheMonth)
+            ->where('early_endorseds.created_at', '<=', $endOfTheMonth)
             ->when($search !== null && $search !== '', function ($query) use ($search) {
                 $query->where(function ($q) use ($search) {
                     $q->where(
@@ -195,14 +200,10 @@ class LucasIntegrationService
                     'reason_for_default' => $previousData->reason_for_default,
                     'sub_reason_for_default' => $previousData->sub_reason_for_default,
                     'next_action_plan' => $data['next_action_plan'],
-                    'remarks' => $previousData->remarks,
+                    'remarks' => $data['remarks'],
                     'geotagging' => $previousData->geotagging,
                     'recorded_by' => $data['employee_id'],
-                    'next_action_date' => GetDateHelper::nextActionDate(
-                        $previousData->action_taken,
-                        $data['next_action_plan'],
-                        $data['next_action_date'] ?? null
-                    ),
+                    'next_action_date' => $data['next_action_date'],
                 ]);
             }
 

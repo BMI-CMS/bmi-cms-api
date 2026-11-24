@@ -97,6 +97,7 @@ class DashboardRepository
             "visited" => $this->visitedAccount($userId, $startOfTheMonth, $endOfTheMonth),
         ];
     }
+
     public function getVisitPlanAccounts(int $userId, string $startDate, string $endDate)
     {
         // $monthStart = $startDate->copy()->startOfMonth();

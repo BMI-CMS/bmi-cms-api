@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('collections', function (Blueprint $table) {
             $table->id();
             $table->decimal('total_amount', 15, 2);
-            // $table->integer('total_account');
+            $table->integer('total_accounts');
             $table->softDeletes();
             $table->timestamps();
         });

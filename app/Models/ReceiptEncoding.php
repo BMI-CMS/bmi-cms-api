@@ -19,6 +19,7 @@ class ReceiptEncoding extends Model
         'ar_date',
         'amount',
         'receipt_image_path',
+        'status'
     ];
 
     protected $casts = [

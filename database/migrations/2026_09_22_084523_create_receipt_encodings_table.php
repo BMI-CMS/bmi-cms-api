@@ -32,7 +32,7 @@ return new class extends Migration
             $table->string('ar_number', 50)->index();
             $table->dateTime('ar_date');
             $table->decimal('amount', 15, 2)->default(0.00);;
-            $table->string('receipt_image_path')->nullable(); // Stores file path / S3 key
+            $table->string('receipt_image_path')->nullable();
             $table->softDeletes();
             $table->timestamp('created_at')->index();
             $table->timestamp('updated_at');
