@@ -13,6 +13,7 @@ class CollectionRepository
         return Account::query()
             ->select([
                 'accounts.id',
+                'receipt_encodings.id as receipt_id',
                 'accounts.customer_name',
                 'accounts.account_number',
                 'accounts.monthly_amortization',

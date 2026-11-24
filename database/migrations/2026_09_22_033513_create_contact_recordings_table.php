@@ -18,7 +18,7 @@ return new class extends Migration
                 ->cascadeOnDelete();
             $table->string('current_category', 70)->nullable();
             $table->string('follow_up_mode', 30);
-            $table->string('action_taken', 30);
+            $table->string('action_taken', 50);
             $table->string('sub_action_taken', 30)->nullable();
             $table->string('reason_for_default', 50)->nullable();
             $table->string('sub_reason_for_default', 30)->nullable();;

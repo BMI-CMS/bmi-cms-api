@@ -13,13 +13,19 @@ use App\Models\PromiseToPay;
 use App\Models\RepossessionRequest;
 use App\Models\ReassignmentHistory;
 use App\Models\CHValidation;
+use App\Models\NoticedAccount;
 use App\Helpers\GetDateHelper;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Http;
+use App\Services\LucasIntegrationService;
+use App\Constants\LucasEndpoint;
 
-class AccountService
+class AccountServiceV1
 {
+    public function __construct(
+        protected LucasIntegrationService $LucasIntegrationService,
+    ) {}
+
     public function markAsForcePrioritized(int $account_id, string $account_number): array
     {
         $account = Account::where('id', $account_id)
@@ -52,7 +58,7 @@ class AccountService
         DB::beginTransaction();
 
         try {
-
+            // return $data;
             $datetime = Carbon::now('Asia/Manila')->format('Y-m-d H:i:s');
 
             $contactRecording = ContactRecording::create([
@@ -60,7 +66,9 @@ class AccountService
                 'current_category' => $data["current_category"] ?? null,
                 'follow_up_mode' => $data["follow_up_mode"],
                 'action_taken' => $data["action_taken"],
+                'sub_action_taken' => $data["sub_action_taken"] ?? null,
                 'reason_for_default' => $data["reason_for_default"],
+                'sub_reason_for_default' => $data["sub_reason_for_default"] ?? null,
                 'next_action_plan' => $data["next_action_plan"],
                 'remarks' =>  $data["remarks"] ?? null,
                 'geotagging' => $data["geotagging"],
@@ -84,25 +92,28 @@ class AccountService
                     ...$data["for_restructuring"],
                 ]);
 
-                // $response = Http::post('http://127.0.0.1:8000/api/v1/integrations/for-restructuring-account', [
-                //     'customer_name' => $data["customer_name"],
-                //     'account_number' => $data["account_number"],
-                //     'outstanding_balance' => $data["outstanding_balance"],
-                //     'conducted_by' => $userName,
-                //     'requested_date' => $contactRecording->contact_date,
-                //     ...$data["for_restructuring"],
-                // ]);
+                $response = $this->LucasIntegrationService->outbound(
+                    LucasEndpoint::FOR_RESTRUCTURING_ACCOUNT,
+                    [
+                        'customer_name' => $data["customer_name"],
+                        'account_number' => $data["account_number"],
+                        'outstanding_balance' => $data["outstanding_balance"],
+                        'conducted_by' => $userName,
+                        'requested_date' => $contactRecording->contact_date,
+                        ...$data["for_restructuring"],
+                    ]
+                );
 
-                // if ($response->failed()) {
-                //     DB::rollBack();
+                if ($response->failed()) {
+                    DB::rollBack();
 
-                //     return [
-                //         'success' => false,
-                //         'message' => $response->json('message')
-                //             ?? 'Webhook request failed.',
-                //         'code' => $response->status(),
-                //     ];
-                // }
+                    return [
+                        'success' => false,
+                        'message' => $response->json('message')
+                            ?? 'Webhook request failed.',
+                        'code' => $response->status(),
+                    ];
+                }
             } else if ($data["action_taken"] === ActionTaken::COLLECTED) {
                 ReceiptEncoding::create([
                     ...$data["receipt_encoding"],
@@ -117,26 +128,29 @@ class AccountService
                     'remarks' => $data["remarks"],
                 ]);
 
-                // $response = Http::post('http://127.0.0.1:8000/api/v1/integrations/early-endorsed-account', [
-                //     'customer_name' => $data["customer_name"],
-                //     'account_number' =>  $data["account_number"],
-                //     'outstanding_balance' => $data["outstanding_balance"],
-                //     'reason_for_early_endorsement' => $data["action_taken"],
-                //     'requested_date' => $contactRecording->contact_date,
-                //     'conducted_by' => $userName,
-                //     'remarks' => $data["remarks"],
-                // ]);
+                $response = $this->LucasIntegrationService->outbound(
+                    LucasEndpoint::EARLY_ENDORSED_ACCOUNT,
+                    [
+                        'customer_name' => $data["customer_name"],
+                        'account_number' =>  $data["account_number"],
+                        'outstanding_balance' => $data["outstanding_balance"],
+                        'reason_for_early_endorsement' => $data["action_taken"],
+                        'requested_date' => $contactRecording->contact_date,
+                        'conducted_by' => $userName,
+                        'remarks' => $data["remarks"],
+                    ]
+                );
 
-                // if ($response->failed()) {
-                //     DB::rollBack();
+                if ($response->failed()) {
+                    DB::rollBack();
 
-                //     return [
-                //         'success' => false,
-                //         'message' => $response->json('message')
-                //             ?? 'Webhook request failed.',
-                //         'code' => $response->status(),
-                //     ];
-                // }
+                    return [
+                        'success' => false,
+                        'message' => $response->json('message')
+                            ?? 'Webhook request failed.',
+                        'code' => $response->status(),
+                    ];
+                }
             }
 
             if ($data["next_action_plan"] === NextActionPlan::PROMISETOPAY) {
@@ -164,26 +178,36 @@ class AccountService
                     'assigned_by' => $userId
                 ]);
             } else if (in_array($data["next_action_plan"], NextActionPlan::FORNOTICEANDDEMAND)) {
-                // $response = Http::post('http://127.0.0.1:8000/api/v1/integrations/notice-and-demand-account', [
-                //     'customer_name' => $data["customer_name"],
-                //     'account_number' => $data["account_number"],
-                //     'outstanding_balance' => $data["outstanding_balance"],
-                //     'demand_letter_type' => $data["next_action_plan"],
-                //     'requested_date' => $contactRecording->contact_date,
-                //     'remarks' => $data["remarks"],
-                //     'conducted_by' => $userName
-                // ]);
+                NoticedAccount::create([
+                    'account_id' => $data["account_id"],
+                    'contact_recording_id' => $contactRecording->id,
+                    'reason_of_endorsement' => $data["action_taken"],
+                    'remarks' => $data["remarks"],
+                ]);
 
-                // if ($response->failed()) {
-                //     DB::rollBack();
+                $response = $this->LucasIntegrationService->outbound(
+                    LucasEndpoint::FOR_NOTICE_AND_DEMAND_ACCOUNT,
+                    [
+                        'customer_name' => $data["customer_name"],
+                        'account_number' => $data["account_number"],
+                        'outstanding_balance' => $data["outstanding_balance"],
+                        'demand_letter_type' => $data["next_action_plan"],
+                        'requested_date' => $contactRecording->contact_date,
+                        'remarks' => $data["remarks"],
+                        'conducted_by' => $userName
+                    ]
+                );
 
-                //     return [
-                //         'success' => false,
-                //         'message' => $response->json('message')
-                //             ?? 'Webhook request failed.',
-                //         'code' => $response->status(),
-                //     ];
-                // }
+                if ($response->failed()) {
+                    DB::rollBack();
+
+                    return [
+                        'success' => false,
+                        'message' => $response->json('message')
+                            ?? 'Webhook request failed.',
+                        'code' => $response->status(),
+                    ];
+                }
             } else if ($data["next_action_plan"] === NextActionPlan::FORCHVALIDATION) {
                 CHValidation::create([
                     'account_id' => $data["account_id"],

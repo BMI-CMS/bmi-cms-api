@@ -30,14 +30,14 @@ class ContactRecordingRequest extends FormRequest
 
         $rules = [
             'account_id' => 'required|integer|min:1',
-            'customer_name' => 'required|string|max:255',
-            'account_number' => 'required|string|max:15',
+            // 'customer_name' => 'required|string|max:255',
+            // 'account_number' => 'required|string|max:15',
             'outstanding_balance' => 'required|numeric|min:0',
             'current_category' => 'string|max:70',
             'follow_up_mode' => 'required|string|max:30',
             'reason_for_default' => 'required|string|max:50',
             'sub_reason_for_default' => 'string|max:30',
-            'action_taken' => 'required|string|max:30',
+            'action_taken' => 'required|string|max:50',
             'sub_action_taken' => 'string|max:30',
             'next_action_plan' => 'required|string|max:60',
             'remarks' => 'string|max:255',
@@ -98,7 +98,7 @@ class ContactRecordingRequest extends FormRequest
             'PROMISE TO PAY' => [
                 'field' => 'promise_to_pay',
                 'rules' => [
-                    'promise_to_pay.ptp_amount' => 'required|string|max:50',
+                    'promise_to_pay.ptp_amount' => 'required|numeric|max:50',
                     'promise_to_pay.ptp_date' => 'required|date',
                     'promise_to_pay.payment_channel' => 'required|string|max:20'
                 ],
