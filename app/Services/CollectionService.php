@@ -9,6 +9,7 @@ use App\Models\DepositEncoding;
 use App\Constants\ReceiptStatus;
 use App\Constants\DepositStatus;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class CollectionService
 {
@@ -137,23 +138,27 @@ class CollectionService
 
     public function deposit(array $data)
     {
-        DepositEncoding::create([
-            'collection_id' => $data['collection_id'],
-            'payment_channel' => $data['payment_channel'],
-            'depository_account' => $data['depository_account'],
-            'transaction_reference_number' => $data['transaction_reference_number'],
-            'deposit_date' => $data['deposit_date'],
-            'total_deposit_amount' => $data['total_deposit_amount'],
-            'deposit_charge' => $data['deposit_charge'],
-            'deposit_amount' => $data['deposit_amount'],
-            'deposit_slip' => $data['deposit_slip'],
-        ]);
+        // DepositEncoding::create([
+        //     'collection_id' => $data['collection_id'],
+        //     'payment_channel' => $data['payment_channel'],
+        //     'depository_account' => $data['depository_account'],
+        //     'transaction_reference_number' => $data['transaction_reference_number'],
+        //     'deposit_date' => $data['deposit_date'],
+        //     'total_deposit_amount' => $data['total_deposit_amount'],
+        //     'deposit_charge' => $data['deposit_charge'],
+        //     'deposit_amount' => $data['deposit_amount'],
+        //     'deposit_slip' => $data['deposit_slip'],
+        // ]);
 
-        $test = "BDO-374-20261124";
-        ReceiptEncoding::where('collection_id', $data['collection_id'])
-            ->update([
-                'reference_number' =>  $test,
-            ]);
+
+        $date = Carbon::parse($data['deposit_date'])->format('Ymd');
+        $depositoryAccount = str_replace(' ', '-', $data['depository_account']);
+        $referenceNumber = "$depositoryAccount-$date";
+        error_log($referenceNumber);
+        // ReceiptEncoding::where('collection_id', $data['collection_id'])
+        //     ->update([
+        //         'reference_number' =>  $test,
+        //     ]);
 
         return "nice";
     }
