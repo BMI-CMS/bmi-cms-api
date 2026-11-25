@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('receipt_encodings', function (Blueprint $table) {
-            $table->string('reference_number', 100)->nullable()->after('collection_id');
+            $table->string('reference_number', 150)->nullable()->after('collection_id');
         });
     }
 

@@ -2,20 +2,25 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use App\Repositories\CollectionRepository;
 use App\Models\Collection;
 use App\Models\ReceiptEncoding;
 use App\Models\DepositEncoding;
 use App\Constants\ReceiptStatus;
 use App\Constants\DepositStatus;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use App\Helpers\ReferenceNumberHelper;
+use App\Services\Integration\IntegrationOutboxService;
+use App\Enums\Integration\IntegrationSystem;
+use App\Enums\Integration\IntegrationEvent;
 
 class CollectionService
 {
 
     public function __construct(
-        protected CollectionRepository $collectionRepository
+        protected CollectionRepository $collectionRepository,
+        private IntegrationOutboxService $integrationOutboxService
     ) {}
 
     public function getCollections(int $userId): array
@@ -136,30 +141,194 @@ class CollectionService
         return array_values($formattedCutoffHistory);
     }
 
-    public function deposit(array $data)
+    public function depositV1(array $data)
     {
-        // DepositEncoding::create([
-        //     'collection_id' => $data['collection_id'],
-        //     'payment_channel' => $data['payment_channel'],
-        //     'depository_account' => $data['depository_account'],
-        //     'transaction_reference_number' => $data['transaction_reference_number'],
-        //     'deposit_date' => $data['deposit_date'],
-        //     'total_deposit_amount' => $data['total_deposit_amount'],
-        //     'deposit_charge' => $data['deposit_charge'],
-        //     'deposit_amount' => $data['deposit_amount'],
-        //     'deposit_slip' => $data['deposit_slip'],
-        // ]);
+        $updatedReceipts = DB::transaction(function () use ($data) {
+
+            // DepositEncoding::create([
+            //     'collection_id' => $data['collection_id'],
+            //     'payment_channel' => $data['payment_channel'],
+            //     'depository_account' => $data['depository_account'],
+            //     'transaction_reference_number' => $data['transaction_reference_number'],
+            //     'deposit_date' => $data['deposit_date'],
+            //     'total_deposit_amount' => $data['total_deposit_amount'],
+            //     'deposit_charge' => $data['deposit_charge'],
+            //     'deposit_amount' => $data['deposit_amount'],
+            //     'deposit_slip' => $data['deposit_slip'],
+            // ]);
+
+            $receipts = ReceiptEncoding::where('collection_id', $data['collection_id'])
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get();
+
+            if ($receipts->isEmpty()) {
+                throw new \RuntimeException(
+                    'No receipts found for the specified collection.'
+                );
+            }
+
+            $referenceNumber = ReferenceNumberHelper::format(
+                $data['deposit_date'],
+                $data['depository_account'] ?? null,
+                $data['transaction_reference_number']
+            );
+
+            // TODO: Confirm reference number format and uniqueness requirements.
+            foreach ($receipts as $index => $receipt) {
+                if (!$receipt->update([
+                    'reference_number' => $referenceNumber . '-' . sprintf('%03d', $index + 1),
+                ])) {
+                    throw new \RuntimeException(
+                        "Failed to update receipt ID: {$receipt->id}"
+                    );
+                }
+            }
+
+            return $receipts->toArray();
+        });
+
+        return $updatedReceipts;
+    }
+    public function depositV2(array $data): array
+    {
+        return DB::transaction(function () use ($data) {
+
+            // $collection = Collection::query()
+            //     ->where('id', $data['collection_id'])
+            //     ->lockForUpdate()
+            //     ->firstOrFail();
+
+            // if (DepositEncoding::where('collection_id', $collection->id)->exists()) {
+            //     throw ValidationException::withMessages([
+            //         'collection_id' => 'This collection already has a deposit.',
+            //     ]);
+            // }
+
+            $receipts = ReceiptEncoding::where('collection_id', $data['collection_id'])
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get();
+
+            if ($receipts->isEmpty()) {
+                throw new \RuntimeException(
+                    'No receipts found for the specified collection.'
+                );
+            }
+
+            $deposit = DepositEncoding::create([
+                'collection_id' => $data['collection_id'],
+                'payment_channel' => $data['payment_channel'],
+                'depository_account' => $data['depository_account'] ?? null,
+                'transaction_reference_number' => $data['transaction_reference_number'],
+                'deposit_date' => $data['deposit_date'],
+                'total_deposit_amount' => $data['total_deposit_amount'],
+                'deposit_charge' => $data['deposit_charge'],
+                'deposit_amount' => $data['deposit_amount'],
+                'deposit_slip' => $data['deposit_slip'] ?? null,
+                'status' => 'FOR_AUTHORIZATION',
+                'submission_version' => 1,
+            ]);
+
+            $referenceNumber = ReferenceNumberHelper::format(
+                $data['deposit_date'],
+                $data['depository_account'] ?? null,
+                $data['transaction_reference_number']
+            );
 
 
-        $date = Carbon::parse($data['deposit_date'])->format('Ymd');
-        $depositoryAccount = str_replace(' ', '-', $data['depository_account']);
-        $referenceNumber = "$depositoryAccount-$date";
-        error_log($referenceNumber);
-        // ReceiptEncoding::where('collection_id', $data['collection_id'])
-        //     ->update([
-        //         'reference_number' =>  $test,
-        //     ]);
+            foreach ($receipts as $index => $receipt) {
 
-        return "nice";
+                if (!$receipt->update([
+                    'reference_number' => $referenceNumber . '-' . sprintf('%03d', $index + 1),
+                ])) {
+                    throw new \RuntimeException(
+                        "Failed to update receipt ID: {$receipt->id}"
+                    );
+                }
+            }
+
+            $payload = [
+                'deposit' => $deposit->only([
+                    'id',
+                    'collection_id',
+                    'payment_channel',
+                    'depository_account',
+                    'transaction_reference_number',
+                    'deposit_date',
+                    'total_deposit_amount',
+                    'deposit_charge',
+                    'deposit_amount',
+                    'deposit_slip',
+                    'submission_version',
+                ]),
+
+                'receipts' => $receipts->map(
+                    fn($receipt) => $receipt->only([
+                        'id',
+                        'account_id',
+                        'collection_id',
+                        'payment_type',
+                        'ar_number',
+                        'ar_date',
+                        'amount',
+                        'reference_number',
+                    ])
+                )->values()->all(),
+            ];
+
+            $outbox = $this->integrationOutboxService->enqueue(
+                destinationSystem: IntegrationSystem::LUCAS,
+                eventType: IntegrationEvent::DEPOSIT_CREATED,
+                referenceType: 'DEPOSIT',
+                referenceId: $deposit->id,
+                payload: $payload
+            );
+
+            return [
+                'success' => true,
+                'message' => 'Deposit encoded successfully.',
+                'data' => [
+                    'deposit_id' => $deposit->id,
+                    'integration_id' => $outbox->id,
+                    'integration_status' => $outbox->status->value,
+                ],
+            ];
+        });
+    }
+
+    public function deposit(array $data): array
+    {
+        // $result = DB::transaction(function () use ($data) {
+
+        //     // Create deposit encoding.
+
+        //     // Update receipt reference numbers.
+
+        //     // Prepare integration payload.
+
+        //     $outbox = $this->integrationOutboxService->enqueue(
+        //         destinationSystem: IntegrationSystem::LUCAS,
+        //         eventType: IntegrationEvent::DEPOSIT_CREATED,
+        //         referenceType: 'DEPOSIT',
+        //         referenceId: $deposit->id,
+        //         payload: $payload
+        //     );
+
+        //     return [
+        //         'deposit_id' => $deposit->id,
+        //         'outbox_id' => $outbox->id,
+        //     ];
+        // });
+
+        // // Database transaction has already committed.
+
+        // // Immediately attempt integration.
+        // $this->integrationProcessorService->processById(
+        //     $result['outbox_id']
+        // );
+
+        //return $result;
+        return ['nice'];
     }
 }
