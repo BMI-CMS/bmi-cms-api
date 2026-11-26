@@ -29,7 +29,7 @@ class CollectionController extends Controller
     {
         $validated = $request->validated();
 
-        $result = $this->collectionService->processCutoff($validated);
+        $result = $this->collectionService->processCutoff(Auth::user()->cmsUser->id, $validated);
 
         if (!$result['success']) {
             return response()->json([
