@@ -64,7 +64,7 @@ class CollectionController extends Controller
         }
 
         return response()->json([
-            'message' => 'Cut off history retrieved successfully.',
+            'message' => 'Successfully Saved',
             'data' =>  $result
         ]);
     }
