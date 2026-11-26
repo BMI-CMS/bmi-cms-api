@@ -20,7 +20,7 @@ class CollectionService
 
     public function __construct(
         protected CollectionRepository $collectionRepository,
-        private IntegrationOutboxService $integrationOutboxService
+        // private IntegrationOutboxService $integrationOutboxService
     ) {}
 
     public function getCollections(int $userId): array
@@ -44,6 +44,7 @@ class CollectionService
                     'ar_date' => $collection->ar_date,
                     'amount' => $collection->amount,
                     'receipt_image_path' => $collection->receipt_image_path,
+                    'collection_date' => $collection->created_at
                 ],
             ];
 
