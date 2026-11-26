@@ -57,6 +57,15 @@ class CollectionController extends Controller
 
         $result = $this->collectionService->deposit($validated);
 
-        return $result;
+        if (!$result['success']) {
+            return response()->json([
+                'message' => $result['message'],
+            ], $result['code']);
+        }
+
+        return response()->json([
+            'message' => 'Cut off history retrieved successfully.',
+            'data' =>  $result
+        ]);
     }
 }
