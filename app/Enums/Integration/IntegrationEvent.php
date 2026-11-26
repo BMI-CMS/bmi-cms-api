@@ -5,6 +5,7 @@ namespace App\Enums\Integration;
 enum IntegrationEvent: string
 {
     case DEPOSIT_CREATED = 'DEPOSIT_CREATED';
+
     case DEPOSIT_RESUBMITTED = 'DEPOSIT_RESUBMITTED';
 
     case RESTRUCTURING_REQUESTED = 'RESTRUCTURING_REQUESTED';

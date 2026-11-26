@@ -15,12 +15,13 @@ use App\Services\Integration\IntegrationOutboxService;
 use App\Enums\Integration\IntegrationSystem;
 use App\Enums\Integration\IntegrationEvent;
 
+
 class CollectionService
 {
 
     public function __construct(
         protected CollectionRepository $collectionRepository,
-        // private IntegrationOutboxService $integrationOutboxService
+        private IntegrationOutboxService $integrationOutboxService
     ) {}
 
     public function getCollections(int $userId): array
@@ -158,6 +159,7 @@ class CollectionService
 
             $formattedCutoffHistory[$collection_id]['payment_history'][] = [
                 'receipt_id' =>  $cutoff->receipt_id,
+                'customer_name' => $cutoff->customer_name,
                 'payment_type' => $cutoff->payment_type,
                 'ar_number' => $cutoff->ar_number,
                 'ar_date' => $cutoff->ar_date,
@@ -168,6 +170,7 @@ class CollectionService
 
         return array_values($formattedCutoffHistory);
     }
+
     public function deposit(array $data): array
     {
         return DB::transaction(function () use ($data) {
@@ -210,8 +213,6 @@ class CollectionService
                 'submission_version' => 1,
             ]);
 
-
-
             $referenceNumber = ReferenceNumberHelper::format(
                 $data['deposit_date'],
                 $data['depository_account'] ?? null,
@@ -229,10 +230,50 @@ class CollectionService
                 }
             }
 
+            $payload = [
+                'deposit' => $deposit->only([
+                    'id',
+                    'collection_id',
+                    'payment_channel',
+                    'depository_account',
+                    'transaction_reference_number',
+                    'deposit_date',
+                    'total_deposit_amount',
+                    'deposit_charge',
+                    'deposit_amount',
+                    'deposit_slip',
+                    'submission_version',
+                ]),
+
+                'receipts' => $receipts->map(function ($receipt) {
+
+                    return $receipt->only([
+                        'id',
+                        'account_id',
+                        'collection_id',
+                        'payment_type',
+                        'ar_number',
+                        'ar_date',
+                        'amount',
+                        'reference_number',
+                    ]);
+                })->values()->all(),
+            ];
+
+            $outbox = $this->integrationOutboxService->enqueue(
+                destinationSystem: IntegrationSystem::LUCAS,
+                eventType: IntegrationEvent::DEPOSIT_CREATED,
+                referenceType: 'DEPOSIT',
+                referenceId: $deposit->id,
+                payload: $payload
+            );
+
             return [
                 'success' => true,
                 'data' => [
-                    'data' => $deposit,
+                    'deposit_id' => $deposit->id,
+                    'integration_id' => $outbox->id,
+                    'integration_status' => $outbox->status->value,
                 ],
             ];
         });

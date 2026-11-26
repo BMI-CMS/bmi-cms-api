@@ -7,9 +7,13 @@ use App\Repositories\IntegrationOutboxRepository;
 use App\Enums\Integration\IntegrationEvent;
 use App\Enums\Integration\IntegrationStatus;
 use App\Enums\Integration\IntegrationSystem;
+use App\Jobs\ProcessIntegrationJob;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Bus;
 use LogicException;
+use Throwable;
 
 class IntegrationOutboxService
 {
@@ -40,7 +44,7 @@ class IntegrationOutboxService
             );
         }
 
-        return $this->repository->create([
+        $outbox = $this->repository->create([
             'idempotency_key' => (string) Str::uuid(),
             'destination_system' => $destinationSystem,
             'event_type' => $eventType,
@@ -55,5 +59,24 @@ class IntegrationOutboxService
             ),
             'next_retry_at' => now(),
         ]);
+
+        $outboxId = $outbox->id;
+
+        DB::afterCommit(function () use ($outboxId) {
+
+            try {
+
+                ProcessIntegrationJob::dispatch($outboxId)
+                    ->onQueue('integrations');
+            } catch (Throwable $exception) {
+
+                Log::error('Integration job dispatch failed.', [
+                    'outbox_id' => $outboxId,
+                    'exception_type' => get_class($exception),
+                ]);
+            }
+        });
+
+        return $outbox;
     }
 }

@@ -8,6 +8,7 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('integration:process-outbox')
-    ->everyMinute()
-    ->withoutOverlapping(30);
+
+Schedule::command('integration:recover-outbox')
+    ->everyThirtySeconds()
+    ->withoutOverlapping(5);

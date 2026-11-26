@@ -63,8 +63,8 @@ class CollectionController extends Controller
         }
 
         return response()->json([
-            'message' => 'Cut off history retrieved successfully.',
-            'data' =>  $result
+            'message' => 'Deposit encoded successfully.',
+            'data' =>  $result['data'],
         ]);
     }
 }

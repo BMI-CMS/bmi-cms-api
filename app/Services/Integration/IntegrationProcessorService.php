@@ -22,6 +22,7 @@ class IntegrationProcessorService
         try {
 
             $destination = $outbox->destination_system->value;
+
             $event = $outbox->event_type->value;
 
             $configuration = config(
@@ -64,7 +65,11 @@ class IntegrationProcessorService
 
             if (
                 $statusCode >= 500 ||
-                in_array($statusCode, [408, 425, 429], true)
+                in_array($statusCode, [
+                    408,
+                    425,
+                    429,
+                ], true)
             ) {
                 throw new RuntimeException(
                     "Temporary integration error: HTTP {$statusCode}"
@@ -89,7 +94,10 @@ class IntegrationProcessorService
             ]);
         } catch (Throwable $exception) {
 
-            $this->handleFailure($outbox, $exception);
+            $this->handleFailure(
+                $outbox,
+                $exception
+            );
         }
     }
 
@@ -103,6 +111,7 @@ class IntegrationProcessorService
         $delay = min(
             config('integrations.retry.delay_seconds', 60)
                 * (2 ** min($outbox->attempts - 1, 10)),
+
             config('integrations.retry.max_delay_seconds', 3600)
         );
 

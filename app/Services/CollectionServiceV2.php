@@ -144,6 +144,73 @@ class CollectionService
         return array_values($formattedCutoffHistory);
     }
 
+    public function depositOriginal(array $data): array
+    {
+        return DB::transaction(function () use ($data) {
+
+            $collection = Collection::query()
+                ->where('id', $data['collection_id'])
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if (DepositEncoding::where('collection_id', $collection->id)->exists()) {
+                throw ValidationException::withMessages([
+                    'collection_id' => 'This collection already has a deposit.',
+                ]);
+            }
+
+            $receipts = ReceiptEncoding::where('collection_id', $collection->id)
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get();
+
+            if ($receipts->isEmpty()) {
+                throw new \RuntimeException(
+                    'No receipts found for the specified collection.'
+                );
+            }
+
+            $depositAmount = bcsub($collection->total_amount, $data['deposit_charge'], 2);
+
+            $deposit = DepositEncoding::create([
+                'collection_id' => $collection->id,
+                'payment_channel' => $data['payment_channel'],
+                'depository_account' => $data['depository_account'] ?? null,
+                'transaction_reference_number' => $data['transaction_reference_number'],
+                'deposit_date' => $data['deposit_date'],
+                'total_deposit_amount' => $collection->total_amount,
+                'deposit_charge' => $data['deposit_charge'],
+                'deposit_amount' => $depositAmount,
+                'deposit_slip' => $data['deposit_slip'] ?? null,
+                'status' => 'FOR_AUTHORIZATION',
+                'submission_version' => 1,
+            ]);
+
+            $referenceNumber = ReferenceNumberHelper::format(
+                $data['deposit_date'],
+                $data['depository_account'] ?? null,
+                $data['transaction_reference_number']
+            );
+
+            foreach ($receipts as $index => $receipt) {
+
+                if (!$receipt->update([
+                    'reference_number' => $referenceNumber . '-' . sprintf('%03d', $index + 1),
+                ])) {
+                    throw new \RuntimeException(
+                        "Failed to update receipt ID: {$receipt->id}"
+                    );
+                }
+            }
+
+            return [
+                'success' => true,
+                'data' => [
+                    'data' => $deposit,
+                ],
+            ];
+        });
+    }
     public function depositV1(array $data)
     {
         $updatedReceipts = DB::transaction(function () use ($data) {
@@ -415,13 +482,13 @@ class CollectionService
 
         $message = match ($integration->status) {
             IntegrationStatus::SENT =>
-                'Deposit encoded and sent for authorization successfully.',
+            'Deposit encoded and sent for authorization successfully.',
             IntegrationStatus::FAILED =>
-                'Deposit encoded successfully. Integration will be retried.',
+            'Deposit encoded successfully. Integration will be retried.',
             IntegrationStatus::REJECTED, IntegrationStatus::EXHAUSTED =>
-                'Deposit encoded successfully. Integration requires attention.',
+            'Deposit encoded successfully. Integration requires attention.',
             default =>
-                'Deposit encoded successfully. Integration is pending.',
+            'Deposit encoded successfully. Integration is pending.',
         };
 
         return [

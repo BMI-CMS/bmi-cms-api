@@ -18,5 +18,6 @@ class DepositEncoding extends Model
         'deposit_slip',
         'status',
         'remarks',
+        'submission_version'
     ];
 }
