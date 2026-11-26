@@ -7,7 +7,6 @@ use App\Services\CollectionService;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\DepositRequest;
 use Illuminate\Support\Facades\Auth;
-// use App\Http\Requests\CollectectionRequest;
 
 class CollectionController extends Controller
 {
@@ -57,6 +56,15 @@ class CollectionController extends Controller
 
         $result = $this->collectionService->deposit($validated);
 
-        return $result;
+        if (!$result['success']) {
+            return response()->json([
+                'message' => $result['message'],
+            ], $result['code']);
+        }
+
+        return response()->json([
+            'message' => 'Cut off history retrieved successfully.',
+            'data' =>  $result
+        ]);
     }
 }
