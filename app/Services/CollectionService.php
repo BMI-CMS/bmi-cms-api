@@ -297,38 +297,38 @@ class CollectionService
         });
     }
 
-    public function deposit(array $data): array
-    {
-        // $result = DB::transaction(function () use ($data) {
+    // public function depositv3(array $data): array
+    // {
+    //     // $result = DB::transaction(function () use ($data) {
 
-        //     // Create deposit encoding.
+    //     //     // Create deposit encoding.
 
-        //     // Update receipt reference numbers.
+    //     //     // Update receipt reference numbers.
 
-        //     // Prepare integration payload.
+    //     //     // Prepare integration payload.
 
-        //     $outbox = $this->integrationOutboxService->enqueue(
-        //         destinationSystem: IntegrationSystem::LUCAS,
-        //         eventType: IntegrationEvent::DEPOSIT_CREATED,
-        //         referenceType: 'DEPOSIT',
-        //         referenceId: $deposit->id,
-        //         payload: $payload
-        //     );
+    //     //     $outbox = $this->integrationOutboxService->enqueue(
+    //     //         destinationSystem: IntegrationSystem::LUCAS,
+    //     //         eventType: IntegrationEvent::DEPOSIT_CREATED,
+    //     //         referenceType: 'DEPOSIT',
+    //     //         referenceId: $deposit->id,
+    //     //         payload: $payload
+    //     //     );
 
-        //     return [
-        //         'deposit_id' => $deposit->id,
-        //         'outbox_id' => $outbox->id,
-        //     ];
-        // });
+    //     //     return [
+    //     //         'deposit_id' => $deposit->id,
+    //     //         'outbox_id' => $outbox->id,
+    //     //     ];
+    //     // });
 
-        // // Database transaction has already committed.
+    //     // // Database transaction has already committed.
 
-        // // Immediately attempt integration.
-        // $this->integrationProcessorService->processById(
-        //     $result['outbox_id']
-        // );
+    //     // // Immediately attempt integration.
+    //     // $this->integrationProcessorService->processById(
+    //     //     $result['outbox_id']
+    //     // );
 
-        //return $result;
-        return ['nice'];
-    }
+    //     //return $result;
+    //     return ['nice'];
+    // }
 }
