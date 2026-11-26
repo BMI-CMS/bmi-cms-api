@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Account;
+use App\Models\ReceiptEncoding;
 
 use Illuminate\Database\Eloquent\Collection;
 use App\Models\Collection as CollectionModel;
@@ -11,7 +12,7 @@ class CollectionRepository
 {
     public function getUndepositedPayments(int $userId): Collection
     {
-        return Account::query()
+        return ReceiptEncoding::query()
             ->select([
                 'accounts.id',
                 'receipt_encodings.id as receipt_id',
@@ -24,12 +25,24 @@ class CollectionRepository
                 'receipt_encodings.ar_number',
                 'receipt_encodings.ar_date',
                 'receipt_encodings.amount',
-                'receipt_encodings.receipt_image_path'
+                'receipt_encodings.receipt_image_path',
+                'receipt_encodings.created_at'
             ])
-            ->join('receipt_encodings', 'accounts.id', '=', 'receipt_encodings.account_id')
-            ->where('accounts.assigned_cc_id', $userId)
+            ->join(
+                'contact_recordings',
+                'contact_recordings.id',
+                '=',
+                'receipt_encodings.contact_recording_id'
+            )
+            ->join(
+                'accounts',
+                'accounts.id',
+                '=',
+                'receipt_encodings.account_id'
+            )
+            ->where('contact_recordings.recorded_by', $userId)
             ->whereNull('receipt_encodings.collection_id')
-            ->orderBy('accounts.id')
+            ->orderBy('receipt_encodings.id')
             ->get();
     }
 

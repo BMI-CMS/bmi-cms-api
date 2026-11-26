@@ -7,7 +7,7 @@ use App\Services\CollectionService;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\DepositRequest;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\CollectectionRequest;
+// use App\Http\Requests\CollectectionRequest;
 
 class CollectionController extends Controller
 {
@@ -25,11 +25,9 @@ class CollectionController extends Controller
         ]);
     }
 
-    public function processCutoff(CollectectionRequest $request)
+    public function processCutoff()
     {
-        $validated = $request->validated();
-
-        $result = $this->collectionService->processCutoff($validated);
+        $result = $this->collectionService->processCutoff(Auth::user()->cmsUser->id);
 
         if (!$result['success']) {
             return response()->json([
