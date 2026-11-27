@@ -17,7 +17,6 @@ class ProcessIntegrationJob implements ShouldQueue, ShouldBeUnique
 
     public int $timeout = 45;
 
-    //public int $uniqueFor = 86400;
     public int $uniqueFor = 604800;
 
     public function __construct(

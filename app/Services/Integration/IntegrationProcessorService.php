@@ -24,8 +24,7 @@ class IntegrationProcessorService
             $destination = $outbox->destination_system->value;
 
             $event = $outbox->event_type->value;
-            error_log($destination);
-            error_log($event);
+
             $configuration = config(
                 "integrations.events.{$destination}.{$event}"
             );

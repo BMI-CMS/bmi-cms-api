@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Services\AccountServiceV2;
+use App\Services\AccountService;
 use App\Http\Requests\ContactRecordingRequest;
 use App\Http\Requests\ForceAssignmentRequest;
 use Illuminate\Support\Facades\Auth;
@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 class AccountController extends Controller
 {
     public function __construct(
-        protected AccountServiceV2 $accountService
+        protected AccountService $accountService
     ) {}
 
     public function markAsForcePrioritized(ForceAssignmentRequest $request)

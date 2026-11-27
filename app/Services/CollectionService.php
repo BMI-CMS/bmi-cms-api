@@ -294,9 +294,4 @@ class CollectionService
             ];
         });
     }
-
-    public function sendBackStatus()
-    {
-        return 'test';
-    }
 }

@@ -10,8 +10,8 @@ use App\Enums\Integration\IntegrationSystem;
 use App\Jobs\ProcessIntegrationJob;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Str;
 use LogicException;
 use Throwable;
 
@@ -63,20 +63,31 @@ class IntegrationOutboxService
         $outboxId = $outbox->id;
 
         DB::afterCommit(function () use ($outboxId) {
-
-            try {
-
-                ProcessIntegrationJob::dispatch($outboxId)
-                    ->onQueue('integrations');
-            } catch (Throwable $exception) {
-
-                Log::error('Integration job dispatch failed.', [
-                    'outbox_id' => $outboxId,
-                    'exception_type' => get_class($exception),
-                ]);
-            }
+            $this->dispatch($outboxId);
         });
 
         return $outbox;
+    }
+
+    public function dispatch(int $outboxId): bool
+    {
+        try {
+
+            Bus::dispatch(
+                (new ProcessIntegrationJob($outboxId))
+                    ->onQueue('integrations')
+            );
+
+            return true;
+        } catch (Throwable $exception) {
+
+            Log::error('Integration job dispatch failed.', [
+                'outbox_id' => $outboxId,
+                'exception_type' => get_class($exception),
+                'message' => $exception->getMessage(),
+            ]);
+
+            return false;
+        }
     }
 }

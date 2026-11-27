@@ -19,7 +19,7 @@ use Illuminate\Validation\ValidationException;
 class LucasIntegrationService
 {
     public function __construct(
-        private IntegrationInboxService $inboxService
+        private IntegrationInboxService $integrationInboxService
     ) {}
 
     public function forRestructuring(array $filters = []): LengthAwarePaginator
@@ -299,12 +299,10 @@ class LucasIntegrationService
             );
     }
 
-    public function updateDepositStatus(
-        array $data,
-        string $idempotencyKey
-    ): array {
+    public function updateDepositStatus(array $data, string $idempotencyKey): array
+    {
 
-        $depositId = (int) $data['deposit_id'];
+        $depositId = $data['deposit_id'];
 
         $payload = [
             'deposit_id' => $depositId,
@@ -312,14 +310,13 @@ class LucasIntegrationService
             'remarks' => $data['remarks'] ?? null,
         ];
 
-        return $this->inboxService->process(
+        return $this->integrationInboxService->process(
             sourceSystem: IntegrationSystem::LUCAS,
             eventType: IntegrationEvent::DEPOSIT_STATUS_UPDATED,
             idempotencyKey: $idempotencyKey,
             referenceType: 'DEPOSIT',
             referenceId: $depositId,
             payload: $payload,
-
             handler: function () use ($payload, $depositId) {
 
                 $deposit = DepositEncoding::query()

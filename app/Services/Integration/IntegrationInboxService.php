@@ -43,7 +43,7 @@ class IntegrationInboxService
             $payloadHash,
             $handler
         ) {
-
+            error_log('nice1');
             $inbox = $this->repository->register([
                 'source_system' => $sourceSystem->value,
                 'event_type' => $eventType->value,
@@ -53,7 +53,7 @@ class IntegrationInboxService
                 'payload' => $payload,
                 'payload_hash' => $payloadHash,
             ]);
-
+            error_log('nice2');
             if (!hash_equals(
                 $inbox->payload_hash,
                 $payloadHash
@@ -62,20 +62,20 @@ class IntegrationInboxService
                     'Idempotency key has already been used with a different payload.'
                 );
             }
-
+            error_log('nice3');
             if ($inbox->processed_at !== null) {
 
                 return $inbox->response;
             }
-
+            error_log('nice4');
             if (!$inbox->wasRecentlyCreated) {
                 throw new LogicException(
                     'An unprocessed inbox record already exists.'
                 );
             }
-
+            error_log('nice5');
             $response = $handler();
-
+            error_log('nice6');
             $this->repository->markAsProcessed(
                 $inbox,
                 $response
