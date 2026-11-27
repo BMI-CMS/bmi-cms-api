@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignId('contact_recording_id')
                 ->constrained('contact_recordings')
                 ->cascadeOnDelete();
-            $table->decimal('ptp_amount', 15, 2);
+            $table->string('ptp_amount', 50);
             $table->date('ptp_date');
             $table->string('payment_channel');
             $table->softDeletes();
