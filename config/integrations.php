@@ -8,8 +8,7 @@ return [
 
             'DEPOSIT_CREATED' => [
                 'method' => 'POST',
-                'endpoint' => '/api/v1/collections/test',
-                //  http://127.0.0.1:9191/api/v1/collections/test
+                'endpoint' => '/api/v1/integrations/lucas/ch-authorization',
             ],
 
             'DEPOSIT_RESUBMITTED' => [

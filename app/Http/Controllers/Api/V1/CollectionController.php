@@ -7,6 +7,7 @@ use App\Services\CollectionService;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\DepositRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 
 class CollectionController extends Controller
 {
@@ -67,8 +68,10 @@ class CollectionController extends Controller
             'data' =>  $result['data'],
         ]);
     }
-    public function testLang()
+
+    public function testLang(Request $request)
     {
-        return 'NICEEEE GUMAGANAAAAAAA';
+        error_log($request);
+        return $request;
     }
 }

@@ -103,7 +103,6 @@ class CollectionService
 
             $affectedRows = ReceiptEncoding::query()
                 ->whereIn('id', $receipts->modelKeys())
-                // ->where('status', ReceiptStatus::PENDING_CUTOFF)
                 ->whereNull('collection_id')
                 ->update([
                     'collection_id' => $collection->id,
@@ -279,7 +278,7 @@ class CollectionService
         });
     }
 
-    public function testLang()
+    public function sendBackStatus()
     {
         return 'test';
     }
