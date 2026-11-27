@@ -67,4 +67,8 @@ class CollectionController extends Controller
             'data' =>  $result['data'],
         ]);
     }
+    public function testLang()
+    {
+        return 'NICEEEE GUMAGANAAAAAAA';
+    }
 }

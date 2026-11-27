@@ -18,10 +18,14 @@ class HmacClientService
         string $idempotencyKey
     ): Response {
 
+        error_log('test111111111111111111111');
         $system = strtolower($destinationSystem->value);
-
+        error_log('test222222222222222222222222222222');
+        error_log($system);
+        error_log('test3333333333333');
         $configuration = config("outbound.{$system}");
-
+        error_log($configuration["url"]);
+        error_log('test44444444444444444444444');
         if (
             !$configuration ||
             empty($configuration['url']) ||

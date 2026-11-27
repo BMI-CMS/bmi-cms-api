@@ -278,4 +278,9 @@ class CollectionService
             ];
         });
     }
+
+    public function testLang()
+    {
+        return 'test';
+    }
 }

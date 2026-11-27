@@ -8,7 +8,8 @@ return [
 
             'DEPOSIT_CREATED' => [
                 'method' => 'POST',
-                'endpoint' => '/api/v1/integrations/deposits',
+                'endpoint' => '/api/v1/collections/test',
+                //  http://127.0.0.1:9191/api/v1/collections/test
             ],
 
             'DEPOSIT_RESUBMITTED' => [
@@ -44,7 +45,7 @@ return [
         'delay_seconds' => 60,
         'max_delay_seconds' => 3600,
         'batch_size' => 50,
-        'lease_seconds' => 120,
+        'lease_seconds' => 60,
     ],
 
     'http' => [

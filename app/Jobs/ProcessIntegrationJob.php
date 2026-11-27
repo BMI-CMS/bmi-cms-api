@@ -17,7 +17,8 @@ class ProcessIntegrationJob implements ShouldQueue, ShouldBeUnique
 
     public int $timeout = 45;
 
-    public int $uniqueFor = 86400;
+    //public int $uniqueFor = 86400;
+    public int $uniqueFor = 604800;
 
     public function __construct(
         public int $outboxId
@@ -29,17 +30,17 @@ class ProcessIntegrationJob implements ShouldQueue, ShouldBeUnique
     }
 
     public function handle(
-        IntegrationOutboxRepository $repository,
-        IntegrationProcessorService $processor
+        IntegrationOutboxRepository $integrationOutboxRepository,
+        IntegrationProcessorService $integrationProcessorService
     ): void {
 
-        $outbox = $repository->claimById($this->outboxId);
+        $outbox = $integrationOutboxRepository->claimById($this->outboxId);
 
         if (!$outbox) {
             return;
         }
 
-        $processor->process($outbox);
+        $integrationProcessorService->process($outbox);
 
         $outbox->refresh();
 

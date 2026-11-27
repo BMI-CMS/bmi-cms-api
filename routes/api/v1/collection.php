@@ -10,4 +10,5 @@ Route::prefix('collections')->group(function () {
         Route::get('/cutoff-history', [CollectionController::class, 'cutoffHistory']);
         Route::post('/deposit', [CollectionController::class, 'deposit']);
     });
+    Route::post('/test', [CollectionController::class, 'testLang']);
 });
