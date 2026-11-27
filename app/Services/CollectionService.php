@@ -124,9 +124,9 @@ class CollectionService
         });
     }
 
-    public function cutoffHistory()
+    public function cutoffHistory(int $userId)
     {
-        $cutoffHistory = $this->collectionRepository->cutoffHistory();
+        $cutoffHistory = $this->collectionRepository->cutoffHistory($userId);
 
         $formattedCutoffHistory = [];
         foreach ($cutoffHistory as $cutoff) {
@@ -157,6 +157,8 @@ class CollectionService
             }
 
             $formattedCutoffHistory[$collection_id]['payment_history'][] = [
+                'customer_name' => $cutoff->customer_name,
+                'account_number' => $cutoff->account_number,
                 'receipt_id' =>  $cutoff->receipt_id,
                 'payment_type' => $cutoff->payment_type,
                 'ar_number' => $cutoff->ar_number,

@@ -46,7 +46,7 @@ class CollectionRepository
             ->get();
     }
 
-    public function cutoffHistory(): Collection
+    public function cutoffHistory(int $userId): Collection
     {
         return CollectionModel::query()
             ->select([
@@ -66,6 +66,8 @@ class CollectionRepository
                 'deposit_encodings.status',
                 'deposit_encodings.remarks',
                 'receipt_encodings.id as receipt_id',
+                'accounts.customer_name',
+                'accounts.account_number',
                 'receipt_encodings.payment_type',
                 'receipt_encodings.ar_number',
                 'receipt_encodings.ar_date',
@@ -84,6 +86,20 @@ class CollectionRepository
                 '=',
                 'receipt_encodings.collection_id'
             )
+            ->join(
+                'contact_recordings',
+                'contact_recordings.id',
+                '=',
+                'receipt_encodings.contact_recording_id'
+            )
+            ->join(
+                'accounts',
+                'accounts.id',
+                '=',
+                'receipt_encodings.account_id'
+            )
+
+            ->where('contact_recordings.recorded_by', $userId)
             ->get();
     }
 }

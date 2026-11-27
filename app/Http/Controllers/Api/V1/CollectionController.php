@@ -43,7 +43,7 @@ class CollectionController extends Controller
 
     public function cutoffHistory()
     {
-        $cutoffHistory = $this->collectionService->cutoffHistory();
+        $cutoffHistory = $this->collectionService->cutoffHistory(Auth::user()->cmsUser->id);
 
         return response()->json([
             'message' => 'Cut off history retrieved successfully.',
