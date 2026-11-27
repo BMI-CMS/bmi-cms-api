@@ -185,9 +185,25 @@ class CollectionService
                 ]);
             }
 
-            $receipts = ReceiptEncoding::where('collection_id', $collection->id)
+            $receipts = ReceiptEncoding::select([
+                'accounts.account_no',
+                'accounts.customer_name',
+                'receipt_encodings.collection_id',
+                'receipt_encodings.payment_type',
+                'receipt_encodings.ar_number',
+                'receipt_encodings.ar_date',
+                'receipt_encodings.amount',
+                'receipt_encodings.reference_number',
+            ])
+                ->join(
+                    'accounts',
+                    'accounts.id',
+                    '=',
+                    'receipt_encodings.account_id'
+                )
+                ->where('collection_id', $collection->id)
                 ->orderBy('id')
-                ->lockForUpdate()
+                ->lock('FOR UPDATE OF receipt_encodings')
                 ->get();
 
             if ($receipts->isEmpty()) {
@@ -248,6 +264,8 @@ class CollectionService
 
                     return $receipt->only([
                         'id',
+                        'account_no',
+                        'customer_name',
                         'account_id',
                         'collection_id',
                         'payment_type',
