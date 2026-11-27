@@ -7,13 +7,21 @@ use App\Models\Restructuring;
 use App\Models\EarlyEndorsed;
 use App\Models\NoticedAccount;
 use App\Models\ContactRecording;
+use App\Models\DepositEncoding;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use App\Helpers\GetDateHelper;
+use App\Enums\Integration\IntegrationSystem;
+use App\Enums\Integration\IntegrationEvent;
+use App\Services\Integration\IntegrationInboxService;
+use Illuminate\Validation\ValidationException;
 
 
 class LucasIntegrationService
 {
+    public function __construct(
+        private IntegrationInboxService $inboxService
+    ) {}
+
     public function forRestructuring(array $filters = []): LengthAwarePaginator
     {
         $sortColumns = [
@@ -289,5 +297,57 @@ class LucasIntegrationService
                 'page',
                 max($page, 1)
             );
+    }
+
+    public function updateDepositStatus(
+        array $data,
+        string $idempotencyKey
+    ): array {
+
+        $depositId = (int) $data['deposit_id'];
+
+        $payload = [
+            'deposit_id' => $depositId,
+            'status' => $data['status'],
+            'remarks' => $data['remarks'] ?? null,
+        ];
+
+        return $this->inboxService->process(
+            sourceSystem: IntegrationSystem::LUCAS,
+            eventType: IntegrationEvent::DEPOSIT_STATUS_UPDATED,
+            idempotencyKey: $idempotencyKey,
+            referenceType: 'DEPOSIT',
+            referenceId: $depositId,
+            payload: $payload,
+
+            handler: function () use ($payload, $depositId) {
+
+                $deposit = DepositEncoding::query()
+                    ->where('id', $depositId)
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                if ($deposit->status !== 'FOR_AUTHORIZATION') {
+
+                    throw ValidationException::withMessages([
+                        'status' => 'This deposit is not eligible for a status update.',
+                    ]);
+                }
+
+                $deposit->update([
+                    'status' => $payload['status'],
+                    'remarks' => $payload['remarks'],
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => 'Deposit status updated successfully.',
+                    'data' => [
+                        'deposit_id' => $deposit->id,
+                        'status' => $deposit->status,
+                    ],
+                ];
+            }
+        );
     }
 }

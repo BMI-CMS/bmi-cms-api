@@ -16,5 +16,6 @@ Route::prefix('integrations')->group(function () {
     });
 
     Route::post('/lucas/ch-authorization', [CollectionController::class, 'testLang']);
+    Route::patch('/lucas/deposit-status', [LucasIntegrationController::class, 'updateDepositStatus']);
     Route::prefix('lms')->group(function () {});
 });

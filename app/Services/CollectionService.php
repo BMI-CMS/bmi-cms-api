@@ -186,7 +186,8 @@ class CollectionService
             }
 
             $receipts = ReceiptEncoding::select([
-                'accounts.account_no',
+                'receipt_encodings.id',
+                'accounts.account_number',
                 'accounts.customer_name',
                 'receipt_encodings.collection_id',
                 'receipt_encodings.payment_type',
@@ -261,12 +262,10 @@ class CollectionService
                 ]),
 
                 'receipts' => $receipts->map(function ($receipt) {
-
                     return $receipt->only([
                         'id',
-                        'account_no',
+                        'account_number',
                         'customer_name',
-                        'account_id',
                         'collection_id',
                         'payment_type',
                         'ar_number',

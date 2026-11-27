@@ -9,7 +9,9 @@ use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 use Throwable;
 use App\Services\LucasIntegrationService;
-use App\Http\Requests\EarlyEndorsedRequest;
+use App\Http\Requests\Integration\EarlyEndorsedRequest;
+use App\Http\Requests\Integration\DepositStatusRequest;
+
 
 
 class LucasIntegrationController extends Controller
@@ -211,5 +213,22 @@ class LucasIntegrationController extends Controller
                 'data' => null,
             ], 500);
         }
+    }
+
+    public function updateDepositStatus(DepositStatusRequest $request): JsonResponse
+    {
+
+        $data = $request->validated();
+
+        $idempotencyKey = $data['idempotency_key'];
+
+        unset($data['idempotency_key']);
+
+        $result = $this->lucasIntegrationService->updateDepositStatus(
+            $data,
+            $idempotencyKey
+        );
+
+        return response()->json($result, 200);
     }
 }
