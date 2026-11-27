@@ -98,7 +98,7 @@ class ContactRecordingRequest extends FormRequest
             'PROMISE TO PAY' => [
                 'field' => 'promise_to_pay',
                 'rules' => [
-                    'promise_to_pay.ptp_amount' => 'required|numeric|max:50',
+                    'promise_to_pay.ptp_amount' => 'required|string|max:50',
                     'promise_to_pay.ptp_date' => 'required|date',
                     'promise_to_pay.payment_channel' => 'required|string|max:20'
                 ],
